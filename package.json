@@ -1,0 +1,8 @@
+{
+  "name": "patte-ghar-server",
+  "version": "1.0.0",
+  "description": "Patte Ghar (Call Break) online multiplayer server - no dependencies",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}

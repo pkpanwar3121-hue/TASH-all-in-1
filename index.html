@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Patte Ghar</title>
+<style>
+:root{--gold:#e8c46a;--ink:#16201b;--pn:14,74,50;--t1:#8fd6ad;--t2:#5ab982;--t3:#3b9a68}
+body[data-th=blue]{--pn:20,60,100;--t1:#a9d4f5;--t2:#5a9fd6;--t3:#3573b0}
+body[data-th=red]{--pn:110,32,32;--t1:#f0b0b0;--t2:#d06a6a;--t3:#a64343}
+body[data-th=dark]{--pn:28,38,33;--t1:#6f8178;--t2:#3d4d45;--t3:#212c26}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#3f9d66;font-family:system-ui,Arial,sans-serif;color:#f4efe0}
+#stage{position:absolute;left:0;top:0;width:960px;height:540px;transform-origin:0 0}
+#bg{position:fixed;inset:0;background:radial-gradient(#ffffff2a 1px,transparent 1px) 0 0/18px 18px,radial-gradient(ellipse at 50% 40%,var(--t1) 0,var(--t2) 55%,var(--t3) 100%);box-shadow:inset 0 0 0 8px #c9a36a,inset 0 0 90px #0a4a2a66}
+#app{position:relative;width:960px;height:540px}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:10px 16px;background:var(--gold);color:var(--ink);font-weight:700}
+button.ghost{background:rgb(var(--pn)/0.80);color:var(--gold);border:1px solid var(--gold)}button.sm{padding:6px 12px;font-size:13px}button:disabled{opacity:.4}
+input{width:100%;padding:11px;border-radius:10px;border:1px solid var(--gold);background:#0a2a1d;color:#fff;font-size:18px}
+.lbl{font-size:13px;opacity:.85;margin:8px 0 4px}.row{display:flex;gap:8px;margin-top:8px}.row button{flex:1}
+.panel{background:rgb(var(--pn)/0.85);border:1px solid #e8c46a88;border-radius:16px;padding:14px}
+/* cards */
+.card{position:relative;width:78px;height:112px;background:#fff;border-radius:10px;border:1px solid #0003;color:var(--c);box-shadow:0 3px 7px #0006;font-family:Arial,sans-serif;flex:none}
+.card i{position:absolute;top:6px;left:8px;font-style:normal;font-weight:800;font-size:28px;line-height:1;text-align:center}
+.card i small{display:block;font-size:24px;margin-top:1px}
+.card span{position:absolute;right:9px;bottom:5px;font-size:52px;line-height:1}
+.hand{position:absolute;left:0;right:0;bottom:8px;display:flex;justify-content:center;z-index:3}
+.hand .card{margin-left:-36px;transition:transform .15s}.hand .card:first-child{margin-left:0}
+.hand .card.ok{transform:translateY(-18px);cursor:pointer}.hand .card.no{filter:brightness(.62)}
+.deal{animation:dealin .4s both;animation-delay:calc(var(--i)*30ms)}
+@keyframes dealin{from{transform:translateY(-260px) rotate(-18deg);opacity:0}}
+.trick{position:absolute;left:320px;top:148px;width:320px;height:250px}
+.trick::before{content:'♠';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:130px;opacity:.07}
+.tc{position:absolute}.tc.p0{left:121px;top:130px}.tc.p2{left:121px;top:0}.tc.p3{left:20px;top:65px}.tc.p1{left:222px;top:65px}
+.tc.new.p0{animation:f0 .3s ease-out}.tc.new.p1{animation:f1 .3s ease-out}.tc.new.p2{animation:f2 .3s ease-out}.tc.new.p3{animation:f3 .3s ease-out}
+@keyframes f0{from{transform:translateY(190px);opacity:.3}}@keyframes f1{from{transform:translateX(300px);opacity:.3}}
+@keyframes f2{from{transform:translateY(-170px);opacity:.3}}@keyframes f3{from{transform:translateX(-300px);opacity:.3}}
+.tc.win .card{outline:4px solid var(--gold);animation:glow .6s ease 2}
+@keyframes glow{50%{transform:scale(1.12)}}
+/* players */
+.chip{position:absolute;width:98px;background:rgb(var(--pn)/0.70);border-radius:14px;padding:6px 4px;text-align:center;font-size:12px;line-height:1.3;display:flex;flex-direction:column;align-items:center;gap:2px;z-index:2}
+.chip b{font-size:14px}
+#c2{left:431px;top:40px}#c3{left:34px;top:190px}#c1{right:34px;top:190px}#c0{left:30px;bottom:22px}
+.av{position:relative;width:64px;height:64px;border-radius:50%;background:#1b2b22;display:flex;align-items:center;justify-content:center;font-size:34px;flex:none;overflow:visible}
+.av img{width:54px;height:54px;border-radius:50%;object-fit:cover}.av span{line-height:1}
+.ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);pointer-events:none}
+.ring circle{fill:none;stroke-width:4}.ring .bg{stroke:#ffffff25}
+.ring .fg{stroke:#e8c46a;stroke-dasharray:170;stroke-dashoffset:0;animation-name:ring;animation-timing-function:linear;animation-fill-mode:forwards}
+@keyframes ring{70%{stroke:#e8c46a}to{stroke-dashoffset:170;stroke:#e23b3b}}
+.chip.on .av{animation:pulse 1s ease-in-out infinite}@keyframes pulse{50%{transform:scale(1.08)}}
+.chip.won .av{animation:pop .7s ease}@keyframes pop{40%{transform:scale(1.28) rotate(-6deg)}}
+@media(prefers-reduced-motion:reduce){.chip .av,.tc .card,.deal{animation:none!important}}
+.bar{position:absolute;top:14px;left:22px;right:22px;display:flex;justify-content:space-between;align-items:center;font-size:17px;z-index:4;color:#fff;text-shadow:0 1px 3px #000a}
+.msg{position:absolute;left:0;right:0;bottom:150px;text-align:center;color:#fff;font-size:19px;font-weight:700;text-shadow:0 2px 4px #000a}
+.bidbar{position:absolute;left:150px;right:150px;bottom:140px;background:rgb(var(--pn)/0.94);border:1px solid var(--gold);border-radius:14px;padding:10px 14px;text-align:center;z-index:4}
+.bids{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px}.bids button{width:40px;padding:10px 0}
+.ov{position:absolute;inset:-400px -1500px;background:#0009;display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:#12261d;border:1px solid var(--gold);border-radius:14px;padding:18px;width:520px;max-height:490px;overflow:auto}
+.box h2{color:var(--gold);margin-bottom:10px}
+.res{width:900px;background:rgb(var(--pn)/0.96);border:1px solid var(--gold);border-radius:18px;padding:16px 22px 18px;text-align:center}
+.res h2{color:var(--gold);font-size:26px;margin-bottom:4px}
+.pod{display:flex;justify-content:center;align-items:flex-end;gap:18px;margin:8px 0 14px}
+.pc{width:172px;border-radius:14px;padding:12px 6px;background:#0007;display:flex;flex-direction:column;align-items:center;gap:3px}
+.pc .av{width:74px;height:74px;font-size:40px}.pc .av img{width:64px;height:64px}
+.pc.first{width:214px;background:linear-gradient(#f5c54266,#0007);border:2px solid var(--gold);box-shadow:0 0 30px #f5c54299;padding-top:8px}
+.pc.first .av{width:100px;height:100px;font-size:54px}.pc.first .av img{width:88px;height:88px}
+.pc.me{outline:2px dashed #fff;outline-offset:2px}
+.pc b{font-size:16px}.pos{font-weight:800;font-size:22px;color:var(--gold)}.first .pos{font-size:32px}.pts{font-size:20px;font-weight:700}
+.crown{width:70px;animation:drop .8s cubic-bezier(.3,1.6,.5,1) both}.crown svg{width:100%;display:block;filter:drop-shadow(0 3px 4px #0008)}
+@keyframes drop{from{transform:translateY(-70px) rotate(-14deg);opacity:0}}
+.res .row{justify-content:center}.res .row button{flex:none;padding:12px 26px}
+table{width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:14px}td,th{padding:6px 4px;text-align:center;border-bottom:1px solid #ffffff22}th{color:var(--gold)}td:first-child,th:first-child{text-align:left}
+/* login + home */
+.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.logo{font-size:28px;letter-spacing:10px;color:#fff;text-shadow:0 2px 5px #0007}h1{font-size:40px;color:#fff;text-shadow:0 2px 5px #0007;margin:2px 0 12px}
+.lg{width:480px}.emo{display:flex;flex-wrap:wrap;gap:6px}.emo button{background:#ffffff18;color:#fff;font-size:20px;padding:6px 10px}.emo button.sel{background:var(--gold);color:var(--ink)}
+.home{position:absolute;inset:0;padding:24px 32px;display:flex;flex-direction:column;gap:12px}
+.hd{display:flex;justify-content:space-between;align-items:center}
+.brand{font-size:30px;font-weight:800;color:#fff;text-shadow:0 2px 5px #0007}.brand .r{color:#ff8a8a}.brand i{font-style:normal;margin-right:5px}
+.cols{flex:1;display:grid;grid-template-columns:225px 1fr 255px;gap:16px;min-height:0}
+.pf{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.av.big{width:88px;height:88px;font-size:48px;cursor:pointer}.av.big img{width:76px;height:76px}
+.lv{background:var(--gold);color:var(--ink);border-radius:20px;padding:2px 14px;font-weight:700;font-size:13px}
+.st{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}.st div{background:#0005;border-radius:10px;padding:8px 4px;font-size:12px}.st b{display:block;font-size:22px;color:var(--gold)}
+.mid{display:flex;flex-direction:column;gap:12px;min-height:0}
+.big-tile{position:relative;flex:1;border-radius:18px;background:linear-gradient(135deg,#f0d27e,#c98f2a);color:var(--ink);padding:18px 22px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.big-tile>div:not(.fan){position:relative;z-index:1}
+.big-tile h2{font-size:34px}.big-tile p{margin:4px 0 6px;opacity:.85;max-width:180px;font-size:14px}.big-tile small{font-weight:700}
+.bt{display:flex;gap:8px;flex-wrap:wrap}.bt button{background:var(--ink);color:var(--gold);font-size:16px;padding:10px 16px}.bt .b2{background:#0002;color:var(--ink);border:2px solid var(--ink)}
+.fan{position:absolute;right:-26px;top:4px;width:240px;height:190px;zoom:.78}.fan .card{position:absolute;left:81px;top:36px;transform-origin:50% 150%}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;height:112px}
+.tile{border-radius:14px;background:#0005;border:1px solid #ffffff22;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:700}
+.tile span{font-size:32px}.tile em{font-style:normal;font-size:11px;background:var(--gold);color:var(--ink);border-radius:10px;padding:1px 9px}
+.rt h4{color:var(--gold);font-size:14px;margin-bottom:4px}
+.lb{display:flex;align-items:center;gap:8px;font-size:13px;padding:4px 0;border-bottom:1px solid #ffffff18}.lb b{flex:1}
+.mini{width:26px;height:26px;border-radius:50%;background:#1b2b22;display:flex;align-items:center;justify-content:center;font-size:15px;overflow:hidden}.mini img{width:100%;height:100%;object-fit:cover}.mini span{line-height:1}
+.seg{display:flex;gap:6px;margin:3px 0 8px}.seg button{flex:1;padding:7px 2px;font-size:12px}
+.pr{font-style:normal;background:var(--gold);color:var(--ink);border-radius:10px;padding:1px 9px;font-size:13px;font-weight:700;margin-left:6px}
+.hand .card.hint{outline:4px solid #ffd54a;animation:hint .8s ease-in-out infinite}@keyframes hint{50%{transform:translateY(-32px)}}
+.coach{position:absolute;left:150px;top:50px;width:278px;max-height:136px;overflow:auto;background:rgb(var(--pn)/0.96);border:2px solid #ffd54a;border-radius:12px;padding:8px 10px;font-size:12.5px;line-height:1.35;z-index:5;text-align:left}
+.coach b{color:#ffd54a;font-size:13px}.coach .a{font-weight:800;font-size:14px;margin:2px 0;color:#fff}.coach small{display:block;margin-top:3px;opacity:.85;font-size:11.5px}
+.fb{position:absolute;right:150px;top:50px;width:278px;max-height:136px;overflow:auto;background:rgb(var(--pn)/.96);border:2px solid #ffb36b;border-radius:12px;padding:8px 10px;font-size:12.5px;line-height:1.35;z-index:5}
+.fb.ok{border-color:#8fe0a8}.fb b{display:block;margin-bottom:2px;font-size:13px}
+.lt{display:flex;gap:14px;justify-content:center;margin:12px 0}.lt .card.win{outline:4px solid var(--gold)}
+.bg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}.bd{background:#0005;border-radius:10px;padding:10px 6px;text-align:center;font-size:12px;opacity:.4;filter:grayscale(1)}
+.bd.on{opacity:1;filter:none;border:1px solid var(--gold)}.bd span{display:block;font-size:30px}
+.how p{margin:7px 0;font-size:14px;line-height:1.5}.newb{margin:0 0 10px;color:var(--gold);font-weight:700}
+input[type=range]{padding:0;border:0;background:none;accent-color:var(--gold)}
+.bids button.hn{background:#fff;outline:3px solid #ffd54a}.hnt{margin-top:6px;color:var(--gold);font-weight:700}
+
+/* ===== naya design: lakdi + gems ===== */
+:root{--pn:96,40,28}
+body[data-th=green]{--pn:14,74,50;--t1:#8fd6ad;--t2:#5ab982;--t3:#3b9a68}
+html,body{background:#d79a4a}
+body[data-th=green],body[data-th=blue],body[data-th=red],body[data-th=dark]{background:var(--t2)}
+#bg{background:repeating-linear-gradient(90deg,#ffffff0d 0 2px,#0000 2px 9px),repeating-linear-gradient(180deg,#e3a54f 0 70px,#b87a2f 70px 72px,#eab15c 72px 142px,#b87a2f 142px 144px,#dd9c46 144px 214px,#b87a2f 214px 216px);box-shadow:inset 0 0 130px #6b3a0f77}
+body[data-th=green] #bg,body[data-th=blue] #bg,body[data-th=red] #bg,body[data-th=dark] #bg{background:radial-gradient(#ffffff2a 1px,transparent 1px) 0 0/18px 18px,radial-gradient(ellipse at 50% 40%,var(--t1) 0,var(--t2) 55%,var(--t3) 100%);box-shadow:inset 0 0 0 8px #c9a36a,inset 0 0 90px #0a4a2a66}
+button.ghost,.wb{background:linear-gradient(#c0583a,#9c3e26);border:2px solid #e08a60;color:#fff;box-shadow:0 3px 0 #5b1f33;border-radius:12px}
+.wb{padding:8px 12px;font-weight:700}
+.ib{width:42px;height:42px;font-size:19px;padding:0;display:flex;align-items:center;justify-content:center}
+.iconb{width:54px;height:54px;font-size:26px;padding:0;display:flex;align-items:center;justify-content:center}
+.gb,.yb{color:#fff!important;text-shadow:0 2px 0 #0004;border-radius:12px}
+.gb{background:linear-gradient(#58c23a,#2f8f1c)!important;box-shadow:0 5px 0 #1c5e10}
+.yb{background:linear-gradient(#f2b705,#c78500)!important;box-shadow:0 5px 0 #7a4f00}
+.gb:disabled{filter:grayscale(.8)}
+.box{background:linear-gradient(#a8432a,#86311d);border:3px solid #e08a60}.box h2{color:#ffd54a}
+.card{width:82px;height:118px}.card i{font-size:30px}.card i small{font-size:26px}.card span{font-size:56px}
+.hand .card{margin-left:-38px}.hand .card:first-child{margin-left:0}.hand .card.ok{transform:translateY(-16px)}
+.trick{top:144px;z-index:3}.trick::before{display:none}
+.tc.p0{left:123px;top:130px}.tc.p2{left:123px;top:0}.tc.p3{left:20px;top:62px}.tc.p1{left:218px;top:62px}
+/* bar */
+.bar{top:8px;left:18px;right:18px}
+.rp{display:flex;align-items:center;gap:8px;background:#0008;border-radius:14px;padding:6px 14px;font-weight:700;font-size:16px}
+.bt2{display:flex;align-items:center;gap:8px}.gp{background:#0008;border-radius:14px;padding:7px 12px;font-weight:800;font-size:17px}
+/* players */
+.chip{background:none;padding:0;width:112px;gap:3px}
+.nm{background:#000a;border-radius:12px;padding:2px 10px;font-size:13px;font-weight:700;max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc{background:#000a;border-radius:12px;padding:2px 8px;font-size:12px;white-space:nowrap}
+.av{border:3px solid #fff;background:#fff}.av img{width:100%;height:100%}.av span{font-size:34px}
+#c2{left:50%;top:48px;transform:translateX(-50%);width:auto;flex-direction:row;align-items:center;gap:8px}#c3{left:36px;top:196px}#c1{right:36px;top:196px}#c0{left:34px;bottom:18px}
+.prac #c3{top:auto;bottom:18px}.prac #c0{left:auto;right:34px}
+.bf{position:absolute;width:60px;height:30px;pointer-events:none}
+.bf i{position:absolute;top:0;width:18px;height:26px;border-radius:4px;border:1px solid #fff;background:repeating-linear-gradient(45deg,#c62828 0 3px,#e57373 3px 6px);transform-origin:50% 130%;box-shadow:0 1px 2px #0006}
+.bf2{left:-62px;top:12px}.bf3{left:58px;top:14px}.bf1{left:-52px;top:14px}
+.msg{text-shadow:0 2px 5px #000}
+.bidbar{background:linear-gradient(#b6492f,#97351f);border:2px solid #e08a60}
+/* coach: bada text, left column */
+.coach{left:18px;top:64px;width:306px;max-height:336px;line-height:1.4;background:linear-gradient(#a8432a,#86311d);border:3px solid #ffd54a;border-radius:14px;padding:10px 12px;font-size:17px;z-index:6;text-align:left}
+.coach.fbk{border-color:#ffb36b}.coach.fbk.ok{border-color:#8fe0a8}
+.coach .a{font-size:1.13em;font-weight:800;margin:4px 0;color:#fff}.coach b{font-size:1em;color:#ffd54a}.coach small{display:block;margin-top:5px;font-size:.84em;opacity:.95}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:6px}.ch span{display:flex;gap:4px}.ch button{padding:2px 8px;font-size:13px;box-shadow:0 2px 0 #5b1f33}
+/* home */
+.top{position:absolute;left:0;right:0;top:0;height:120px}
+.prof{position:absolute;left:30px;top:22px;display:flex;align-items:center;gap:10px;background:linear-gradient(#c0583a,#9c3e26);border:2px solid #e08a60;border-radius:36px;padding:6px 10px 6px 6px;box-shadow:0 4px 0 #5b1f33;cursor:pointer;min-width:270px;color:#fff}
+.prof .av{width:58px;height:58px}.pi b{font-size:18px;display:block}.gm{font-size:19px;font-weight:800;background:#0007;border-radius:12px;padding:0 10px;margin-top:2px}
+.plus{width:38px;height:38px;border-radius:50%;background:#35b52a;color:#fff;font-size:26px;padding:0;margin-left:auto;box-shadow:0 3px 0 #1c5e10;line-height:1;border:2px solid #fff}
+.pills{position:absolute;left:0;right:0;top:20px;display:flex;justify-content:center;gap:8px;pointer-events:none}.pills>*{pointer-events:auto}
+.pl{background:#000a;color:#fff;border-radius:20px;padding:6px 16px;font-size:16px;font-weight:600;box-shadow:none}
+.ibs{position:absolute;right:26px;top:22px;display:flex;gap:10px}
+.tl4{position:absolute;left:205px;top:126px;width:550px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.tl{position:relative;height:158px;background:linear-gradient(#b6492f,#97351f);border:2px solid #d9784f;border-radius:16px;box-shadow:0 6px 0 #5b1f33;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;font-weight:800;font-size:22px;cursor:pointer;text-align:center}
+.tl .ic{font-size:54px;line-height:1}.tl small{font-size:13px;opacity:.92;font-weight:600}.tl.soon{filter:saturate(.6);opacity:.85;cursor:default}
+.tl em{position:absolute;top:8px;right:8px;background:var(--gold);color:var(--ink);font-style:normal;font-size:11px;padding:2px 9px;border-radius:9px}
+.sharebtn{position:absolute;left:50%;transform:translateX(-50%);bottom:24px;font-size:17px;padding:10px 26px}
+.bigem{font-size:54px;font-weight:800;text-align:center;margin:12px 0;color:#ffd54a}
+.flash{position:absolute;left:50%;top:70px;transform:translateX(-50%);background:#000d;color:#fff;padding:9px 20px;border-radius:22px;z-index:30;font-weight:700;font-size:16px;white-space:nowrap}
+/* result (peach) */
+.ov.peach{background:radial-gradient(ellipse at 30% 15%,#ffe3b3,#ffc57a 60%,#f7b15c)}
+.resw{position:relative;width:960px;height:540px;color:#4a2410}
+.rtop{position:absolute;left:0;right:0;top:0;height:120px}
+.rcs{position:absolute;left:0;right:0;top:136px;display:flex;justify-content:center;gap:22px}
+.rcw{width:176px;text-align:center}
+.rc{position:relative;background:#ffe5b8;border:4px solid #5a2a14;border-radius:16px;height:262px;padding-top:16px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.rc.me{border-color:#43b02a;background:#ffedcf}
+.rc .av{width:86px;height:86px;border:2px solid #ead7b6;background:#fff}.rc b{font-size:19px;color:#4a2410}.rs2{font-size:28px;font-weight:800}
+.rc hr{width:84%;border:0;border-top:2px solid #5a2a14;margin:2px 0}.who{font-size:15px;font-weight:700;letter-spacing:1px}
+.medal{position:absolute;right:-8px;top:-14px;width:44px;height:44px;border-radius:50%;border:3px solid #fff9;display:flex;align-items:center;justify-content:center;font-size:23px;font-weight:800;color:#fff;box-shadow:0 2px 5px #0005}
+.rc .crown{position:absolute;top:-38px;left:50%;margin-left:-32px;width:64px}
+.gain{margin-top:8px;font-size:27px;font-weight:800;color:#5a2a14}
+.rnote{position:absolute;left:0;right:0;top:446px;text-align:center;font-size:15px;color:#6b3a1d;font-weight:600}
+.rbtn{position:absolute;left:0;right:0;bottom:20px;justify-content:center}.rbtn button{flex:none;min-width:210px;font-size:22px;padding:12px 24px}
+.sharepill{position:absolute;right:26px;top:88px;font-size:16px;font-weight:800;padding:8px 16px;border-radius:22px;border:2px solid #ffd54a;animation:glowp 1.6s ease-in-out infinite}
+.sharepill b{color:#ffe27a}@keyframes glowp{50%{box-shadow:0 0 0 6px #ffd54a66,0 5px 0 #1c5e10}}
+@media(prefers-reduced-motion:reduce){.sharepill{animation:none}}
+.tc.new{animation:fly .3s ease-out}
+@keyframes fly{from{transform:translate(var(--dx,0),var(--dy,0));opacity:.3}}
+.tc .card{transform:scale(var(--sc,1))}
+@keyframes glow{50%{transform:scale(calc(var(--sc,1)*1.12))}}
+.chip.rowc{flex-direction:row;align-items:center;width:auto;gap:8px}
+.hand.sm .card{margin-left:-24px}.hand.sm .card:first-child{margin-left:0}
+.pl{padding:6px 12px;font-size:15px}
+.n5.prac .coach,.n6.prac .coach{top:124px;max-height:276px}
+.lt{flex-wrap:wrap}
+.rcs.n5{gap:16px}.rcs.n5 .rcw{width:162px}.rcs.n6{gap:12px}.rcs.n6 .rcw{width:142px}
+.rcs.n5 .rc .av,.rcs.n6 .rc .av{width:72px;height:72px}.rcs.n6 .rc{height:244px}.rcs.n6 .rc b{font-size:16px}.rcs.n6 .rs2{font-size:24px}.rcs.n6 .gain{font-size:22px}
+.hand .card{touch-action:none}
+.pl.big{font-size:17px;padding:9px 20px;pointer-events:auto}
+.nm{font-size:15px}.sc{font-size:14px;padding:3px 9px;font-weight:700}
+.pt{position:absolute;right:-18px;top:-8px;background:#2e7d32;color:#fff;border:2px solid #fff;border-radius:12px;padding:1px 8px;font-size:15px;font-weight:800;z-index:3;white-space:nowrap}
+.box.sbx table.sbt{font-size:19px;margin:8px 0 6px}.sbt th,.sbt td{padding:7px 6px;text-align:center}.sbt th{font-size:17px}
+.sbt td b{display:block;font-size:22px}.sbt td small{display:block;font-size:13px;opacity:.85}
+.sbt tr.tot th{font-size:28px;border-top:3px solid #ffd54a}.sbt th.lead{color:#ffd54a}
+.cdn{flex:1;font-size:18px;font-weight:700;align-self:center}.cdn b{font-size:30px;color:#ffd54a;margin:0 4px}
+.trick.drop{outline:3px dashed #ffd54a;outline-offset:-6px;border-radius:22px;background:#ffffff26}
+.hand .card{user-select:none;-webkit-user-select:none}
+.rseats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+.rs{background:#0006;border-radius:12px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:15px;text-align:center}
+.rs.empty{opacity:.55}.rs .mini{width:44px;height:44px;font-size:26px}.rs small{font-size:12px;opacity:.9}
+.code{background:#0008;border-radius:10px;padding:2px 12px;letter-spacing:4px;font-size:26px;color:#ffd54a}
+.emopick{position:absolute;left:50%;bottom:150px;transform:translateX(-50%);display:flex;gap:6px;background:#000c;border-radius:22px;padding:8px 12px;z-index:25}
+.emopick button{font-size:28px;padding:4px 8px;background:transparent;box-shadow:none}
+.eb{position:absolute;left:50%;top:-36px;font-size:36px;animation:eb 2.5s ease forwards;z-index:9;pointer-events:none}
+@keyframes eb{0%{opacity:0;transform:translate(-50%,10px) scale(.5)}15%{opacity:1;transform:translate(-50%,0) scale(1.2)}80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-14px)}}
+</style>
+</head>
+<body><div id="bg"></div><div id="stage"><div id="app"></div></div>
+<script>
+/* ============ 1. CARD LIBRARY ============ */
+const SUITS=['♠','♥','♣','♦'];           // 0 = Spade (always trump in Call Break)
+const RANKS={11:'J',12:'Q',13:'K',14:'A'};
+const rankName=r=>RANKS[r]||r;
+function rand(n){const b=new Uint32Array(1);crypto.getRandomValues(b);return b[0]%n}
+function newDeck(){const d=[];for(let s=0;s<4;s++)for(let r=2;r<=14;r++)d.push({s,r});return d}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function sshuffle(arr,seed){const r=rng(seed),a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function sortHand(h){return h.slice().sort((a,b)=>a.s-b.s||b.r-a.r)}
+
+/* ============ 2. GAME: CALL BREAK ============
+   Naya game add karna ho to isi tarah ek object banao aur Registry me daal do.
+   Interface: id, name, createInitialState, getValidMoves, applyMove, isGameOver, getScores */
+function trickWinner(trick){
+  const ls=trick[0].c.s;let best=trick[0];
+  for(const t of trick.slice(1)){
+    const a=t.c,b=best.c;
+    if(a.s===b.s?a.r>b.r:(a.s===0&&b.s!==0))best=t;
+  }
+  return best.p;
+}
+function validCards(hand,trick){
+  if(!trick.length)return hand;
+  const ls=trick[0].c.s,wp=trickWinner(trick),wc=trick.find(t=>t.p===wp).c;
+  const same=hand.filter(c=>c.s===ls);
+  if(same.length){
+    if(wc.s===ls){const hi=same.filter(c=>c.r>wc.r);return hi.length?hi:same}
+    return same;
+  }
+  const sp=hand.filter(c=>c.s===0);
+  if(sp.length){
+    if(wc.s===0){const hi=sp.filter(c=>c.r>wc.r);return hi.length?hi:hand}   // EASY niyam: bada hukum na ho to koi bhi patta chal sakta hai
+    return sp;
+  }
+  return hand;
+}
+const CallBreak={
+  id:'callbreak',name:'Call Break',minPlayers:4,maxPlayers:6,supportsTeams:false,ROUNDS:5,
+  createInitialState(o={}){const n=o.players||4,t=o.target||0;return this.deal({n,hpp:n===4?13:n===5?10:8,round:0,rounds:t?0:(o.rounds||5),target:t,dealer:0,totals:Array(n).fill(0),history:[],seed:o.seed})},
+  deal(st){
+    const n=st.n,hpp=st.hpp;let h,k=0;do{let d=st.seed!=null?sshuffle(newDeck(),st.seed*31+st.round*7+(k++)):shuffle(newDeck());
+      d=d.filter(c=>!(c.r===2&&(n===6||(n===5&&(c.s===2||c.s===3)))));   // 5 khiladi: 2♣,2♦ hate; 6 khiladi: chaaron 2
+      h=Array.from({length:n},(_,i)=>sortHand(d.slice(i*hpp,i*hpp+hpp)))}
+    while(h.some(x=>!x.some(c=>c.s===0)));          // kisi ke paas spade na ho to auto redeal
+    return {...st,hands:h,bids:Array(n).fill(null),won:Array(n).fill(0),trick:[],played:[],turn:(st.dealer+1)%n,phase:'bid',lastTrick:null,roundScore:null};
+  },
+  getValidMoves(st,p){
+    if(st.phase==='bid')return Array.from({length:st.hpp},(_,i)=>({t:'bid',n:i+1}));
+    if(st.phase==='play')return validCards(st.hands[p],st.trick).map(c=>({t:'play',c}));
+    return [];
+  },
+  applyMove(st,p,m){
+    const s=structuredClone(st);
+    if(m.t==='bid'){
+      s.bids[p]=m.n;s.turn=(p+1)%s.n;
+      if(s.bids.every(b=>b!==null)){s.phase='play';s.turn=(s.dealer+1)%s.n}
+      return s;
+    }
+    s.hands[p]=s.hands[p].filter(c=>!(c.s===m.c.s&&c.r===m.c.r));
+    s.trick.push({p,c:m.c});s.played.push(m.c);s.turn=(p+1)%s.n;
+    if(s.trick.length===s.n){
+      const w=trickWinner(s.trick);s.won[w]++;s.lastTrick={cards:s.trick,w};s.trick=[];s.turn=w;
+      if(s.hands.every(h=>!h.length)){
+        const mul={4:1,5:1.5,6:2}[s.n];   // chhote haath me score dheere badhta hai, isliye 5 khiladi x1.5, 6 khiladi x2
+        s.roundScore=s.bids.map((b,i)=>Math.round((s.won[i]>=b?b+(s.won[i]-b)*.1:-b)*mul*10)/10);
+        s.totals=s.totals.map((t,i)=>Math.round((t+s.roundScore[i])*10)/10);
+        s.history.push({bids:s.bids,won:s.won,score:s.roundScore});
+        const fin=s.target?(Math.max(...s.totals)>=s.target||s.round+1>=15):(s.round+1>=s.rounds);   // target mode: sabse pehle 11/21 par pahunchne wala
+        s.phase=fin?'over':'roundEnd';
+      }
+    }
+    return s;
+  },
+  nextRound(st){return this.deal({...st,round:st.round+1,dealer:(st.dealer+1)%st.n})},
+  isGameOver:st=>st.phase==='over',
+  getScores:st=>st.totals
+};
+const Registry={callbreak:CallBreak};   // yahin Rummy, Teen Patti, ... register honge
+
+/* ============ 3. BOTS ============ */
+const Bots={
+  easy:(st,p,mv)=>mv[rand(mv.length)],
+  medium(st,p,mv){
+    const hand=st.hands[p];
+    if(st.phase==='bid'){
+      let n=0;const sp=hand.filter(c=>c.s===0);
+      sp.forEach(c=>{n+=c.r>=13?1:c.r>=11?.6:c.r>=8?.3:.15});
+      for(let s=1;s<4;s++){
+        const cs=hand.filter(c=>c.s===s);
+        if(cs.some(c=>c.r===14))n+=.9;
+        if(cs.some(c=>c.r===13)&&cs.length>=2)n+=.5;
+        if(cs.length<=1&&sp.length>=3)n+=.4;       // chhota suit = spade se kaat sakte hain
+      }
+      const b=Math.max(1,Math.min(8,mv.length,Math.floor(n)));
+      return mv.find(m=>m.n===b);
+    }
+    const need=st.won[p]<st.bids[p],val=c=>c.r+(c.s===0?20:0);
+    const sorted=mv.slice().sort((a,b)=>val(a.c)-val(b.c));
+    // boss = isse bada patta ab kisi ke paas nahi (khela ja chuka ya mere paas hai)
+    const boss=c=>{for(let r=c.r+1;r<=14;r++)if(!st.played.some(x=>x.s===c.s&&x.r===r)&&!hand.some(x=>x.s===c.s&&x.r===r))return false;return true};
+    if(!st.trick.length){                         // chal shuru karna
+      if(need){
+        const b=sorted.filter(m=>boss(m.c)&&m.c.s!==0);if(b.length)return b[b.length-1];
+        const bs=sorted.filter(m=>boss(m.c)&&m.c.s===0);if(bs.length)return bs[0];
+      }
+      const ns=sorted.filter(m=>m.c.s!==0);
+      return ns.length?ns[0]:sorted[0];           // warna sabse chhota non-spade
+    }
+    const win=m=>trickWinner([...st.trick,{p,c:m.c}])===p;
+    const w=sorted.filter(win),l=sorted.filter(m=>!win(m));
+    if(need&&w.length)return w[0];                // hath chahiye: sabse chhote patte se jeeto
+    return l.length?l[0]:sorted[0];               // warna chhota patta phenko
+  }
+,
+  hard(st,p,mv){
+    const hand=st.hands[p];
+    if(st.phase==='bid'){
+      const sp=hand.filter(c=>c.s===0);let n=0;
+      sp.forEach((c,i)=>{n+=c.r===14?1:c.r===13?(sp.length>1?.9:.4):c.r===12?(sp.length>2?.7:.3):c.r===11?.4:i>=3?.5:.25});
+      for(let s=1;s<4;s++){const cs=hand.filter(c=>c.s===s);
+        if(cs.some(c=>c.r===14))n+=.85;
+        if(cs.some(c=>c.r===13)&&cs.length>=2&&cs.length<=4)n+=.45;
+        if(cs.length===0&&sp.length>=2)n+=.7;else if(cs.length===1&&sp.length>=3)n+=.4}
+      const b=Math.max(1,Math.min(9,mv.length,Math.round(n)));return mv.find(m=>m.n===b);
+    }
+    const left=hand.length,need=st.bids[p]-st.won[p],val=c=>c.r+(c.s===0?20:0);
+    const sorted=mv.slice().sort((a,b)=>val(a.c)-val(b.c));
+    const boss=c=>{for(let r=c.r+1;r<=14;r++)if(!st.played.some(x=>x.s===c.s&&x.r===r)&&!hand.some(x=>x.s===c.s&&x.r===r))return false;return true};
+    const ns=sorted.filter(m=>m.c.s!==0);
+    if(!st.trick.length){
+      if(need>=left)return sorted[sorted.length-1];                 // baaki sab hath chahiye
+      if(need>0){
+        const b=ns.filter(m=>boss(m.c));if(b.length)return b[b.length-1];
+        const bs=sorted.filter(m=>boss(m.c)&&m.c.s===0);if(bs.length)return bs[bs.length-1];
+        return ns.length?ns[0]:sorted[0];
+      }
+      const safe=ns.filter(m=>!boss(m.c));                          // bid poori: jeetne se bacho
+      return safe.length?safe[0]:(ns.length?ns[0]:sorted[0]);
+    }
+    const win=m=>trickWinner([...st.trick,{p,c:m.c}])===p;
+    const w=sorted.filter(win),l=sorted.filter(m=>!win(m));
+    if(need>0&&w.length)return need>=left?w[w.length-1]:w[0];
+    if(l.length)return need>0?l[0]:l[l.length-1];                   // bid poori ho gayi: bade patte nikalo
+    return sorted[0];
+  }
+
+};
+
+/* ============ 4. DATA, SOUND ============ */
+let PG={users:{},cur:null,set:{}};
+try{PG=JSON.parse(localStorage.getItem('pg2'))||PG}catch(e){}
+PG.users=PG.users||{};PG.set=Object.assign({rounds:5,level:'medium',sound:true,lang:'hi',vol:35,vib:true,theme:'green',coach:true,music:true,mvol:40,cfs:17,tune:'lori',players:4,gmode:'rounds',target:21,playmode:'drag',server:''},PG.set);
+if(!PG.set.v2){PG.set.v2=1;PG.set.theme='wood'}
+const save=()=>{try{localStorage.setItem('pg2',JSON.stringify(PG))}catch(e){}};
+const me=()=>PG.users[PG.cur];
+const POOL=[['राहुल','Rahul','m'],['अमित','Amit','m'],['विक्रम','Vikram','m'],['अर्जुन','Arjun','m'],['संदीप','Sandeep','m'],['रोहित','Rohit','m'],['करण','Karan','m'],['मनोज','Manoj','m'],['दीपक','Deepak','m'],['सुनील','Sunil','m'],['गुरप्रीत','Gurpreet','m'],['इमरान','Imran','m'],['रवि','Ravi','m'],
+ ['प्रिया','Priya','f'],['नेहा','Neha','f'],['पूजा','Pooja','f'],['अंजलि','Anjali','f'],['सिमरन','Simran','f'],['कविता','Kavita','f'],['सुनीता','Sunita','f'],['मीना','Meena','f'],['रीतू','Ritu','f'],['दिव्या','Divya','f'],['फ़ातिमा','Fatima','f'],['कोमल','Komal','f']];
+const FACE={m:['👨','🧔','👳','👱','👴','🧑'],f:['👩','👩‍🦰','👩‍🦱','🧕','👵','👱‍♀️']};
+function pickBots(k=3){const a=POOL.slice(),r=[];while(r.length<k){const x=a.splice(rand(a.length),1)[0],f=FACE[x[2]];r.push({n:[x[0],x[1]],e:f[rand(f.length)]})}return r}
+let BOTS=pickBots();
+const pn=p=>p?BOTS[p-1].n[li()]:me().name;
+const avOf=a=>a.img?`<img src="${a.img}" alt="">`:`<span>${a.e}</span>`;
+const avHTML=p=>avOf(p?{e:BOTS[p-1].e}:me().av);
+let AC,MG;
+const sndOn=()=>AC&&PG.set.sound;
+const gainOf=()=>PG.set.vol/100*.9;     // slider: Settings me
+function out(){if(!MG){MG=AC.createGain();MG.gain.value=gainOf();const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3200;MG.connect(lp);lp.connect(AC.destination)}return MG}
+function tone(f,d,v=.05,w=0){   // narm ghanti (sine + halka octave)
+  if(!sndOn())return;const T=AC.currentTime+w,o=AC.createOscillator(),o2=AC.createOscillator(),g=AC.createGain(),g2=AC.createGain();
+  o.frequency.value=f;o2.frequency.value=f*2;g2.gain.value=.12;
+  g.gain.setValueAtTime(0,T);g.gain.linearRampToValueAtTime(v,T+.03);g.gain.exponentialRampToValueAtTime(.0005,T+d);
+  o.connect(g);o2.connect(g2);g2.connect(g);g.connect(out());o.start(T);o2.start(T);o.stop(T+d+.05);o2.stop(T+d+.05)}
+function nz(d,type,f0,f1,v,w=0,q=.7){   // filtered shor (brush / thud)
+  if(!sndOn())return;const n=Math.floor(AC.sampleRate*d),b=AC.createBuffer(1,n,AC.sampleRate),x=b.getChannelData(0);
+  for(let i=0;i<n;i++){const t=i/n;x[i]=(Math.random()*2-1)*Math.pow(Math.sin(Math.PI*t),2)}
+  const T=AC.currentTime+w,s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();
+  f.type=type;f.Q.value=q;f.frequency.setValueAtTime(f0,T);f.frequency.exponentialRampToValueAtTime(f1,T+d);
+  g.gain.value=v*2;s.buffer=b;s.connect(f);f.connect(g);g.connect(out());s.start(T)}
+const snd={
+  play:()=>{nz(.15,'bandpass',600,1300,.5);nz(.07,'lowpass',800,450,1,.08);tone(105,.14,.07,.08)},   // narm "sarrr" + dheema "thup"
+  bid:()=>tone(330,.22,.04),
+  turn:()=>tone(659,.4,.03),
+  win:()=>{tone(523,.5,.05);tone(659,.55,.05,.12)},
+  deal:()=>{for(let i=0;i<8;i++)nz(.12,'bandpass',500,1100,.3,i*.085)},
+  end:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.65,.05,i*.18))};
+const vib=()=>{if(PG.set.vib&&navigator.vibrate)try{navigator.vibrate(12)}catch(e){}};
+/* ---- dheemi mithi dhun: 2 dhunein (Lori, Raag) ---- */
+let MUG,MU=null,mT=0,mI=0;
+const mGain=()=>PG.set.music?PG.set.mvol/100:0;
+function mBus(){if(!MUG){MUG=AC.createGain();MUG.gain.value=mGain();const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3200;
+  const dl=AC.createDelay(),fb=AC.createGain(),wet=AC.createGain();dl.delayTime.value=.34;fb.gain.value=.3;wet.gain.value=.35;   // halki goonj
+  MUG.connect(lp);lp.connect(AC.destination);lp.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(AC.destination)}return MUG}
+function pluck(f,t,d,v){   // music-box / sitar jaisi narm toon
+  [[1,1],[2,.28],[3,.1]].forEach(([m,a])=>{const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f*m;
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v*a,t+.01);g.gain.exponentialRampToValueAtTime(.0005,t+d/m);o.connect(g);g.connect(mBus());o.start(t);o.stop(t+d+.1)})}
+function flute(f,t,d,v){   // bansuri jaisi halki kampan wali toon
+  const o=AC.createOscillator(),o2=AC.createOscillator(),lf=AC.createOscillator(),lg=AC.createGain(),g=AC.createGain(),g2=AC.createGain();
+  o.frequency.value=f;o2.frequency.value=f*2;lf.frequency.value=5;lg.gain.value=f*.006;lf.connect(lg);lg.connect(o.frequency);lg.connect(o2.frequency);
+  g2.gain.value=.08;o2.connect(g2);g2.connect(g);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.18);g.gain.setValueAtTime(v,t+d*.55);g.gain.exponentialRampToValueAtTime(.0005,t+d);
+  o.connect(g);g.connect(mBus());[o,o2,lf].forEach(x=>{x.start(t);x.stop(t+d+.1)})}
+const NT=[261.63,293.66,329.63,349.23,392,440,493.88,523.25,587.33,659.25,698.46,783.99,880];
+const LM=[[9,-1,-1,8,7,-1,9,-1],[7,-1,-1,6,5,-1,7,-1],[5,-1,-1,4,3,-1,5,-1],[6,-1,-1,5,4,-1,-1,-1],[9,-1,-1,11,9,-1,8,-1],[7,-1,9,-1,5,-1,-1,-1],[5,-1,7,-1,10,-1,9,-1],[8,-1,-1,-1,6,-1,4,-1],
+ [7,-1,5,-1,7,-1,10,-1],[8,-1,6,-1,8,-1,11,-1],[9,-1,-1,8,6,-1,9,-1],[7,-1,-1,6,5,-1,-1,-1],[5,-1,7,-1,12,-1,11,-1],[10,-1,-1,9,8,-1,6,-1],[9,-1,-1,8,7,-1,-1,-1],[-1,-1,-1,-1,-1,-1,-1,-1]];
+const CHD={C:[130.81,196,261.63],Am:[110,164.81,220],F:[87.31,130.81,174.61],G:[98,146.83,196],Em:[82.41,123.47,164.81]};
+const LC=['C','Am','F','G','C','Am','F','G','F','G','Em','Am','F','G','C','C'];
+const BH=[261.63,293.66,329.63,392,440,523.25,587.33,659.25,783.99,880];   // raag Bhoopali
+const RM=[[2,-1,-1,3,4,-1,-1,-1],[5,-1,4,-1,3,-1,2,-1],[1,-1,2,-1,3,-1,-1,-1],[4,-1,5,-1,6,-1,5,-1],[7,-1,-1,6,5,-1,4,-1],[3,-1,4,-1,5,-1,-1,-1],[4,-1,3,-1,2,-1,1,-1],[0,-1,-1,-1,-1,-1,-1,-1]];
+const TUNES={
+ lori:{step:.4,ev(i,t){const b=(i/8|0)%16,s=i%8,m=LM[b][s];if(m>=0)pluck(NT[m],t,1.8,.14);if(s%2===0)pluck(CHD[LC[b]][[0,1,2,1][s/2]],t,1,.07)}},
+ raag:{step:.5,ev(i,t){const b=(i/8|0)%8,s=i%8,m=RM[b][s];if(m>=0)flute(BH[m],t,2.6,.12);if(s%2===0)pluck([196,261.63,261.63,130.81][s/2],t,2.4,.07)}}};
+function music(on){
+  clearInterval(MU);MU=null;if(!AC||!on)return;
+  if(MUG)MUG.gain.value=mGain();const T=TUNES[PG.set.tune]||TUNES.lori;mT=AC.currentTime+.3;mI=0;
+  MU=setInterval(()=>{while(mT<AC.currentTime+1.6){T.ev(mI,mT);mT+=T.step;mI++}},400);
+}
+function setMVol(v){PG.set.mvol=+v;if(MUG)MUG.gain.value=mGain();save();const e=document.getElementById('mv');if(e)e.textContent=v+'%'}
+document.addEventListener('visibilitychange',()=>{if(AC)document.hidden?AC.suspend():AC.resume()});
+let fsTried=false;
+document.addEventListener('pointerdown',()=>{
+  try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume();if(PG.set.music&&!MU)music(true)}catch(e){}
+  if(!fsTried){fsTried=true;try{const d=document.documentElement;if(d.requestFullscreen)d.requestFullscreen().then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape')).catch(()=>{})}catch(e){}}
+});
+
+/* ============ 5. UI ============ */
+const $=document.getElementById('app'),stage=document.getElementById('stage');
+const FIT={k:1,port:false};
+function fit(){
+  const W=innerWidth,H=innerHeight,port=H>W,k=Math.min((port?H:W)/960,(port?W:H)/540);FIT.k=k;FIT.port=port;
+  stage.style.transform=port?`translate(${(W+540*k)/2}px,${(H-960*k)/2}px) rotate(90deg) scale(${k})`:`translate(${(W-960*k)/2}px,${(H-540*k)/2}px) scale(${k})`;
+}
+addEventListener('resize',fit);addEventListener('orientationchange',fit);fit();
+let G=null,ui={hold:false,show:null,modal:null};
+const BOT_MIN=1500,BOT_MAX=3000,HUMAN_MS=10000;   // bot ka soch-samay aur aapka samay (ms)
+const SC=['#111','#d11f1f','#111','#d11f1f'];   // ♠♣ kaala, ♥♦ laal
+const cardHTML=(c,x='',st='')=>`<div class="card ${x}" style="--c:${SC[c.s]};${st}"><i>${rankName(c.r)}<small>${SUITS[c.s]}</small></i><span>${SUITS[c.s]}</span></div>`;
+const EMOJI=['😎','🦁','🐯','🦊','🐼','🐸','🦉','🐵','🐲','🤖','👑','🥷','🧙','🎩'];
+let pickE='😎',typed='';
+const tog=()=>{PG.set.sound=!PG.set.sound;save();G?render():home()};
+const setS=(k,v)=>{PG.set[k]=v;save();home()};
+
+function login(){
+  G=null;$.className='';const names=Object.keys(PG.users);
+  $.innerHTML=`<div class="center"><div style="position:absolute;top:18px;right:26px"><button class="ghost sm" onclick="setL('hi')">हिंदी</button> <button class="ghost sm" onclick="setL('en')">English</button></div><div class="logo">♠ ♥ ♣ ♦</div><h1>Patte Ghar</h1><div class="panel lg">
+  <div class="lbl">Apna naam likho</div><input id="nmIn" maxlength="12" placeholder="Jaise: Rahul" value="${typed}">
+  <div class="lbl">Avatar chuno</div><div class="emo">${EMOJI.map(e=>`<button class="${e===pickE?'sel':''}" onclick="typed=document.getElementById('nmIn').value;pickE='${e}';login()">${e}</button>`).join('')}</div>
+  <div class="row"><button onclick="doLogin()">Shuru karo</button><button class="ghost" onclick="doLogin('Guest')">Guest</button></div>
+  ${names.length?`<div class="lbl">Is phone par pehle khele hue</div><div class="emo">${names.map(n=>`<button onclick="doLogin('${n}')">${n}</button>`).join('')}</div>`:''}</div></div>`;
+}
+function doLogin(n){
+  n=(n||document.getElementById('nmIn').value).replace(/[<>"'&\\]/g,'').trim().slice(0,12);
+  if(!n){document.getElementById('nmIn').focus();return}
+  if(!PG.users[n])PG.users[n]={name:n,av:{e:pickE},played:0,won:0,pts:0,best:0};
+  PG.cur=n;save();home();
+}
+const logout=()=>{PG.cur=null;save();login()};
+
+const gems=()=>(me().gems||0);
+function flash(t){const e=document.createElement('div');e.className='flash';e.textContent=t;$.appendChild(e);setTimeout(()=>e.remove(),2800)}
+const SHARE_URL='';   // Play Store link bante hi yahan daalna
+async function shareApp(){
+  if(ui.modal==='pick')closeM();
+  const u=me(),txt=T2('मैं Patte Ghar (Call Break) खेल रहा हूँ — आओ मुझे हराओ! ','I am playing Patte Ghar (Call Break) — come beat me! ')+SHARE_URL;
+  let ok=false,copied=false;
+  try{
+    if(navigator.share){await navigator.share(SHARE_URL?{title:'Patte Ghar',text:txt,url:SHARE_URL}:{title:'Patte Ghar',text:txt});ok=true}
+    else if(navigator.clipboard){await navigator.clipboard.writeText(txt);ok=true;copied=true}
+  }catch(e){ok=false}
+  if(!ok)return;
+  const first=u.shareDay!==today();
+  if(first){u.shareDay=today();u.gems=gems()+20;save()}
+  G?render():home();
+  if(copied)flash(T2('टेक्स्ट कॉपी हो गया — दोस्तों को भेजिए','Text copied — send it to your friends'));
+  setTimeout(()=>flash(first?T2('+20 💎 शेयर बोनस मिला!','+20 💎 share bonus!'):T2('आज का शेयर बोनस मिल चुका है','Today\'s share bonus is already claimed')),copied?1500:300);
+}
+let bonusDone=0;
+function bonusCheck(){
+  const u=me();let amt=0,msg='';
+  if(u.gems==null){amt=100;msg=T2('🎉 स्वागत है! पहले लॉगिन का तोहफ़ा','🎉 Welcome! Your first-login gift');u.bonusDay=today()}
+  else if(u.bonusDay!==today()){amt=20;msg=T2('🎁 आज का डेली बोनस','🎁 Your daily bonus');u.bonusDay=today()}
+  if(!amt)return;
+  u.gems=gems()+amt;save();
+  modal(`<h2 style="text-align:center">${msg}</h2><div class="bigem">+${amt} 💎</div><div class="row"><button class="gb" onclick="closeM()">${T2('लीजिए','Claim')}</button></div>`);
+}
+function gemsBox(){
+  const done=me().shareDay===today();
+  modal(`<h2>💎 ${T2('फ्री जेम्स','Free gems')}</h2><p style="font-size:15px;line-height:1.7">🎁 ${T2('हर दिन पहली बार आने पर डेली बोनस +20','Daily bonus +20 on your first visit each day')}<br>🏆 ${T2('मैच के इनाम (5 राउंड): 1st +40 · 2nd +20 · 3rd +8 · 4th +4','Match rewards (5 rounds): 1st +40 · 2nd +20 · 3rd +8 · 4th +4')}<br>📤 ${T2('दोस्तों को शेयर करने पर +20 (दिन में एक बार)','Share with friends: +20 (once a day)')}</p>
+  <div class="row"><button class="gb" onclick="shareApp()" ${done?'disabled':''}>📤 ${done?T2('आज का बोनस मिल चुका','Claimed today'):T2('शेयर करें +20 💎','Share +20 💎')}</button><button class="ghost" onclick="closeM()">${T2('बंद करें','Close')}</button></div>`);
+}
+function lbBox(){
+  const us=Object.values(PG.users).sort((a,b)=>b.won-a.won||(b.gems||0)-(a.gems||0)||b.pts-a.pts).slice(0,10);
+  modal(`<h2>🏆 ${T2('लीडरबोर्ड (इस फ़ोन पर)','Leaderboard (this phone)')}</h2>${us.map((x,i)=>`<div class="lb"><span style="width:26px">${['🥇','🥈','🥉'][i]||i+1}</span><div class="mini">${avOf(x.av)}</div><b>${x.name}</b><span>${x.won} ${T2('जीत','wins')} · 💎${x.gems||0}</span></div>`).join('')}<div class="row"><button onclick="closeM()">${T2('बंद करें','Close')}</button></div>`);
+}
+const MODES=[['rounds',1],['rounds',3],['rounds',5],['target',11],['target',21]];
+function setupHTML(){
+  const S=PG.set,b=(on,f,t)=>`<button class="${on?'':'ghost'}" onclick="${f}">${t}</button>`;
+  return `<h2>🎛 ${T2('गेम चुनिए','Choose your game')}</h2>
+  <div class="lbl">👥 ${T2('खिलाड़ी','Players')}</div><div class="seg">${[4,5,6].map(n=>b(S.players===n,`setPref('players',${n})`,n)).join('')}</div>
+  <div class="lbl">🔁 ${T2('राउंड वाला खेल','Rounds game')}</div><div class="seg">${[1,3,5].map(n=>b(S.gmode==='rounds'&&S.rounds===n,`setPref('rounds',${n})`,n+' '+T2('राउंड','Round'))).join('')}</div>
+  <div class="lbl">🎯 ${T2('टारगेट वाला खेल (जो पहले पहुँचे वह जीते)','Target game (first to reach wins)')}</div><div class="seg">${[11,21].map(n=>b(S.gmode==='target'&&S.target===n,`setPref('target',${n})`,n+' '+T2('अंक','points'))).join('')}</div>
+  <div class="lbl">🤖 ${T2('बॉट का स्तर','Bot level')}</div><div class="seg">${[['easy',T2('आसान','Easy')],['medium',T2('मध्यम','Medium')],['hard',T2('कठिन','Hard')]].map(([k,t])=>b(S.level===k,`setPref('level','${k}')`,t)).join('')}</div>
+  <div class="row"><button class="gb" onclick="closeM()">✔ ${T2('ठीक है','Done')}</button></div>`}
+function setup(){BOXFN=setupHTML;modal(setupHTML())}
+function setPref(k,v){const S=PG.set;if(k==='rounds'){S.gmode='rounds';S.rounds=v}else if(k==='target'){S.gmode='target';S.target=v}else S[k]=v;save();document.querySelector('#pk .box').innerHTML=(BOXFN||setupHTML)()}
+const cycMode=()=>{const S=PG.set,i=MODES.findIndex(m=>m[0]===S.gmode&&m[1]===(m[0]==='rounds'?S.rounds:S.target)),m=MODES[(i+1)%MODES.length];S.gmode=m[0];if(m[0]==='rounds')S.rounds=m[1];else S.target=m[1];save();home()};
+const cycPlayers=()=>{const S=PG.set;S.players=S.players>=6?4:S.players+1;save();home()};
+const modeLbl=S=>S.gmode==='target'?`🎯 ${S.target} ${T2('अंक','pts')}`:`${S.rounds} ${T2('राउंड','Round')}`;
+const cyc=k=>{const a=k==='rounds'?[1,3,5]:['easy','medium','hard'];PG.set[k]=a[(a.indexOf(PG.set[k])+1)%a.length];save();home()};
+function home(){
+  if((ON.active||ON.room)&&!ON.keep)onlineLeave();
+  G=null;$.className='';const u=me(),sd=u.shareDay===today(),S=PG.set,LVN={easy:T2('आसान','Easy'),medium:T2('मध्यम','Medium'),hard:T2('कठिन','Hard')};
+  const dl=u.daily&&u.daily.date===today()?T2('आज का स्कोर: ','Today: ')+u.daily.score:T2('रोज़ नया हाथ','A new hand daily');
+  $.innerHTML=`<div class="top"><div class="prof" onclick="pick()"><div class="av">${avHTML(0)}</div><div class="pi"><b>${u.name}</b><div class="gm">💎 ${gems()}</div></div><button class="plus" onclick="event.stopPropagation();gemsBox()">+</button></div>
+   <div class="pills"><button class="pl big" onclick="setup()">👥 ${S.players} ${T2('खिलाड़ी','Players')} · ${modeLbl(S)} · ${LVN[S.level]} ▾</button></div>
+   <div class="ibs"><button class="wb iconb" onclick="lbBox()">🏆</button><button class="wb iconb" onclick="badges()">🏅</button><button class="wb iconb" onclick="howto()">❓</button><button class="wb iconb" onclick="settings()">⚙</button></div><button class="gb sharepill" onclick="shareApp()">📤 ${T2('शेयर करो','Share')} <b>${sd?'':'+20 💎'}</b></button></div>
+  <div class="tl4">
+   <div class="tl" onclick="start()"><div class="ic">🤖</div>${T2('बॉट्स के साथ खेलो','Play vs Bots')}<small>${S.players} ${T2('खिलाड़ी','players')} · ${modeLbl(S)}</small></div>
+   <div class="tl" onclick="start(1)"><div class="ic">🎓</div>${T2('अभ्यास','Practice')}<small>${T2('कोच के साथ सीखो','Learn with the coach')}</small></div>
+   <div class="tl" onclick="start('daily')"><div class="ic">📅</div>${T2('डेली चैलेंज','Daily Challenge')}<small>${dl}</small></div>
+   <div class="tl" onclick="onlineBox()"><div class="ic">🌐</div>${T2('ऑनलाइन खेलो','Play Online')}<small>${T2('दोस्तों के साथ','With friends')}</small></div></div>`;
+  if(bonusDone!==today()){bonusDone=today();setTimeout(bonusCheck,350)}
+}
+function start(mode){
+  clearTimeout(ui.timer);
+  const S0=PG.set;G=mode==='daily'?CallBreak.createInitialState({rounds:1,seed:today()}):CallBreak.createInitialState({players:S0.players,rounds:S0.rounds,target:S0.gmode==='target'?S0.target:0});
+  if(mode===1)G.practice=true;if(mode==='daily')G.daily=today();
+  BOTS=pickBots(G.n-1);   // har game me naye naam
+  ui={hold:false,show:null,modal:null,deal:true,hist:[]};setTimeout(()=>ui.deal=false,200);snd.deal();render();step();
+}
+
+const SEATS={
+ 4:[[[34,418,'h'],[812,196,'r'],[480,52,'rc'],[36,196,'l']],[[818,418,'h'],[812,196,'r'],[480,52,'rc'],[34,418,'l']]],
+ 5:[[[34,418,'h'],[812,230,'r'],[560,52,'row'],[130,52,'row'],[36,230,'l']],[[818,418,'h'],[812,230,'r'],[560,52,'row'],[130,52,'row'],[34,418,'l']]],
+ 6:[[[34,418,'h'],[812,270,'r'],[812,140,'r'],[480,52,'rc'],[36,140,'l'],[36,270,'l']],[[818,418,'h'],[812,270,'r'],[812,140,'r'],[480,52,'rc'],[150,418,'l'],[34,418,'l']]]};
+function tcPos(p){   // patta har khiladi ki taraf se table ke beech aata hai
+  const n=G.n,a=2*Math.PI*p/n,rx=n===6?122:105,ry=n===6?80:66;
+  return `left:${(160+rx*Math.sin(a)-41).toFixed(0)}px;top:${(125+ry*Math.cos(a)-59).toFixed(0)}px;--dx:${(Math.sin(a)*320).toFixed(0)}px;--dy:${(Math.cos(a)*200).toFixed(0)}px;--sc:${n>4?.8:1}`;
+}
+function chip(p){
+  const on=G.turn===p&&!ui.hold&&ui.dur&&['bid','play'].includes(G.phase);
+  const ring=on?`<svg class="ring" viewBox="0 0 60 60"><circle class="bg" cx="30" cy="30" r="27"/><circle class="fg" cx="30" cy="30" r="27" style="animation-duration:${ui.dur}ms;animation-delay:-${Math.min(Date.now()-ui.t0,ui.dur)}ms"/></svg>`:'';
+  const [L,T,k]=SEATS[G.n][G.practice?1:0][p],n=Math.min(G.hands[p].length,13);
+  const bd=G.bids[p],wn=G.won[p],mulx={4:1,5:1.5,6:2}[G.n],pt=bd!=null&&wn>=bd?`<div class="pt">✓ ${fmt(Math.round((bd+(wn-bd)*.1)*mulx*10)/10)}</div>`:'';
+  const fc={l:'bf3',r:'bf1',row:'bf2',rc:'bf2'}[k],fan=p&&n&&fc?`<div class="bf ${fc}">${Array.from({length:n},(_,i)=>`<i style="left:${i*2.6}px;transform:rotate(${(i-(n-1)/2)*5}deg)"></i>`).join('')}</div>`:'';
+  const pos=`left:${L}px;top:${T}px;right:auto;bottom:auto${k==='rc'?';transform:translateX(-50%)':''}`;
+  return `<div class="chip ${k==='rc'||k==='row'?'rowc':''} ${on?'on':''} ${ui.show&&ui.show.w===p?'won':''}" id="sx${p}" style="${pos}"><div class="av" ${p?'':'onclick="pick()"'}>${ring}${avHTML(p)}${fan}${pt}${ui.emo&&ui.emo[p]?`<div class="eb">${ui.emo[p]}</div>`:''}</div><div class="nm">${pn(p)}</div><div class="sc">Bid ${G.bids[p]??'-'} · Jeete ${G.won[p]}</div></div>`;
+}
+function render(){
+  $.className=(G.practice?'prac ':'')+'n'+G.n;
+  const tr=ui.show?ui.show.cards:G.trick,mine=G.hands[0],myTurn=G.phase==='play'&&G.turn===0&&!ui.hold;
+  const ok=myTurn?validCards(mine,G.trick):[],isOk=c=>ok.some(x=>x.s===c.s&&x.r===c.r),bidding=G.phase==='bid'&&G.turn===0;
+  const msg=G.phase==='play'?(ui.show?`${pn(ui.show.w)} ne hath jeeta`:myTurn?(ui.forced?T2('सिर्फ़ यही पत्ता चल सकता है — अपने आप चल रहा है','Only this card is playable — playing it automatically'):ui.hint?'💡 Hint: ye patta khelo':(PG.set.playmode==='tap'?'Aapki baari':T2('आपकी बारी — पत्ते को ऊपर खींचिए','Your turn — drag a card up'))):''):'';
+  $.innerHTML=`<div class="bar"><div class="rp"><span>📋</span><div>${G.target?`<span>${T2('राउंड','Round')} ${G.round+1} · 🎯 ${G.target}</span>`:`<span>Round ${G.round+1} / ${G.rounds}</span>`}${G.practice?' <em class="pr">Practice</em>':''}${G.daily?' <em class="pr">📅</em>':''}</div></div><div class="bt2"><span class="gp">💎 ${gems()}</span>${G.practice?`<button class="wb ib" onclick="hint()">🎓</button><button class="wb ib" onclick="undo()">↩</button><button class="wb ib" onclick="toggleLang()">🌐</button>`:''}${ON.active?'<button class="wb ib" onclick="emoBox()">😀</button>':''}<button class="wb ib" onclick="lastTrick()">🕘</button><button class="wb ib" onclick="ui.modal='score';render()">📋</button><button class="wb ib" onclick="settings()">⚙</button><button class="wb ib" onclick="home()">🏠</button></div></div>
+  <div class="trick">${tr.map((t,i)=>`<div class="tc ${!ui.show&&i===tr.length-1?'new':''} ${ui.show&&ui.show.w===t.p?'win':''}" style="${tcPos(t.p)}">${cardHTML(t.c)}</div>`).join('')}</div>
+  ${Array.from({length:G.n},(_,p)=>chip(p)).join('')}<div class="msg">${msg}</div>${G.practice&&ui.hint?coachHTML():''}${G.practice&&ui.fb?fbHTML():''}
+  ${bidding?`<div class="bidbar"><b>Aapki bid: kitne hath jeetoge?</b> <small>(${G.practice?'':'10 sec me apne aap lag jayegi · '}aapke spade: ${mine.filter(c=>c.s===0).length})</small><div class="bids">${Array.from({length:G.hpp},(_,i)=>`<button class="${ui.hint&&ui.hint.bid===i+1?'hn':''}" onclick="act(0,{t:'bid',n:${i+1}})">${i+1}</button>`).join('')}</div></div>`:''}
+  <div class="hand ${G.hpp<=10?'sm':''}">${mine.map((c,i)=>cardHTML(c,(ui.deal?'deal ':'')+(myTurn?(isOk(c)?'ok'+(ui.hint&&ui.hint.s===c.s&&ui.hint.r===c.r?' hint':''):'no'):''),`--i:${i}`)).join('')}</div>`;
+  if(myTurn)[...document.querySelectorAll('.hand .card')].forEach((el,i)=>{
+    if(isOk(mine[i]))el.onpointerdown=e=>dragStart(e,el,mine[i]);
+    else el.onpointerdown=()=>flash(T2('यह पत्ता अभी नहीं चल सकता — उठे हुए पत्तों में से चुनिए','This card cannot be played now — pick one of the raised cards'))});
+  overlays();
+}
+const ORD=['1st','2nd','3rd','4th'];
+const CROWN='<svg viewBox="0 0 64 44"><path d="M4 38 L8 10 L22 24 L32 4 L42 24 L56 10 L60 38 Z" fill="#f5c542" stroke="#b8860b" stroke-width="2.5" stroke-linejoin="round"/><circle cx="8" cy="9" r="4.5" fill="#fff3b0"/><circle cx="32" cy="4.5" r="4.5" fill="#fff3b0"/><circle cx="56" cy="9" r="4.5" fill="#fff3b0"/><rect x="4" y="37" width="56" height="6" rx="3" fill="#d99a1a"/></svg>';
+const PAYT={4:[40,20,8,4],5:[50,25,12,6,3],6:[60,30,15,8,4,2]};
+const payFor=(r,g=G)=>Math.max(1,Math.round(PAYT[g.n][r]*(g.target?(g.target===11?.6:1):g.rounds/5)));
+const fmt=x=>Number.isInteger(x)?String(x):x.toFixed(1);   // 3.1 jaisa full-stop wala score
+const ranks=()=>G.totals.map(t=>G.totals.filter(x=>x>t).length);   // 0 = pehla
+function resultHTML(){
+  const rk=ranks(),order=Array.from({length:G.n},(_,i)=>i).sort((a,b)=>rk[a]-rk[b]||a-b),TB=[40,20,8,4],medal=['#f2b705','#b9c0c7','#c27b45','#9fd0dc','#b9cf9a','#cdb6dc'];
+  const pay=r=>payFor(r),mode=G.practice?T2('अभ्यास','Practice'):G.daily?T2('डेली','Daily'):T2('बॉट्स','Bots');
+  const notes=[];
+  if(G.practice)notes.push(T2('अभ्यास में जेम्स नहीं मिलते — असली मैच खेलकर जेम्स जीतिए','No gems in Practice — play a real match to win gems'));
+  else if(ui.dbonus)notes.push(T2(`📅 डेली चैलेंज बोनस +${ui.dbonus} 💎`,`📅 Daily challenge bonus +${ui.dbonus} 💎`));
+  if(ui.newAch&&ui.newAch.length)notes.push(`🏅 ${T2('नया बैज: ','New badge: ')}${ACH.filter(a=>ui.newAch.includes(a[0])).map(a=>a[1]+' '+a[2+li()]).join(' · ')}`);
+  return `<div class="resw"><div class="rtop"><div class="prof"><div class="av">${avHTML(0)}</div><div class="pi"><b>${me().name}</b><div class="gm">💎 ${gems()}</div></div></div>
+   <div class="pills"><span class="pl">${G.n} ${T2('खिलाड़ी','Players')}</span><span class="pl">${G.target?`🎯 ${G.target}`:`${G.rounds} ${T2('राउंड','Round')}`}</span><span class="pl">${mode}</span></div>
+   <div class="ibs"><button class="wb iconb" onclick="ui.modal='score';render()">📋</button></div><button class="gb sharepill" onclick="shareApp()">📤 ${T2('शेयर करो','Share')} <b>${me().shareDay===today()?'':'+20 💎'}</b></button></div>
+  <div class="rcs n${G.n}">${order.map(p=>{const r=rk[p],g=p===0&&!G.practice?ui.gain:pay(r);return `<div class="rcw"><div class="rc ${p===0?'me':''}"><div class="medal" style="background:${medal[r]}">${r+1}</div>${r===0?`<div class="crown">${CROWN}</div>`:''}<div class="av">${avHTML(p)}</div><b>${pn(p)}</b><div class="rs2">(${fmt(G.totals[p])})</div><hr><div class="who">${p===0?T2('आप','YOU'):T2('बॉट','BOT')}</div></div>${G.practice?'':`<div class="gain">+${g} 💎</div>`}</div>`}).join('')}</div>
+  <div class="rnote">${notes.join(' &nbsp;·&nbsp; ')}</div>
+  <div class="row rbtn"><button class="yb" onclick="home()">${T2('होम','GO HOME')}</button><button class="gb" onclick="again()">${T2('फिर खेलें','PLAY AGAIN')}</button></div></div>`;
+}
+const again=()=>ON.active?onlineAgain():start(G.practice?1:G.daily?'daily':0);
+function scoreHTML(){
+  const re=G.phase==='roundEnd'&&!ui.modal,n=G.n,lead=Math.max(...G.totals);
+  const rows=G.history.map((r,i)=>`<tr><td>${T2('राउंड','Round')} ${i+1}</td>${r.score.map((v,j)=>`<td><b>${fmt(v)}</b><small>${r.won[j]}/${r.bids[j]}</small></td>`).join('')}</tr>`).join('');
+  return `<div class="box sbx" style="width:${n>4?860:660}px"><h2>${re?T2('राउंड '+(G.round+1)+' खत्म','Round '+(G.round+1)+' complete'):T2('स्कोरबोर्ड','Scoreboard')}${G.target?' · 🎯 '+G.target:''}</h2>
+  <table class="sbt"><tr><th></th>${Array.from({length:n},(_,p)=>`<th>${pn(p)}</th>`).join('')}</tr>${rows}
+  <tr class="tot"><th>${T2('कुल','Total')}</th>${G.totals.map(t=>`<th class="${t===lead?'lead':''}">${fmt(t)}</th>`).join('')}</tr>
+  <tr><th>${T2('स्थान','Position')}</th>${ranks().map(r=>`<th>${ORD[r]}</th>`).join('')}</tr></table>
+  <small>${T2('हर खाने में: स्कोर और (जीते/बिड)','Each box: score and (won/bid)')}</small>
+  <div class="row">${re?`<div class="cdn">${T2('अगला राउंड','Next round in')} <b id="cdn">${ui.cdn}</b> ${T2('सेकंड में','sec')}</div>${ON.active?'':`<button class="gb" onclick="nextRound()">▶ ${T2('अभी शुरू करें','Start now')}</button>`}`:`<button onclick="ui.modal=null;render();step()">${T2('वापस','Back')}</button>`}</div></div>`;
+}
+function dragStart(e,el,card){   // patte ko ungli se pakadkar upar mez ki taraf kheenchiye
+  e.preventDefault();
+  const pm=PG.set.playmode||'drag',x0=e.clientX,y0=e.clientY,tr=document.querySelector('.trick');let moved=false;
+  try{el.setPointerCapture(e.pointerId)}catch(_){}
+  el.style.transition='none';el.style.zIndex=60;
+  const st=(dx,dy)=>FIT.port?[dy/FIT.k,-dx/FIT.k]:[dx/FIT.k,dy/FIT.k];   // screen -> stage (ghoomi hui screen me bhi)
+  el.onpointermove=ev=>{const [sx,sy]=st(ev.clientX-x0,ev.clientY-y0);if(Math.abs(sx)+Math.abs(sy)>12)moved=true;
+    if(pm!=='tap'){el.style.transform=`translate(${sx}px,${sy-16}px) scale(1.12) rotate(${Math.max(-18,Math.min(18,sx/14))}deg)`;if(tr)tr.classList.toggle('drop',sy<-60)}};
+  const end=ev=>{el.onpointermove=el.onpointerup=el.onpointercancel=null;if(tr)tr.classList.remove('drop');
+    const [sx,sy]=st(ev.clientX-x0,ev.clientY-y0);
+    const play=ev.type==='pointerup'&&((moved&&pm!=='tap'&&sy<-70)||(!moved&&pm!=='drag'));
+    if(play){if(ON.active)el.style.opacity='.45';act(0,{t:'play',c:card});return}
+    el.style.transition='transform .2s';el.style.transform='';el.style.zIndex='';
+    if(!moved&&pm==='drag')flash(T2('पत्ते को ऊपर मेज़ की ओर खींचिए','Drag the card up to the table'))};
+  el.onpointerup=end;el.onpointercancel=end;
+}
+function overlays(){
+  let h='';
+  if(G.phase==='over'&&!ui.hold&&!ui.modal)h=resultHTML();
+  else if(ui.modal==='last'&&G.lastTrick){const L=G.lastTrick;
+    h=`<div class="box"><h2>${pn(L.w)} ne hath jeeta</h2><div class="lt">${L.cards.map(t=>`<div style="text-align:center;font-size:12px">${cardHTML(t.c,t.p===L.w?'win':'')}<div style="margin-top:4px">${pn(t.p)}</div></div>`).join('')}</div><div class="row"><button onclick="ui.modal=null;render();step()">Wapas</button></div></div>`}
+  else if(ui.modal==='score'||(!ui.hold&&G.phase==='roundEnd'))h=scoreHTML();
+  if(h)$.insertAdjacentHTML('beforeend','<div class="ov'+(G.phase==='over'&&!ui.hold&&!ui.modal?' peach':'')+'">'+h+'</div>');
+}
+function autoNext(){
+  clearInterval(ui.cd);ui.cdn=ON.active?6:G.practice?12:7;const g=G;
+  ui.cd=setInterval(()=>{
+    if(G!==g||G.phase!=='roundEnd'){clearInterval(ui.cd);return}
+    if(ui.modal)return;
+    ui.cdn--;const e=document.getElementById('cdn');if(e)e.textContent=ui.cdn;
+    if(ui.cdn<=0){clearInterval(ui.cd);if(!ON.active)nextRound()}
+  },1000);
+}
+function nextRound(){clearInterval(ui.cd);G=CallBreak.nextRound(G);ui.deal=true;setTimeout(()=>ui.deal=false,200);snd.deal();render();step()}
+function recordResult(){
+  const u=me(),my=G.totals[0];
+  if(!G.practice){
+    const w=my===Math.max(...G.totals);u.played++;if(w)u.won++;u.streak=w?(u.streak||0)+1:0;
+    u.pts=Math.round((u.pts+my)*10)/10;u.best=Math.max(u.best,my);
+    if(G.daily){const d=u.daily&&u.daily.date===G.daily?u.daily.score:-99;u.daily={date:G.daily,score:Math.max(d,my)}}
+  }
+  ui.newAch=award(u);ui.gain=0;ui.dbonus=0;
+  if(!G.practice){ui.gain=payFor(ranks()[0]);
+    if(G.daily&&u.dailyPaid!==G.daily){u.dailyPaid=G.daily;ui.dbonus=25}
+    u.gems=(u.gems||0)+ui.gain+ui.dbonus;ui.gain+=ui.dbonus}
+  save();snd.end();
+}
+function today(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()}
+const T2=(h,e)=>li()?e:h;
+const ACH=[['first','🥇','पहली जीत','First win'],['streak3','🔥','लगातार 3 जीत','3 wins in a row'],['exact','🎯','बिड बिल्कुल सही','Exact bid'],
+ ['big','💪','बड़ी बिड (5+) पूरी','Big bid (5+) made'],['hard','🧠','हार्ड बॉट्स को हराया','Beat Hard bots'],['pts10','⭐','एक खेल में 10+ अंक','10+ points in a game'],
+ ['games10','🎴','10 खेल पूरे','10 games played'],['daily','📅','दैनिक चुनौती पूरी','Daily challenge done'],['prac','🎓','अभ्यास खेल पूरा','Practice game done']];
+function award(u){
+  u.ach=u.ach||{};const H=G.history,np=!G.practice,w=np&&G.totals[0]===Math.max(...G.totals);
+  const c={first:w,streak3:w&&u.streak>=3,exact:np&&H.some(r=>r.won[0]===r.bids[0]),big:np&&H.some(r=>r.bids[0]>=5&&r.won[0]>=r.bids[0]),
+    hard:w&&PG.set.level==='hard'&&!G.daily,pts10:np&&G.totals[0]>=10,games10:u.played>=10,daily:!!G.daily,prac:!np};
+  const nw=[];for(const k in c)if(c[k]&&!u.ach[k]){u.ach[k]=1;nw.push(k)}return nw}
+function coachParts(h){
+  const E=li()===1,T=(a,b)=>E?b:a,hand=G.hands[0];
+  const nm=c=>rankName(c.r)+SUITS[c.s],SN=[T('हुकुम','Spades'),T('पान','Hearts'),T('चिड़ी','Clubs'),T('ईंट','Diamonds')];
+  let a,b,c;
+  if(h.bid){
+    const sp=hand.filter(x=>x.s===0),big=sp.filter(x=>x.r>=12).length,ak=hand.filter(x=>x.s!==0&&x.r>=13).length;
+    a=T(`इस बार बिड ${h.bid} लगाइए।`,`Bid ${h.bid} this round.`);
+    b=T(`आपके पास ${sp.length} हुकुम (♠) हैं, जिनमें ${big} बड़े (A/K/Q) हैं, और दूसरे रंगों के ${ak} इक्का/बादशाह हैं। हुकुम सबसे ताकतवर रंग है, वही हाथ जिताता है।`,
+        `You hold ${sp.length} spades (♠), ${big} of them high (A/K/Q), plus ${ak} aces/kings in other suits. Spades are trump, so they win tricks.`);
+    c=T('नए खिलाड़ी के लिए थोड़ी कम बिड सुरक्षित रहती है।',`As a beginner, bidding a little low is safer.`);
+  }else{
+    const card=hand.find(x=>x.s===h.s&&x.r===h.r),need=G.bids[0]-G.won[0],tr=G.trick;
+    const win=tr.length&&trickWinner([...tr,{p:0,c:card}])===0;
+    const boss=(()=>{for(let r=card.r+1;r<=14;r++)if(!G.played.some(x=>x.s===card.s&&x.r===r)&&!hand.some(x=>x.s===card.s&&x.r===r))return false;return true})();
+    a=T(`यह पत्ता चलिए: ${nm(card)}`,`Play this card: ${nm(card)}`);
+    if(!tr.length){
+      b=need<=0?T('आपकी बिड पूरी हो चुकी है, इसलिए अब हाथ जीतने से बचिए। सबसे सुरक्षित छोटा पत्ता चलिए।',`Your bid is already met, so avoid winning more. Lead the safest low card.`)
+        :boss?T(`इस रंग का ${nm(card)} अब सबसे बड़ा पत्ता बचा है, इसलिए हाथ जीतने की अच्छी संभावना है।`,`${nm(card)} is the highest card left in this suit, so it is likely to win the trick.`)
+        :T('अभी बड़ा पत्ता खर्च मत कीजिए। छोटा पत्ता चलिए, बड़े पत्ते बाद में काम आएँगे।',`Don't spend a high card yet. Lead low and save your big cards for later.`);
+      c=T('हाथ शुरू करते समय आप कोई भी पत्ता चल सकते हैं।','When you lead, any card is allowed.');
+    }else{
+      const ls=tr[0].c.s,hasLead=hand.some(x=>x.s===ls),hasSp=hand.some(x=>x.s===0);
+      b=win&&need>0?(card.s===0&&ls!==0?T('आपके पास उस रंग का पत्ता नहीं है, इसलिए हुकुम से काटकर हाथ जीतिए। आपको अभी हाथ चाहिए।',`You have none of the led suit, so cut with a spade to win. You still need tricks.`)
+          :T(`यह पत्ता अभी हाथ जीत लेता है और आपको हाथ चाहिए (जीते ${G.won[0]} / बिड ${G.bids[0]})।`,`This card wins the trick and you still need tricks (won ${G.won[0]} / bid ${G.bids[0]}).`))
+        :win?T('नियम के कारण यही पत्ता चलना पड़ता है; इससे हाथ जीत जाएगा।',`The rules force a card that wins this trick.`)
+        :need>0?T('इस हाथ को जीतना मुश्किल है, इसलिए सबसे छोटा पत्ता चलिए और बड़ा पत्ता बाद के लिए बचाइए।',`This trick is hard to win, so play low and save your big card for later.`)
+        :T('आपकी बिड पूरी है, इसलिए हाथ हारना ठीक है। बड़ा पत्ता अभी निकाल दीजिए, वरना वह बाद में अनचाहा हाथ जिता देगा।',`Your bid is met, so losing this trick is fine. Dump a high card now so it cannot win by accident later.`);
+      c=hasLead?T(`नियम: ${SN[ls]} का पत्ता चलना ज़रूरी है (और बड़ा चल सकें तो बड़ा)।`,`Rule: you must follow ${SN[ls]} (and play higher if you can).`)
+        :hasSp?T(`नियम: आपके पास ${SN[ls]} नहीं है, इसलिए हुकुम से काटना ज़रूरी है।`,`Rule: you have no ${SN[ls]}, so you must cut with a spade.`)
+        :T('नियम: आपके पास न वह रंग है न हुकुम, कोई भी पत्ता चल सकते हैं।',`Rule: no led suit and no spades, so any card is allowed.`);
+    }
+  }
+  return [a,b,c];
+}
+function coachHTML(){const [a,b,c]=coachParts(ui.hint);return `<div class="coach" style="font-size:${PG.set.cfs}px"><div class="ch"><b>🎓 ${T2('कोच','Coach')}</b><span><button onclick="cfs(-1)">A−</button><button onclick="cfs(1)">A+</button><button onclick="toggleLang()">${li()?'हिं':'EN'}</button></span></div><div class="a">${a}</div><div>${b}</div><small>${c}</small></div>`}
+function fbHTML(){const f=ui.fb,[a,b]=f.parts[li()];return `<div class="coach fbk ${f.ok?'ok':''}" style="font-size:${PG.set.cfs}px"><div class="ch"><b>${f.ok?T2('✅ सही चाल!','✅ Good move!'):T2('💡 बेहतर चाल थी','💡 A better move')}</b><span><button onclick="cfs(-1)">A−</button><button onclick="cfs(1)">A+</button><button onclick="toggleLang()">${li()?'हिं':'EN'}</button></span></div>${f.ok?`<div>${b}</div>`:`<div class="a">${a}</div><div>${b}</div>`}</div>`}
+const cfs=d=>{PG.set.cfs=Math.max(13,Math.min(26,(PG.set.cfs||17)+d*2));save();render()};
+const toggleLang=()=>{PG.set.lang=li()?'hi':'en';save();G?render():home()};
+function computeHint(){const mv=CallBreak.getValidMoves(G,0),m=Bots.hard(G,0,mv);return m.t==='bid'?{bid:m.n}:{s:m.c.s,r:m.c.r}}
+function feedback(m){
+  const b=Bots.hard(G,0,CallBreak.getValidMoves(G,0)),h=b.t==='bid'?{bid:b.n}:{s:b.c.s,r:b.c.r},L0=PG.set.lang;
+  const ok=m.t==='bid'?b.n===m.n:(b.c.s===m.c.s&&b.c.r===m.c.r);
+  PG.set.lang='hi';const p0=coachParts(h);PG.set.lang='en';const p1=coachParts(h);PG.set.lang=L0;
+  ui.fb={ok,parts:[p0,p1]};
+}
+
+/* practice: hint + undo */
+function hint(){   // coach on/off (practice me coach apne aap dikhta hai)
+  PG.set.coach=!PG.set.coach;save();
+  ui.hint=(PG.set.coach&&G.practice&&!ui.hold&&G.turn===0&&['bid','play'].includes(G.phase))?computeHint():null;render();
+}
+function undo(){
+  if(!G.practice||ui.hold||ui.modal||!ui.hist||!ui.hist.length)return;
+  clearTimeout(ui.timer);G=ui.hist.pop();ui.hint=null;ui.fb=null;render();step();
+}
+function setL(l){typed=(document.getElementById('nmIn')||{}).value||typed;PG.set.lang=l;save();login()}
+
+function lastTrick(){if(!G.lastTrick||ui.hold||ui.modal)return;ui.modal='last';render()}
+function modal(html){if(ui.hold||ui.modal)return;ui.modal='pick';clearTimeout(ui.timer);$.insertAdjacentHTML('beforeend',`<div class="ov" id="pk"><div class="box">${html}</div></div>`)}
+function closeM(){ui.modal=null;const o=document.getElementById('pk');if(o)o.remove();if(G){render();step()}else home()}
+const HOW=[['🎯 लक्ष्य: हर राउंड में आपने जितने हाथ जीतने की बिड लगाई, उतने (या ज़्यादा) जीतिए।','🎯 Goal: win at least as many tricks as you bid in each round.'],
+['📢 बिड: पत्ते बँटने के बाद हर खिलाड़ी 1 से 13 के बीच बिड लगाता है।','📢 Bid: after the deal, each player bids a number from 1 to 13.'],
+['♠ हुकुम तुरुप है: हुकुम का कोई भी पत्ता दूसरे रंगों के हर पत्ते को हरा देता है।','♠ Spades are trump: any spade beats every card of the other suits.'],
+['🃏 चाल के नियम: (1) जो रंग चला गया वही चलिए; (2) हो सके तो उससे बड़ा चलिए; (3) वह रंग न हो तो हुकुम से काटिए; (4) दोनों न हों तो कोई भी पत्ता।','🃏 Play rules: (1) follow the suit led; (2) play higher if you can; (3) no such suit? cut with a spade; (4) neither? play anything.'],
+['🏆 स्कोर: बिड पूरी हुई तो बिड + 0.1 × अतिरिक्त हाथ; नहीं हुई तो −बिड।','🏆 Score: bid met = bid + 0.1 × extra tricks; missed = −bid.'],
+['🎓 नए हैं? Practice में खेलिए: कोच हर चाल से पहले बताएगा कि क्या करना है और क्यों।','🎓 New? Play Practice: the coach tells you what to do and why before every move.']];
+HOW.push(['👥 खिलाड़ी: 4 से 6। 5 खिलाड़ियों में दो और 6 में चारों 2 के पत्ते हटा दिए जाते हैं (5 खिलाड़ी: 10-10 पत्ते, 6 खिलाड़ी: 8-8 पत्ते)।','👥 Players: 4 to 6. With 5 players two 2s are removed, with 6 players all four 2s (10 cards each for 5 players, 8 each for 6).'],
+ ['🎯 खेल दो तरह का: राउंड वाला (1, 3 या 5 राउंड) या टारगेट वाला, जिसमें जो सबसे पहले 11 या 21 अंक पर पहुँचे वह जीतता है। ऊपर के बटनों से चुनिए।','🎯 Two ways to play: Rounds (1, 3 or 5) or Target, where the first to reach 11 or 21 points wins. Pick with the buttons at the top.'],
+ ['✖️ 5 खिलाड़ियों में अंक ×1.5 और 6 में ×2 गिने जाते हैं (पत्ते कम होने के कारण), ताकि 11 या 21 का लक्ष्य जल्दी पहुँचे।','✖️ With 5 players points count ×1.5 and with 6 players ×2 (hands are smaller), so the 11 or 21 target is reached in a similar number of rounds.']);
+HOW.push(['👆 पत्ता चलाना: पत्ते को उँगली से पकड़कर ऊपर मेज़ की ओर खींचिए और छोड़ दीजिए। (सेटिंग्स में "टैप" या "दोनों" भी चुन सकते हैं।)','👆 Playing a card: hold the card with your finger, drag it up to the table and let go. (Settings also offers Tap or Both.)'],
+ ['🌐 ऑनलाइन: "ऑनलाइन खेलो" में क्विक मैच खेलिए, या प्राइवेट रूम बनाकर कोड दोस्तों को भेजिए। खाली सीटों पर बॉट बैठते हैं।','🌐 Online: use "Play Online" for a Quick Match, or create a private room and send the code to friends. Empty seats are filled by bots.']);
+function howto(){modal(`<h2>❓ Kaise khelein</h2><div class="how">${HOW.map(x=>`<p>${x[li()]}</p>`).join('')}</div><div class="row"><button onclick="closeM()">Band karo</button></div>`)}
+function badges(){const A=me().ach||{};modal(`<h2>🏅 Badges</h2><div class="bg">${ACH.map(a=>`<div class="bd ${A[a[0]]?'on':''}"><span>${a[1]}</span>${a[2+li()]}</div>`).join('')}</div><div class="row"><button onclick="closeM()">Band karo</button></div>`)}
+function settingsHTML(){
+  const S=PG.set,b=(on,f,t)=>`<button class="${on?'':'ghost'}" onclick="${f}">${t}</button>`;
+  return `<h2>⚙ ${T2('सेटिंग्स','Settings')}</h2>
+  <div class="lbl">${T2('भाषा','Language')}</div><div class="seg">${b(S.lang==='hi',"setSet('lang','hi')",'हिंदी')}${b(S.lang==='en',"setSet('lang','en')",'English')}</div>
+  <div class="lbl">${T2('आवाज़ (इफ़ेक्ट)','Sound effects')} <b id="vv">${S.vol}%</b></div><input type="range" min="0" max="100" value="${S.vol}" oninput="setVol(this.value)" onchange="snd.bid()">
+  <div class="seg">${b(S.sound,"setSet('sound',true)",T2('चालू','On'))}${b(!S.sound,"setSet('sound',false)",T2('बंद','Off'))}</div>
+  <div class="lbl">${T2('संगीत (मीठी धुन)','Music')} <b id="mv">${S.mvol}%</b></div><input type="range" min="0" max="100" value="${S.mvol}" oninput="setMVol(this.value)">
+  <div class="seg">${b(S.music,"setSet('music',true)",T2('चालू','On'))}${b(!S.music,"setSet('music',false)",T2('बंद','Off'))}</div>
+  <div class="lbl">${T2('धुन','Tune')}</div><div class="seg">${b(S.tune==='lori',"setSet('tune','lori')",T2('लोरी (म्यूज़िक-बॉक्स)','Lullaby (music box)'))}${b(S.tune==='raag',"setSet('tune','raag')",T2('राग (बाँसुरी)','Raag (flute)'))}</div>
+  <div class="lbl">${T2('वाइब्रेशन','Vibration')}</div><div class="seg">${b(S.vib,"setSet('vib',true)",T2('चालू','On'))}${b(!S.vib,"setSet('vib',false)",T2('बंद','Off'))}</div>
+  <div class="lbl">${T2('पत्ता चलाने का तरीका','How to play a card')}</div><div class="seg">${b(S.playmode==='drag',"setSet('playmode','drag')",T2('खींचकर','Drag'))}${b(S.playmode==='tap',"setSet('playmode','tap')",T2('टैप','Tap'))}${b(S.playmode==='both',"setSet('playmode','both')",T2('दोनों','Both'))}</div>
+  <div class="lbl">${T2('टेबल','Table')}</div><div class="seg">${[['wood','🟫'],['green','🟢'],['blue','🔵'],['dark','⚫']].map(([k,e])=>b(S.theme===k,`setSet('theme','${k}')`,e)).join('')}</div>
+  <div class="row"><button class="ghost" onclick="closeM();logout()">${T2('खिलाड़ी बदलें','Switch player')}</button><button onclick="closeM()">${T2('बंद करें','Close')}</button></div>`}
+function settings(){modal(settingsHTML())}
+function setSet(k,v){PG.set[k]=v;save();if(k==='theme')document.body.dataset.th=v;if(k==='music')music(v);if(k==='tune')music(PG.set.music);document.querySelector('#pk .box').innerHTML=settingsHTML();if(k==='sound'&&v)snd.bid()}
+function setVol(v){PG.set.vol=+v;if(MG)MG.gain.value=gainOf();save();const e=document.getElementById('vv');if(e)e.textContent=v+'%'}
+
+/* game flow */
+function act(p,m){
+  clearTimeout(ui.timer);ui.forced=0;
+  if(ON.active){onlineSend(m);return}
+  const done=G.phase==='play'&&G.trick.length===G.n-1;
+  if(p===0&&G.practice){(ui.hist=ui.hist||[]).push(G);feedback(m)}
+  if(p===0&&m.t==='play')vib();
+  ui.hint=null;
+  m.t==='play'?snd.play():snd.bid();
+  G=CallBreak.applyMove(G,p,m);
+  if(G.phase==='over')recordResult();
+  if(done){
+    ui.hold=true;ui.show=G.lastTrick;render();setTimeout(snd.win,350);
+    const gg=G;setTimeout(()=>{if(G!==gg)return;ui.hold=false;ui.show=null;render();step();if(G.phase==='roundEnd')autoNext()},1400);   // Home dabane par na atke
+  }else{render();step()}
+}
+function step(){
+  clearTimeout(ui.timer);
+  if(ON.active){onlineStep();return}
+  if(!G||ui.hold||ui.modal||!['bid','play'].includes(G.phase)){ui.dur=0;return}
+  const p=G.turn,g=G,human=p===0;
+  ui.forced=0;
+  if(human&&G.phase==='play'){const mv0=CallBreak.getValidMoves(G,0);
+    if(mv0.length===1){   // sirf ek hi patta chal sakta hai (aakhri patta bhi): apne aap chal jaye
+      ui.forced=1;ui.dur=0;ui.fb=null;ui.hint=G.practice&&PG.set.coach?computeHint():null;render();snd.turn();
+      ui.timer=setTimeout(()=>{if(G!==g||ui.hold||ui.modal)return;act(0,mv0[0])},G.practice?2600:900);return}}
+  if(human&&G.practice){ui.dur=0;ui.fb=null;ui.hint=PG.set.coach?computeHint():null;render();snd.turn();return}   // practice: koi timer nahi
+  ui.t0=Date.now();
+  ui.dur=human?HUMAN_MS:(G.phase==='bid'?1000+rand(600):BOT_MIN+rand(BOT_MAX-BOT_MIN));
+  render();if(human)snd.turn();
+  ui.timer=setTimeout(()=>{
+    if(G!==g||ui.hold||ui.modal)return;
+    const mv=CallBreak.getValidMoves(G,p);
+    act(p,human?Bots.medium(G,p,mv):Bots[G.daily?'medium':PG.set.level](G,p,mv));   // aapka time khatam: auto-play
+  },ui.dur);
+}
+/* ============ 6. BHASHA (Hindi / English) ============ */
+const TR={
+'Apna naam likho':['अपना नाम लिखें','Enter your name'],'Avatar chuno':['अवतार चुनें','Choose avatar'],'Shuru karo':['शुरू करें','Start'],'Guest':['अतिथि','Guest'],
+'Is phone par pehle khele hue':['इस फ़ोन पर पहले खेले हुए','Played before on this phone'],'Jaise: Rahul':['जैसे: राहुल','e.g. Rahul'],
+'🔊 Sound on':['🔊 आवाज़ चालू','🔊 Sound on'],'🔇 Sound off':['🔇 आवाज़ बंद','🔇 Sound off'],'Khiladi badlo':['खिलाड़ी बदलें','Switch player'],
+'Khele':['खेले','Played'],'Jeete':['जीते','Won'],'Jeet':['जीत','Win rate'],'Best score':['सबसे अच्छा स्कोर','Best score'],
+'Photo badalne ke liye avatar dabao':['फ़ोटो बदलने के लिए अवतार दबाएं','Tap avatar to change photo'],
+'Khelo':['खेलें','Play'],'Practice':['अभ्यास','Practice'],'Jald aa raha hai':['जल्द आ रहा है','Coming soon'],'Online dosto ke saath':['ऑनलाइन दोस्तों के साथ','Online with friends'],
+'Rummy':['रमी','Rummy'],'Teen Patti':['तीन पत्ती','Teen Patti'],'Call Break':['कॉल ब्रेक','Call Break'],
+'🏆 Leaderboard (is phone par)':['🏆 लीडरबोर्ड (इस फ़ोन पर)','🏆 Leaderboard (this phone)'],'Round':['राउंड','Rounds'],'Bots ka level':['बॉट का स्तर','Bot level'],
+'Easy':['आसान','Easy'],'Medium':['मध्यम','Medium'],'Hard':['कठिन','Hard'],
+'Home':['होम','Home'],'Score':['स्कोर','Score'],'Aapki baari':['आपकी बारी','Your turn'],'Aapki bid: kitne hath jeetoge?':['आपकी बिड: कितने हाथ जीतोगे?','Your bid: how many tricks?'],
+'Wapas':['वापस','Back'],'Agla round':['अगला राउंड','Next round'],'Phir se khelo':['फिर से खेलें','Play again'],'Scoreboard':['स्कोरबोर्ड','Scoreboard'],
+'Har box: score aur (jeete/bid)':['हर खाना: स्कोर और (जीते/बिड)','Each box: score and (won/bid)'],'Total':['कुल','Total'],'Position':['स्थान','Position'],
+'Score dekho':['स्कोर देखें','View score'],'🎉 Badhai ho, aap jeet gaye!':['🎉 बधाई हो, आप जीत गए!','🎉 Congratulations, you won!'],
+'Apni photo chuno':['अपनी फ़ोटो चुनें','Choose your photo'],'Gallery se photo':['गैलरी से फ़ोटो','Photo from gallery'],'Band karo':['बंद करें','Close'],
+'1st':['पहला','1st'],'2nd':['दूसरा','2nd'],'3rd':['तीसरा','3rd'],'4th':['चौथा','4th'],
+'Practice mode: ye game leaderboard me nahi gina jayega':['अभ्यास मोड: यह खेल लीडरबोर्ड में नहीं गिना जाएगा','Practice mode: this game is not counted on the leaderboard'],
+'💡 Hint':['💡 सुझाव','💡 Hint'],'↩ Undo':['↩ वापस लो','↩ Undo'],'💡 Hint: ye patta khelo':['💡 सुझाव: यह चमकता पत्ता चलो','💡 Hint: play the glowing card'],
+'Kaise khelein':['कैसे खेलें','How to play'],'❓ Kaise khelein':['❓ कैसे खेलें','❓ How to play'],'🏅 Badges':['🏅 बैज','🏅 Badges'],'⚙ Settings':['⚙ सेटिंग्स','⚙ Settings'],
+'Volume':['आवाज़ का स्तर','Volume'],'Sound':['आवाज़','Sound'],'Vibration':['कंपन','Vibration'],'Table theme':['टेबल का रंग','Table theme'],'On':['चालू','On'],'Off':['बंद','Off'],
+'🕘 Pichla hath':['🕘 पिछला हाथ','🕘 Last trick'],'📅 Aaj ka challenge':['📅 आज की चुनौती','📅 Daily challenge'],
+'Raja':['राजा','Raja'],'Rani':['रानी','Rani'],'Sheru':['शेरू','Sheru']};
+const LV={easy:'आसान',medium:'मध्यम',hard:'कठिन'};
+const li=()=>PG.set.lang==='en'?1:0,NM=x=>(TR[x]||[x,x])[li()];
+const PT=[
+[/^Round (\d+) \/ (\d+)$/,m=>`राउंड ${m[1]} / ${m[2]}`,m=>m[0]],[/^Round (\d+)$/,m=>`राउंड ${m[1]}`,m=>m[0]],[/^Level (\d+)$/,m=>`लेवल ${m[1]}`,m=>m[0]],
+[/^Bid (\S+) · Jeete (\d+)$/,m=>`बिड ${m[1]} · जीते ${m[2]}`,m=>`Bid ${m[1]} · Won ${m[2]}`],
+[/^(.+) ne hath jeeta$/,m=>`${NM(m[1])} ने हाथ जीता`,m=>`${NM(m[1])} won the trick`],[/^(.+) jeet gaya$/,m=>`${NM(m[1])} जीत गया`,m=>`${NM(m[1])} won`],
+[/^(\d+) jeet$/,m=>`${m[1]} जीत`,m=>`${m[1]} wins`],[/^(-?[\d.]+) points$/,m=>`${m[1]} अंक`,m=>m[0]],
+[/^4 khiladi · Spade hukum · (\d+) round · (Easy|Medium|Hard) bots$/,m=>`4 खिलाड़ी · हुकुम · ${m[1]} राउंड · ${LV[m[2].toLowerCase()]} बॉट`,m=>`4 players · Spades trump · ${m[1]} rounds · ${m[2]} bots`],
+[/^\((10 sec me apne aap lag jayegi · )?aapke spade: (\d+)\)$/,m=>`(${m[1]?'10 सेकंड में अपने आप लग जाएगी · ':''}आपके हुकुम: ${m[2]})`,m=>`(${m[1]?'auto-bids in 10 sec · ':''}your spades: ${m[2]})`],
+[/^Aaj ka score: (-?[\d.]+)$/,m=>`आज का स्कोर: ${m[1]}`,m=>`Today's score: ${m[1]}`],
+[/^💡 Hint: bid (\d+) theek rahegi$/,m=>`💡 सुझाव: बिड ${m[1]} ठीक रहेगी`,m=>`💡 Hint: bid ${m[1]} looks right`]];
+function trText(k){const d=TR[k];if(d)return d[li()];for(const [re,h,e] of PT){const m=k.match(re);if(m)return (li()?e:h)(m)}return k}
+function trNode(n){
+  if(n.nodeType===3){const o=n.nodeValue,k=o.trim();if(k){const r=trText(k);if(r!==k)n.nodeValue=o.replace(k,()=>r)}return}
+  if(n.nodeType!==1)return;
+  [n,...n.querySelectorAll('[placeholder]')].forEach(e=>{if(e.hasAttribute('placeholder'))e.setAttribute('placeholder',trText(e.getAttribute('placeholder')))});
+  const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT),a=[];while(w.nextNode())a.push(w.currentNode);a.forEach(trNode);
+}
+new MutationObserver(ms=>ms.forEach(x=>x.addedNodes.forEach(trNode))).observe($,{childList:true,subtree:true});
+document.body.dataset.th=PG.set.theme;
+/* ============ 7. ONLINE MULTIPLAYER ============ */
+let BOXFN=null;
+const ON={cto:8000,ct:null,ws:null,ok:false,active:false,room:null,seat:0,seats:[],tn:0,q:[],pending:0,tries:0,dl:0,keep:0,then:null};
+const defServer=()=>typeof location!=='undefined'&&/^https?:$/.test(location.protocol)&&location.host?(location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws':'';
+const serverUrl=()=>(PG.set.server||'').trim()||defServer();
+const myEmoji=()=>me().av&&me().av.e?me().av.e:'🙂';
+const tokGet=()=>{try{return localStorage.getItem('pg_tok')||''}catch(e){return ''}};
+const onSend=o=>{if(ON.ws&&ON.ws.readyState===1)ON.ws.send(JSON.stringify(o))};
+const ERR={noroom:['ये रूम नहीं मिला','Room not found'],started:['इस रूम का खेल शुरू हो चुका है','That game has already started'],full:['रूम भर चुका है','The room is full'],turn:['अभी आपकी बारी नहीं है','It is not your turn'],illegal:['यह चाल सही नहीं है','That move is not allowed']};
+function onConnect(then){
+  const url=serverUrl();if(!url){flash(T2('पहले सर्वर का पता डालिए','Enter the server address first'));return}
+  if(ON.ws&&ON.ws.readyState===1&&ON.ok){if(then)then();return}
+  if(ON.ws&&ON.ws.readyState===0){ON.then=then;return}
+  let w;try{w=new WebSocket(url)}catch(e){flash(T2('सर्वर का पता सही नहीं है','The server address is not valid'));return}
+  ON.ws=w;ON.then=then;clearTimeout(ON.ct);
+  ON.ct=setTimeout(()=>{   // server na mile to hamesha na atke
+    if(ON.ws!==w||w.readyState===1)return;w._dead=1;try{w.close()}catch(e){}ON.ws=null;ON.ok=false;
+    if(ON.active||ON.room)onReconnect();else{if(ON.then){ON.then=null;flash(T2('सर्वर से जुड़ नहीं पाए','Could not connect to the server'))}refreshBox()}},ON.cto);
+  w.onopen=()=>w.send(JSON.stringify({t:'hello',name:me().name,e:myEmoji(),token:tokGet()}));
+  w.onmessage=ev=>{let m;try{m=JSON.parse(ev.data)}catch(e){return}onMsg(m)};
+  w.onclose=()=>{if(w._dead)return;clearTimeout(ON.ct);ON.ok=false;ON.ws=null;
+    if(ON.active||ON.room)onReconnect();
+    else{if(ON.then){ON.then=null;flash(T2('सर्वर से जुड़ नहीं पाए','Could not connect to the server'))}refreshBox()}};
+  w.onerror=()=>{};
+}
+function onReconnect(){
+  if(ON.tries++>8){flash(T2('सर्वर से कनेक्शन टूट गया','Connection to the server was lost'));const was=ON.active;ON.room=null;ON.active=false;if(was)home();return}
+  flash(T2('फिर से जुड़ रहे हैं…','Reconnecting…'));setTimeout(()=>{if(ON.room||ON.active)onConnect()},2000);
+}
+function onMsg(m){
+  if(m.t==='hi'){clearTimeout(ON.ct);ON.ok=true;ON.tries=0;
+    if((ON.active||ON.room)&&!m.resumed){   // server par ab wo room/game nahi raha
+      const was=ON.active;ON.room=null;ON.active=false;ON.q=[];flash(T2('वह गेम ख़त्म हो चुका है','That game is no longer running'));if(was)home();else{BOXFN=onlineHTML;refreshBox()}}
+    try{localStorage.setItem('pg_tok',m.token)}catch(e){}const f=ON.then;ON.then=null;if(f)f();refreshBox();return}
+  if(m.t==='room'){
+    ON.room=m;ON.seat=m.you;ON.seats=m.seats;
+    if(m.phase==='lobby'){if(ON.active){ON.keep=1;ON.active=false;home();ON.keep=0}showRoom()}
+    else if(ON.active&&G){setBots()}
+    return}
+  if(m.t==='state'){if(ON.room)onState(m);return}
+  if(m.t==='emo'){onEmo(m);return}
+  if(m.t==='err'){ON.pending=0;const e=ERR[m.code];flash(e?T2(e[0],e[1]):m.msg);return}
+}
+function refreshBox(){const b=document.querySelector('#pk .box');if(b&&BOXFN)b.innerHTML=BOXFN()}
+function showRoom(){BOXFN=roomHTML;if(document.getElementById('pk'))refreshBox();else modal(roomHTML())}
+const onOpts=()=>{const S=PG.set;return{n:S.players,mode:S.gmode,rounds:S.rounds,target:S.target,level:S.level}};
+const onQuick=()=>onConnect(()=>onSend({t:'quick',...onOpts()}));
+const onCreate=()=>onConnect(()=>onSend({t:'create',...onOpts()}));
+function onJoin(c){c=(c||'').trim();if(c.length<4){flash(T2('रूम कोड डालिए','Enter the room code'));return}onConnect(()=>onSend({t:'join',code:c}))}
+const onStart=()=>onSend({t:'start'});
+function setServer(v){PG.set.server=(v||'').trim();save();if(ON.ws){try{ON.ws.close()}catch(e){}ON.ws=null;ON.ok=false}refreshBox()}
+function onlineBox(){BOXFN=onlineHTML;modal(onlineHTML());if(serverUrl())onConnect()}
+function onlineHTML(){
+  const rows=setupHTML().replace(/^<h2>.*?<\/h2>/s,'').replace(/<div class="row"><button class="gb" onclick="closeM\(\)">.*$/s,'');
+  return `<h2>🌐 ${T2('ऑनलाइन खेलो','Play Online')}</h2>
+  <div class="lbl">${T2('सर्वर का पता','Server address')} ${ON.ok?'🟢':'⚪'}</div><input id="srv" value="${serverUrl()}" placeholder="wss://your-server.com/ws" onchange="setServer(this.value)">
+  ${rows}
+  <div class="row"><button class="gb" onclick="onQuick()">⚡ ${T2('क्विक मैच','Quick match')}</button><button class="yb" onclick="onCreate()">➕ ${T2('प्राइवेट रूम','Private room')}</button></div>
+  <div class="lbl">🔑 ${T2('रूम कोड से जुड़िए','Join with a room code')}</div><div class="row"><input id="jc" maxlength="5" placeholder="ABCDE" style="text-transform:uppercase"><button onclick="onJoin(document.getElementById('jc').value)">${T2('जुड़ें','Join')}</button></div>
+  <div class="row"><button class="ghost" onclick="closeM()">${T2('बंद करें','Close')}</button></div>`;
+}
+function roomHTML(){
+  const r=ON.room;if(!r)return onlineHTML();
+  const LVN={easy:T2('आसान','Easy'),medium:T2('मध्यम','Medium'),hard:T2('कठिन','Hard')},hum=r.seats.filter(s=>s.k==='human').length;
+  const seats=r.seats.map((s,i)=>`<div class="rs ${s.k}"><div class="mini">${s.k==='empty'?'＋':(s.e||'🙂')}</div><b>${s.k==='empty'?T2('खाली','Empty'):s.name[li()]}</b><small>${i===r.host?'👑 ':''}${i===r.you?T2('आप','You'):s.k==='bot'?T2('बॉट','Bot'):''}</small></div>`).join('');
+  return `<h2>🌐 ${r.pub?T2('क्विक मैच','Quick match'):T2('प्राइवेट रूम','Private room')} ${r.pub?'':`<span class="code">${r.code}</span>`}</h2>
+  <div class="lbl">${r.n} ${T2('खिलाड़ी','Players')} · ${r.mode==='target'?'🎯 '+r.target:r.rounds+' '+T2('राउंड','Round')} · ${LVN[r.level]}</div>
+  <div class="rseats">${seats}</div>
+  <div class="lbl">${r.pub?T2('खिलाड़ी ढूँढ रहे हैं… खाली सीटों पर बॉट बैठेंगे','Looking for players… empty seats will be filled by bots'):T2('कोड दोस्तों को भेजिए। खाली सीटों पर बॉट बैठेंगे।','Send the code to your friends. Empty seats will be filled by bots.')}</div>
+  <div class="row">${r.you===r.host?`<button class="gb" onclick="onStart()">▶ ${T2('शुरू करें','Start')} (${hum}/${r.n})</button>`:`<div class="cdn">${T2('होस्ट के शुरू करने का इंतज़ार…','Waiting for the host…')}</div>`}${r.pub?'':'<button class="wb" onclick="shareCode()">📤</button>'}<button class="ghost" onclick="closeM()">${T2('बाहर निकलें','Leave')}</button></div>`;
+}
+async function shareCode(){
+  const r=ON.room;if(!r)return;const base=serverUrl().replace(/^ws/,'http').replace(/\/ws$/,'');
+  const txt=T2(`Patte Ghar में मेरे रूम में आइए! रूम कोड: ${r.code}`,`Join my Patte Ghar room! Room code: ${r.code}`)+(base?' — '+base:'');
+  try{if(navigator.share)await navigator.share({title:'Patte Ghar',text:txt});else if(navigator.clipboard){await navigator.clipboard.writeText(txt);flash(T2('कोड कॉपी हो गया','Code copied'))}}catch(e){}
+}
+/* ---- khel: server ka state apne seat ke hisaab se ghumakar dikhana ---- */
+function rot(m){
+  const g=m.G,n=g.n,s=m.seat,R=a=>a.map((_,i)=>a[(i+s)%n]),L=p=>(p-s+n)%n;
+  const o={...g,hands:R(g.hands),bids:R(g.bids),won:R(g.won),totals:R(g.totals),turn:L(g.turn),dealer:L(g.dealer),
+    trick:g.trick.map(t=>({p:L(t.p),c:t.c})),history:g.history.map(h=>({bids:R(h.bids),won:R(h.won),score:R(h.score)}))};
+  if(g.roundScore)o.roundScore=R(g.roundScore);
+  if(g.lastTrick)o.lastTrick={cards:g.lastTrick.cards.map(t=>({p:L(t.p),c:t.c})),w:L(g.lastTrick.w)};
+  return o;
+}
+function setBots(){const n=ON.seats.length,s=ON.seat;BOTS=Array.from({length:Math.max(0,n-1)},(_,i)=>{const x=ON.seats[(i+1+s)%n]||{};return{n:x.name||['?','?'],e:x.e||'🙂'}})}
+function enterGame(m){
+  const o=document.getElementById('pk');if(o)o.remove();
+  ON.active=true;ON.tn=m.tn;ON.q=[];ON.pending=0;ON.dl=m.ms;
+  if(ui){clearTimeout(ui.timer);clearInterval(ui.cd)}
+  ui={hold:false,show:null,modal:null,deal:true,hist:[],emo:{}};setTimeout(()=>ui.deal=false,200);
+  G=rot(m);setBots();snd.deal();render();onlineStep();
+}
+function onState(m){if(!ON.active){enterGame(m);return}ON.q.push(m);drainQ()}
+function drainQ(){while(ON.q.length&&!ui.hold)applyOnline(ON.q.shift())}
+const R2=()=>{if(!ui.modal)render()};   // khuli hui window ko render se na todna
+function applyOnline(m){
+  const prev=G,ng=rot(m);ON.pending=0;ON.dl=m.ms;
+  const tcomp=m.tn>ON.tn;ON.tn=m.tn;G=ng;setBots();
+  if(prev&&ng.round>prev.round){ui.deal=true;setTimeout(()=>ui.deal=false,200);clearInterval(ui.cd);snd.deal()}
+  const lastP=tcomp&&ng.lastTrick?ng.lastTrick.cards[ng.lastTrick.cards.length-1].p:null;
+  if((prev&&ng.trick.length>prev.trick.length&&ng.trick[ng.trick.length-1].p!==0)||(lastP!==null&&lastP!==0))snd.play();
+  if(ng.phase==='over'&&!ui.rec){ui.rec=1;recordResult()}
+  if(tcomp&&ng.lastTrick){
+    ui.hold=true;ui.show=ng.lastTrick;R2();snd.win();if(ng.lastTrick.w===0)vib([30,40,30]);
+    const gg=G;setTimeout(()=>{if(!ON.active||G!==gg)return;ui.hold=false;ui.show=null;R2();if(G.phase==='roundEnd'&&!ui.modal)autoNext();onlineStep();drainQ()},1400);
+  }else{R2();onlineStep()}
+}
+function onlineStep(){
+  clearTimeout(ui.timer);ui.forced=0;
+  if(!G||ui.hold||ui.modal||!['bid','play'].includes(G.phase)){ui.dur=0;return}
+  const p=G.turn,g=G;ui.t0=Date.now();ui.dur=Math.max(300,ON.dl||0);
+  if(p===0&&G.phase==='play'){const mv0=CallBreak.getValidMoves(G,0);
+    if(mv0.length===1){ui.forced=1;render();snd.turn();ui.timer=setTimeout(()=>{if(G!==g||ui.hold||ui.modal)return;act(0,mv0[0])},900);return}}
+  render();if(p===0){snd.turn();vib(20)}
+}
+function onlineSend(m){
+  if(ON.pending)return;ON.pending=1;setTimeout(()=>ON.pending=0,2500);
+  if(m.t==='play'){snd.play();vib(10)}else snd.bid();
+  ui.hint=null;onSend({t:'move',m:m.t==='bid'?{t:'bid',n:m.n}:{t:'play',c:{s:m.c.s,r:m.c.r}}});
+}
+function onlineLeave(){onSend({t:'leave'});ON.active=false;ON.room=null;ON.q=[];ON.pending=0;ON.then=null;if(ui)clearInterval(ui.cd)}
+function onlineAgain(){ON.keep=1;ON.active=false;onSend({t:'again'});home();ON.keep=0}
+function onEmo(m){
+  if(!ON.active||!G)return;const p=(m.seat-ON.seat+G.n)%G.n;ui.emo=ui.emo||{};ui.emo[p]=m.e;R2();
+  setTimeout(()=>{if(ui.emo&&ui.emo[p]===m.e){delete ui.emo[p];if(ON.active)R2()}},2600);
+}
+function emoBox(){
+  const o=document.getElementById('emop');if(o){o.remove();return}
+  $.insertAdjacentHTML('beforeend',`<div class="emopick" id="emop">${['👍','😂','😮','🔥','👏','😡','🙏'].map(e=>`<button onclick="sendEmo('${e}')">${e}</button>`).join('')}</div>`);
+}
+function sendEmo(e){onSend({t:'emo',e});const o=document.getElementById('emop');if(o)o.remove()}
+PG.cur&&me()?home():login();
+</script>
+</body>
+</html>
