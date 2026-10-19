@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "Taash Adda",
+  "short_name": "Taash Adda",
+  "description": "Dosto ke saath online taash ka adda. Call Break khelo, kamre banao, bots ke saath practice karo.",
+  "lang": "hi",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0e4a32",
+  "theme_color": "#0e4a32",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

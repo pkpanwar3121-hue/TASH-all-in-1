@@ -3,7 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Patte Ghar</title>
+<title>Taash Adda</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0e4a32">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Taash Adda">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <style>
 :root{--gold:#e8c46a;--ink:#16201b;--pn:14,74,50;--t1:#8fd6ad;--t2:#5ab982;--t3:#3b9a68}
 body[data-th=blue]{--pn:20,60,100;--t1:#a9d4f5;--t2:#5a9fd6;--t3:#3573b0}
@@ -459,11 +466,11 @@ const setS=(k,v)=>{PG.set[k]=v;save();home()};
 
 function login(){
   G=null;$.className='';const names=Object.keys(PG.users);
-  $.innerHTML=`<div class="center"><div style="position:absolute;top:18px;right:26px"><button class="ghost sm" onclick="setL('hi')">हिंदी</button> <button class="ghost sm" onclick="setL('en')">English</button></div><div class="logo">♠ ♥ ♣ ♦</div><h1>Patte Ghar</h1><div class="panel lg">
+  $.innerHTML=`<div class="center"><div style="position:absolute;top:18px;right:26px"><button class="ghost sm" onclick="setL('hi')">हिंदी</button> <button class="ghost sm" onclick="setL('en')">English</button></div><div class="logo">♠ ♥ ♣ ♦</div><h1>Taash Adda</h1><div class="panel lg">
   <div class="lbl">Apna naam likho</div><input id="nmIn" maxlength="12" placeholder="Jaise: Rahul" value="${typed}">
   <div class="lbl">Avatar chuno</div><div class="emo">${EMOJI.map(e=>`<button class="${e===pickE?'sel':''}" onclick="typed=document.getElementById('nmIn').value;pickE='${e}';login()">${e}</button>`).join('')}</div>
   <div class="row"><button onclick="doLogin()">Shuru karo</button><button class="ghost" onclick="doLogin('Guest')">Guest</button></div>
-  ${names.length?`<div class="lbl">Is phone par pehle khele hue</div><div class="emo">${names.map(n=>`<button onclick="doLogin('${n}')">${n}</button>`).join('')}</div>`:''}</div></div>`;
+  ${names.length?`<div class="lbl">Is phone par pehle khele hue</div><div class="emo">${names.map(n=>`<button onclick="doLogin('${n}')">${n}</button>`).join('')}</div>`:''}<div class="lbl" style="margin-top:10px;opacity:.7"><a href="/privacy" target="_blank" rel="noopener" style="color:inherit">Privacy Policy · गोपनीयता नीति</a></div></div></div>`;
 }
 function doLogin(n){
   n=(n||document.getElementById('nmIn').value).replace(/[<>"'&\\]/g,'').trim().slice(0,12);
@@ -478,10 +485,10 @@ function flash(t){const e=document.createElement('div');e.className='flash';e.te
 const SHARE_URL='';   // Play Store link bante hi yahan daalna
 async function shareApp(){
   if(ui.modal==='pick')closeM();
-  const u=me(),txt=T2('मैं Patte Ghar (Call Break) खेल रहा हूँ — आओ मुझे हराओ! ','I am playing Patte Ghar (Call Break) — come beat me! ')+SHARE_URL;
+  const u=me(),txt=T2('मैं Taash Adda (Call Break) खेल रहा हूँ — आओ मुझे हराओ! ','I am playing Taash Adda (Call Break) — come beat me! ')+SHARE_URL;
   let ok=false,copied=false;
   try{
-    if(navigator.share){await navigator.share(SHARE_URL?{title:'Patte Ghar',text:txt,url:SHARE_URL}:{title:'Patte Ghar',text:txt});ok=true}
+    if(navigator.share){await navigator.share(SHARE_URL?{title:'Taash Adda',text:txt,url:SHARE_URL}:{title:'Taash Adda',text:txt});ok=true}
     else if(navigator.clipboard){await navigator.clipboard.writeText(txt);ok=true;copied=true}
   }catch(e){ok=false}
   if(!ok)return;
@@ -908,8 +915,8 @@ function roomHTML(){
 }
 async function shareCode(){
   const r=ON.room;if(!r)return;const base=serverUrl().replace(/^ws/,'http').replace(/\/ws$/,'');
-  const txt=T2(`Patte Ghar में मेरे रूम में आइए! रूम कोड: ${r.code}`,`Join my Patte Ghar room! Room code: ${r.code}`)+(base?' — '+base:'');
-  try{if(navigator.share)await navigator.share({title:'Patte Ghar',text:txt});else if(navigator.clipboard){await navigator.clipboard.writeText(txt);flash(T2('कोड कॉपी हो गया','Code copied'))}}catch(e){}
+  const txt=T2(`Taash Adda में मेरे रूम में आइए! रूम कोड: ${r.code}`,`Join my Taash Adda room! Room code: ${r.code}`)+(base?' — '+base:'');
+  try{if(navigator.share)await navigator.share({title:'Taash Adda',text:txt});else if(navigator.clipboard){await navigator.clipboard.writeText(txt);flash(T2('कोड कॉपी हो गया','Code copied'))}}catch(e){}
 }
 /* ---- khel: server ka state apne seat ke hisaab se ghumakar dikhana ---- */
 function rot(m){
@@ -969,5 +976,6 @@ function emoBox(){
 function sendEmo(e){onSend({t:'emo',e});const o=document.getElementById('emop');if(o)o.remove()}
 PG.cur&&me()?home():login();
 </script>
+<script>if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
 </body>
 </html>

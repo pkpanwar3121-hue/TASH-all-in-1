@@ -236,6 +236,27 @@ const server = http.createServer((req, res) => {
     catch (e) { res.writeHead(500); return res.end('index.html nahi mila'); }
   }
   if (u === '/healthz') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ ok: true, rooms: rooms.size, clients: clients.size })); }
+  if (u === '/privacy' || u === '/privacy.html') {
+    const f = [path.join(__dirname, 'privacy.html'), path.join(__dirname, '..', 'www', 'privacy.html')].find(x => fs.existsSync(x));
+    if (f) {
+      const mail = process.env.CONTACT_EMAIL || 'email-yahan-aayega@example.com';
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
+      return res.end(fs.readFileSync(f, 'utf8').split('{{EMAIL}}').join(mail));
+    }
+  }
+  /* app ki files: manifest, service worker, icon, assetlinks (sab isi folder me hone chahiye) */
+  const STATIC = {
+    '/manifest.json': ['manifest.json', 'application/manifest+json; charset=utf-8'],
+    '/sw.js': ['sw.js', 'application/javascript; charset=utf-8'],
+    '/icon-192.png': ['icon-192.png', 'image/png'],
+    '/icon-512.png': ['icon-512.png', 'image/png'],
+    '/icon-maskable-512.png': ['icon-maskable-512.png', 'image/png'],
+    '/.well-known/assetlinks.json': ['assetlinks.json', 'application/json']
+  };
+  if (STATIC[u]) {
+    const f = [path.join(__dirname, STATIC[u][0]), path.join(__dirname, '..', 'www', STATIC[u][0])].find(x => fs.existsSync(x));
+    if (f) { res.writeHead(200, { 'Content-Type': STATIC[u][1], 'Cache-Control': u === '/sw.js' ? 'no-cache' : 'public, max-age=3600' }); return res.end(fs.readFileSync(f)); }
+  }
   res.writeHead(404); res.end('not found');
 });
 server.on('upgrade', (req, sock) => {
@@ -251,5 +272,5 @@ server.on('upgrade', (req, sock) => {
 setInterval(() => { clients.forEach(c => c.ws.frame(9, Buffer.alloc(0))); }, 25000);      // keep-alive
 setInterval(() => { rooms.forEach(r => { if (!humans(r).length) destroy(r); }); }, 30000);
 
-if (require.main === module) server.listen(PORT, () => console.log('Patte Ghar server chal raha hai: http://localhost:' + PORT + '  (WebSocket: /ws)'));
+if (require.main === module) server.listen(PORT, () => console.log('Taash Adda server chal raha hai: http://localhost:' + PORT + '  (WebSocket: /ws)'));
 module.exports = { server, rooms, T };
