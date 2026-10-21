@@ -300,6 +300,111 @@ const CallBreak={
   isGameOver:st=>st.phase==='over',
   getScores:st=>st.totals
 };
+/* ============ KOT PIECE (Court Piece) engine ============
+   4 khilari, team = p%2 (saamne wala partner). Rang (trump) 5 patte dekhkar bola jata hai.
+   Sar jama hoti rehti hai (pile). Jab ek hi khilari lagatar 2 sar jeete, wo poori pile uthata hai. */
+function kotWinner(trick,tr){
+  let best=trick[0];
+  for(const t of trick.slice(1)){const a=t.c,b=best.c;
+    if(a.s===b.s?a.r>b.r:(a.s===tr&&b.s!==tr))best=t}
+  return best.p;
+}
+function kotFin(s,st,wt,kot,early){   // round khatam: ank, itihas, agla baantne wala
+  const pts=kot?2:1,dt=st.dealer%2;
+  s.score[wt]+=pts;
+  s.roundInfo={wt,kot,pts,early:!!early,chBy:s.by};
+  s.history.push({won:s.won.slice(),wt,kot,early:!!early});
+  s.phase=s.score[wt]>=s.target?'over':'roundEnd';
+  let nd=st.dealer;
+  if(wt===dt)nd=(st.dealer+1)%4;          // jeetne wali team nahi baantegi
+  else if(kot)nd=(st.dealer+2)%4;         // baantne wali team par kot: uska partner baantega
+  s.nextDealer=nd;return s;
+}
+function kotValid(hand,trick){
+  if(!trick.length)return hand;
+  const same=hand.filter(c=>c.s===trick[0].c.s);
+  return same.length?same:hand;            // rang ho to wahi, warna koi bhi patta
+}
+const KotPiece={
+  id:'kotpiece',name:'Kot Piece',minPlayers:4,maxPlayers:4,supportsTeams:true,
+  team:p=>p%2,
+  createInitialState(o={}){
+    const st={n:4,round:0,dealer:o.dealer,seed:o.seed,target:o.target||5,score:[0,0],history:[],draw:null};
+    if(st.dealer==null){            // sabko ek-ek patta: jise pehle ikka mile wo baantega
+      const d=st.seed!=null?sshuffle(newDeck(),st.seed):shuffle(newDeck());st.draw=[];
+      for(let i=0;;i++){st.draw.push(d[i]);if(d[i].r===14){st.dealer=i%4;break}}
+    }
+    return this.deal(st);
+  },
+  deal(st){
+    const d=st.seed!=null?sshuffle(newDeck(),st.seed*31+st.round*7+1):shuffle(newDeck());
+    const h=[[],[],[],[]];let idx=0;
+    for(const cnt of [5,4,4])for(let k=0;k<4;k++){h[(st.dealer+1+k)%4].push(...d.slice(idx,idx+cnt));idx+=cnt}
+    const caller=(st.dealer+1)%4;
+    return {...st,hands:h,vis:[5,5,5,5],caller,trump:null,called:false,changer:null,chIdx:0,
+      phase:'call',turn:caller,trick:[],played:[],pile:0,pileT:[],chTeam:null,by:null,how:null,tw:[0,0,0,0],last:null,won:[0,0],lastTrick:null,roundInfo:null};
+  },
+  hand(st,p){return sortHand(st.hands[p].slice(0,st.vis[p]))},   // jitne patte dikhne chahiye
+  getValidMoves(st,p){
+    if(st.phase==='call')return [0,1,2,3].map(s=>({t:'call',s})).concat([{t:'pass'}]);
+    if(st.phase==='change')return [{t:'keep'},{t:'change'}];
+    if(st.phase==='newtrump')return [0,1,2,3].filter(x=>x!==st.trump).map(s=>({t:'trump',s})).concat([{t:'keepT'}]);
+    if(st.phase==='play')return kotValid(st.hands[p],st.trick).map(c=>({t:'play',c}));
+    return [];
+  },
+  applyMove(st,p,m){
+    const s=structuredClone(st),all=()=>{s.vis=[13,13,13,13]};
+    const startPlay=()=>{all();s.phase='play';s.turn=s.caller};
+    if(m.t==='call'){s.trump=m.s;s.by=p;s.how='call';s.called=true;s.phase='change';s.chIdx=0;s.turn=(s.caller+1)%4;return s}
+    if(m.t==='pass'){s.trump=s.hands[s.caller][12].s;s.by=s.caller;s.how='13th';s.called=false;s.phase='change';s.chIdx=0;s.turn=(s.caller+1)%4;return s}   // 13wa patta rang; samne wali team badal sakti hai
+    if(m.t==='keep'){s.chIdx++;if(s.chIdx>=2)startPlay();else s.turn=(s.caller+3)%4;return s}
+    if(m.t==='change'){s.changer=p;s.vis[p]=13;s.phase='newtrump';return s}   // apne 13 patte dekhega
+    if(m.t==='keepT'){s.phase='change';s.changer=null;s.chIdx++;if(s.chIdx>=2)startPlay();else s.turn=(s.caller+3)%4;return s}   // 13 patte dekhe, rang nahi badla
+    if(m.t==='trump'){s.trump=m.s;s.by=p;s.how='change';s.chTeam=p%2;startPlay();return s}
+    // play
+    s.hands[p]=s.hands[p].filter(c=>!(c.s===m.c.s&&c.r===m.c.r));
+    s.trick.push({p,c:m.c});s.played.push(m.c);s.turn=(p+1)%4;
+    if(s.trick.length<4)return s;
+    const w=kotWinner(s.trick,s.trump),tm=w%2;
+    s.lastTrick={cards:s.trick,w};s.trick=[];s.turn=w;s.pile++;s.tw[w]++;s.pileT.push(s.lastTrick);
+    if(s.last===w){s.won[tm]+=s.pile;s.lastGot=s.pile;s.pile=0;s.pileT=[];s.last=null;
+      if(s.chTeam!=null&&tm!==s.chTeam)return kotFin(s,st,tm,true,true)}   // rang badalne ke baad virodhi ne sar uthayi: round khatam, badalne wali team par kot   // lagatar 2 sar: poori pile uthayi
+    else{s.last=w;s.lastGot=0}
+    if(s.hands.every(h=>!h.length)){
+      if(s.pile){s.won[tm]+=s.pile;s.pile=0;s.pileT=[]}                  // bachi hui pile aakhri sar jeetne wale ki
+      const wt=s.won[0]>=7?0:1;return kotFin(s,st,wt,s.won[1-wt]===0,false);
+    }
+    return s;
+  },
+  nextRound(st){return this.deal({...st,round:st.round+1,dealer:st.nextDealer})},
+  isGameOver:st=>st.phase==='over',
+  getScores:st=>st.score
+};
+const KotBots={
+  easy:(st,p,mv)=>mv[rand(mv.length)],
+  medium(st,p,mv){
+    const hand=st.hands[p].slice(0,st.vis[p]);
+    const strength=s=>hand.filter(c=>c.s===s).reduce((a,c)=>a+1+(c.r>=12?c.r-10:0)*.5,0);
+    const bestSuit=()=>[0,1,2,3].sort((a,b)=>strength(b)-strength(a))[0];
+    if(st.phase==='call'){const s=bestSuit();return strength(s)>=5?{t:'call',s}:{t:'pass'}}
+    if(st.phase==='change'){
+      const s=[0,1,2,3].filter(x=>x!==st.trump).sort((a,b)=>strength(b)-strength(a))[0];
+      return strength(s)>=6?{t:'change'}:{t:'keep'}}
+    if(st.phase==='newtrump'){const b=bestSuit();return b!==st.trump&&strength(b)>=8&&strength(b)>=strength(st.trump)+3?{t:'trump',s:b}:{t:'keepT'}}
+    const tr=st.trump,val=c=>c.r+(c.s===tr?20:0),sorted=mv.slice().sort((a,b)=>val(a.c)-val(b.c));
+    if(!st.trick.length){
+      const nt=sorted.filter(m=>m.c.s!==tr),ace=nt.filter(m=>m.c.r>=13);
+      return st.pile||st.last!=null?(ace[0]||sorted[sorted.length-1]):(nt[0]||sorted[0]);
+    }
+    const win=m=>kotWinner([...st.trick,{p,c:m.c}],tr)===p;
+    const w=sorted.filter(win),partnerWins=kotWinner(st.trick,tr)===(p+2)%4;
+    if(partnerWins)return sorted[0];   // saathi ki jeet mat todo
+    if(w.length&&(st.pile>0||st.last===p||st.trick.length===3))return w[0];
+    return sorted[0];
+  }
+};
+KotBots.hard=KotBots.medium;
+
 const Registry={callbreak:CallBreak};   // yahin Rummy, Teen Patti, ... register honge
 
 /* ============ 3. BOTS ============ */
@@ -537,7 +642,7 @@ function home(){
   const dl=u.daily&&u.daily.date===today()?T2('आज का स्कोर: ','Today: ')+u.daily.score:T2('रोज़ नया हाथ','A new hand daily');
   $.innerHTML=`<div class="top"><div class="prof" onclick="pick()"><div class="av">${avHTML(0)}</div><div class="pi"><b>${u.name}</b><div class="gm">💎 ${gems()}</div></div><button class="plus" onclick="event.stopPropagation();gemsBox()">+</button></div>
    <div class="pills"><button class="pl big" onclick="setup()">👥 ${S.players} ${T2('खिलाड़ी','Players')} · ${modeLbl(S)} · ${LVN[S.level]} ▾</button></div>
-   <div class="ibs"><button class="wb iconb" onclick="lbBox()">🏆</button><button class="wb iconb" onclick="badges()">🏅</button><button class="wb iconb" onclick="howto()">❓</button><button class="wb iconb" onclick="settings()">⚙</button></div><button class="gb sharepill" onclick="shareApp()">📤 ${T2('शेयर करो','Share')} <b>${sd?'':'+20 💎'}</b></button></div>
+   <div class="ibs"><button class="wb iconb" onclick="lbBox()">🏆</button><button class="wb iconb" onclick="badges()">🏅</button><button class="wb iconb" onclick="howto()">❓</button><button class="wb iconb" onclick="settings()">⚙</button></div><button class="gb sharepill" onclick="shareApp()">📤 ${T2('शेयर करो','Share')} <b>${sd?'':'+20 💎'}</b></button><button class="wb" style="position:absolute;left:30px;top:92px;font-size:14px;padding:4px 14px" onclick="hub()">🎮 ${T2('गेम बदलो','Change game')}</button></div>
   <div class="tl4">
    <div class="tl" onclick="start()"><div class="ic">🤖</div>${T2('बॉट्स के साथ खेलो','Play vs Bots')}<small>${S.players} ${T2('खिलाड़ी','players')} · ${modeLbl(S)}</small></div>
    <div class="tl" onclick="start(1)"><div class="ic">🎓</div>${T2('अभ्यास','Practice')}<small>${T2('कोच के साथ सीखो','Learn with the coach')}</small></div>
@@ -844,6 +949,7 @@ new MutationObserver(ms=>ms.forEach(x=>x.addedNodes.forEach(trNode))).observe($,
 document.body.dataset.th=PG.set.theme;
 /* ============ 7. ONLINE MULTIPLAYER ============ */
 let BOXFN=null;
+const KO={on:false,q:[],tn:0,end:0,pending:0,iv:null,rec:false,reward:0,intro:0};   // Kot Piece online ki sthiti
 const ON={cto:8000,ct:null,ws:null,ok:false,active:false,room:null,seat:0,seats:[],tn:0,q:[],pending:0,tries:0,dl:0,keep:0,then:null};
 const defServer=()=>typeof location!=='undefined'&&/^https?:$/.test(location.protocol)&&location.host?(location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws':'';
 const serverUrl=()=>(PG.set.server||'').trim()||defServer();
@@ -868,22 +974,23 @@ function onConnect(then){
   w.onerror=()=>{};
 }
 function onReconnect(){
-  if(ON.tries++>8){flash(T2('सर्वर से कनेक्शन टूट गया','Connection to the server was lost'));const was=ON.active;ON.room=null;ON.active=false;if(was)home();return}
+  if(ON.tries++>8){flash(T2('सर्वर से कनेक्शन टूट गया','Connection to the server was lost'));const was=ON.active||KO.on;ON.room=null;ON.active=false;KO.on=false;clearInterval(KO.iv);if(was)home();return}
   flash(T2('फिर से जुड़ रहे हैं…','Reconnecting…'));setTimeout(()=>{if(ON.room||ON.active)onConnect()},2000);
 }
 function onMsg(m){
   if(m.t==='hi'){clearTimeout(ON.ct);ON.ok=true;ON.tries=0;
     if((ON.active||ON.room)&&!m.resumed){   // server par ab wo room/game nahi raha
-      const was=ON.active;ON.room=null;ON.active=false;ON.q=[];flash(T2('वह गेम ख़त्म हो चुका है','That game is no longer running'));if(was)home();else{BOXFN=onlineHTML;refreshBox()}}
+      const was=ON.active||KO.on;ON.room=null;ON.active=false;ON.q=[];KO.on=false;clearInterval(KO.iv);flash(T2('वह गेम ख़त्म हो चुका है','That game is no longer running'));if(was)home();else{BOXFN=PG.set.game==='kot'?kotOnlineHTML:onlineHTML;refreshBox()}}
     try{localStorage.setItem('pg_tok',m.token)}catch(e){}const f=ON.then;ON.then=null;if(f)f();refreshBox();return}
   if(m.t==='room'){
     ON.room=m;ON.seat=m.you;ON.seats=m.seats;
-    if(m.phase==='lobby'){if(ON.active){ON.keep=1;ON.active=false;home();ON.keep=0}showRoom()}
+    if(m.phase==='lobby'){if(ON.active){ON.keep=1;ON.active=false;home();ON.keep=0}if(KO.on){ON.keep=1;KO.on=false;clearInterval(KO.iv);KG=null;kotCloseOv();home();ON.keep=0}showRoom()}
     else if(ON.active&&G){setBots()}
+    else if(KO.on){setBots()}
     return}
-  if(m.t==='state'){if(ON.room)onState(m);return}
+  if(m.t==='state'){if(ON.room){if(ON.room.game==='kot')kotOnState(m);else{if(!ON.active){PG.set.game='cb';$.className=''}onState(m)}}return}
   if(m.t==='emo'){onEmo(m);return}
-  if(m.t==='err'){ON.pending=0;const e=ERR[m.code];flash(e?T2(e[0],e[1]):m.msg);return}
+  if(m.t==='err'){ON.pending=0;KO.pending=0;const e=ERR[m.code];flash(e?T2(e[0],e[1]):m.msg);return}
 }
 function refreshBox(){const b=document.querySelector('#pk .box');if(b&&BOXFN)b.innerHTML=BOXFN()}
 function showRoom(){BOXFN=roomHTML;if(document.getElementById('pk'))refreshBox();else modal(roomHTML())}
@@ -904,7 +1011,7 @@ function onlineHTML(){
   <div class="row"><button class="ghost" onclick="closeM()">${T2('बंद करें','Close')}</button></div>`;
 }
 function roomHTML(){
-  const r=ON.room;if(!r)return onlineHTML();
+  const r=ON.room;if(!r)return onlineHTML();if(r.game==='kot')return kotRoomHTML();
   const LVN={easy:T2('आसान','Easy'),medium:T2('मध्यम','Medium'),hard:T2('कठिन','Hard')},hum=r.seats.filter(s=>s.k==='human').length;
   const seats=r.seats.map((s,i)=>`<div class="rs ${s.k}"><div class="mini">${s.k==='empty'?'＋':(s.e||'🙂')}</div><b>${s.k==='empty'?T2('खाली','Empty'):s.name[li()]}</b><small>${i===r.host?'👑 ':''}${i===r.you?T2('आप','You'):s.k==='bot'?T2('बॉट','Bot'):''}</small></div>`).join('');
   return `<h2>🌐 ${r.pub?T2('क्विक मैच','Quick match'):T2('प्राइवेट रूम','Private room')} ${r.pub?'':`<span class="code">${r.code}</span>`}</h2>
@@ -963,7 +1070,7 @@ function onlineSend(m){
   if(m.t==='play'){snd.play();vib(10)}else snd.bid();
   ui.hint=null;onSend({t:'move',m:m.t==='bid'?{t:'bid',n:m.n}:{t:'play',c:{s:m.c.s,r:m.c.r}}});
 }
-function onlineLeave(){onSend({t:'leave'});ON.active=false;ON.room=null;ON.q=[];ON.pending=0;ON.then=null;if(ui)clearInterval(ui.cd)}
+function onlineLeave(){onSend({t:'leave'});KO.on=false;clearInterval(KO.iv);ON.active=false;ON.room=null;ON.q=[];ON.pending=0;ON.then=null;if(ui)clearInterval(ui.cd)}
 function onlineAgain(){ON.keep=1;ON.active=false;onSend({t:'again'});home();ON.keep=0}
 function onEmo(m){
   if(!ON.active||!G)return;const p=(m.seat-ON.seat+G.n)%G.n;ui.emo=ui.emo||{};ui.emo[p]=m.e;R2();
@@ -974,6 +1081,310 @@ function emoBox(){
   $.insertAdjacentHTML('beforeend',`<div class="emopick" id="emop">${['👍','😂','😮','🔥','👏','😡','🙏'].map(e=>`<button onclick="sendEmo('${e}')">${e}</button>`).join('')}</div>`);
 }
 function sendEmo(e){onSend({t:'emo',e});const o=document.getElementById('emop');if(o)o.remove()}
+/* ============ 8. KOT PIECE: SCREEN ============ */
+document.head.insertAdjacentHTML('beforeend','<style>.kbar{position:absolute;left:0;right:0;top:0;height:46px;display:flex;gap:12px;align-items:center;padding:0 12px;background:#000a;color:#fff;font-weight:700;font-size:15px;z-index:5}.kbar .sp{flex:1}.kbar button{padding:5px 12px}.kchip{position:absolute;display:flex;flex-direction:column;align-items:center;color:#fff;font-size:13px;width:120px;padding:4px;z-index:2}.kchip .a{font-size:32px;line-height:1.1}.kchip.on{outline:3px solid #ffd54a;border-radius:12px;background:#0005}.kt{position:absolute;transform:scale(.86)}.kt.win .card{outline:4px solid #ffd54a}.kpan{position:absolute;left:150px;right:150px;top:92px;background:#12261df2;border:2px solid #ffd54a;border-radius:14px;padding:14px;color:#fff;text-align:center;z-index:6;line-height:1.5}.kpan .row{justify-content:center;flex-wrap:wrap}.kpan button{flex:none;min-width:96px;font-size:22px}.kmsg{position:absolute;left:0;right:0;top:48px;text-align:center;color:#ffd54a;font-weight:700;font-size:16px;line-height:1.35;text-shadow:0 1px 3px #000}.kmsg small{display:block;color:#fff;font-size:14px;font-weight:600}.kme{flex-direction:row;width:auto;gap:8px;align-items:center;background:#0007;border-radius:12px;padding:4px 12px;white-space:nowrap}.kme .a{font-size:26px}.ktr{position:absolute;right:12px;top:52px;width:122px;background:#fff;border:3px solid #ffd54a;border-radius:14px;text-align:center;color:#222;font-weight:800;padding:4px 2px;z-index:4;box-shadow:0 4px 10px #0008}.ktr .ts{font-size:68px;line-height:1.05}.ktr small{display:block;font-size:12px;color:#444;font-weight:700}.bigt th{color:#ffd54a;padding:6px}.bigt td{padding:6px;border-top:1px solid #fff3}.kcoach{position:absolute;left:640px;top:308px;width:306px;max-height:104px;overflow:auto;background:#12261df2;border:2px solid #ffd54a;border-radius:12px;padding:6px 9px;color:#fff;line-height:1.35;z-index:5}.kcoach .a{font-weight:800;color:#9be7ff;margin:2px 0}.kcoach b{color:#ffd54a}.kcoach small{display:block;color:#ddd}.kcoach .fbx{border-bottom:1px solid #fff3;padding-bottom:3px;margin-bottom:3px}.kcoach .fbx.ok b{color:#8fe0a8}.kcoach .ch button{padding:1px 8px;font-size:13px}</style>');
+const KOT_HOW=[
+['🎯 लक्ष्य: 4 खिलाड़ी, 2 टीमें। सामने बैठा खिलाड़ी आपका साथी है। 13 में से 7 या ज़्यादा सर उठाने वाली टीम राउंड जीतती है।','🎯 Goal: 4 players, 2 teams. The player opposite you is your partner. The team that collects 7 or more of the 13 tricks wins the round.'],
+['🃏 पत्ते बाँटने वाला: सबको एक-एक पत्ता मिलता है। जिसे सबसे पहले इक्का (A) मिले, वह पत्ते बाँटेगा।','🃏 Who deals: everyone gets one card. The first player to get an Ace deals.'],
+['🂠 बँटवारा: पहले सबको 5-5 पत्ते, फिर 4-4, फिर 4-4। कुल 13-13 पत्ते।','🂠 The deal: 5 cards each first, then 4 each, then 4 each. 13 cards each in all.'],
+['📢 रंग बोलना: बाँटने वाले के अगले खिलाड़ी को सबसे पहले 5 पत्ते मिलते हैं। उन्हें देखकर वह रंग (हुकुम, पान, चिड़ी या ईंट) बोलता है। वही रंग "कट" (तुरुप) है।','📢 Naming trump: the player after the dealer sees the first 5 cards and names a suit. That suit is the trump ("kat").'],
+['🔢 रंग न बोलें तो: अगर वह 5 पत्तों में रंग नहीं बोलता, तो उसका 13वाँ (आख़िरी) पत्ता जिस रंग का हो, वही रंग माना जाएगा।','🔢 If he does not name one: the suit of his 13th (last) card becomes the trump.'],
+['🔄 रंग बदलना: जिस टीम ने रंग नहीं बोला, उसका खिलाड़ी रंग बदलना चाहे तो पहले अपने सारे 13 पत्ते उठाता है और उन्हें देखने के बाद ही नया रंग चुन सकता है। वह साथी से कुछ नहीं पूछ सकता। ध्यान रहे: रंग बदलने के बाद अगर विरोधी टीम एक भी बार सर उठा ले, तो राउंड वहीं खत्म, विरोधी जीतेंगे और रंग बदलने वाली टीम पर कोट लगेगा।','🔄 Changing trump: a player of the team that did not name the trump may first pick up all 13 cards and, only after seeing them, choose a new suit. He cannot ask his partner. Warning: once the trump is changed, if the opponents collect even once, the round ends there, they win and the changing team gets Kot.'],
+['▶️ चाल के नियम: जो रंग चला गया वही चलिए। वह रंग न हो तो कोई भी पत्ता चल सकता है; कट लगाना ज़रूरी नहीं। बड़ा पत्ता लगाकर दबाना भी ज़रूरी नहीं।','▶️ Play rules: follow the suit led. If you do not have it, play any card; trumping is not compulsory. You also do not have to beat the card on the table.'],
+['🏅 सर कौन जीतता है: कट वाला पत्ता बाकी रंगों से जीतता है। एक ही रंग में बड़ा पत्ता जीतता है। सर जीतने वाला अगली चाल चलता है।','🏅 Who wins a trick: a trump beats other suits. In the same suit the higher card wins. The winner leads next.'],
+['📦 डबल सर: जीती हुई सर तुरंत नहीं मिलती, वह बीच में जमा रहती है। जब कोई एक ही खिलाड़ी लगातार 2 सर जीत ले, तब वह जमा हुई सारी सर अपनी टीम के लिए उठा लेता है। बीच में कोई और जीत जाए तो गिनती दोबारा उसी से शुरू होती है और सर जमा होती रहती हैं।','📦 Double trick: a won trick is not banked at once; it stays in a pile. When the same player wins 2 tricks in a row, he collects the whole pile for his team. If someone else wins in between, the count starts again from him and the pile keeps growing.'],
+['🔚 आख़िर में: 13 सर के बाद जमा सरों में जो बची हों, वे आख़िरी सर जीतने वाली टीम को मिलती हैं।','🔚 At the end: any tricks left in the pile after the 13th go to the team that won the last trick.'],
+['🏆 अंक: राउंड जीतने पर 1 अंक। अगर हारने वाली टीम की एक भी सर नहीं उठी, तो उस पर "कोट" लगता है और जीतने वाली टीम को 2 अंक मिलते हैं। सेटिंग में चुने अंक (शुरू में 5) पर पहुँचने वाली टीम खेल जीतती है।','🏆 Points: winning a round gives 1 point. If the losing team collected no trick at all, it is "Kot" and the winners get 2 points. The first team to reach the target points (5 by default) wins the game.'],
+['🔁 अगला बाँटने वाला: जीतने वाली टीम पत्ते नहीं बाँटती। बाँटने वाली टीम हार जाए तो वही खिलाड़ी फिर बाँटता है। बाँटने वाली टीम पर कोट लगे तो उसका साथी बाँटता है। दूसरी टीम पर कोट लगे तो अगला खिलाड़ी बाँट सकता है।','🔁 Next dealer: the winning team does not deal. If the dealing team loses, the same player deals again. If the dealing team gets Kot, his partner deals. If the other team gets Kot, the next player deals.'],
+['💎 जेम्स: बॉट्स के साथ खेल शुरू करने पर 10 💎 लगते हैं। जीतने पर 25 💎 मिलते हैं (विरोधियों पर कोट लगे तो 10 💎 और)। अभ्यास और डेली चैलेंज के लिए 💎 नहीं लगते।','💎 Gems: starting a game vs bots costs 10 💎. A win gives 25 💎 (10 more if you put Kot on the opponents). Practice and Daily cost nothing.'],
+['🪙 जेम्स और कॉइन नकली हैं। इनकी कोई असली कीमत नहीं है।','🪙 Gems and coins are virtual and have no real-world value.']
+];
+const SUITN=[['हुकुम','Spades'],['पान','Hearts'],['चिड़ी','Clubs'],['ईंट','Diamonds']];
+const sBtn=(s,f)=>`<button onclick="${f}(${s})" style="background:#fff;color:${s%2?'#d11f1f':'#111'}">${SUITS[s]}<br><small style="font-size:12px;color:#333">${SUITN[s][li()]}</small></button>`;
+let KG=null,KU={};
+function kotOv(h,w){kotCloseOv();$.insertAdjacentHTML('beforeend',`<div class="ov" id="kov"><div class="box" ${w?`style="width:${w}px"`:''}>${h}</div></div>`)}
+function kotCloseOv(){const o=document.getElementById('kov');if(o)o.remove()}
+function kotHome(){clearTimeout(KU.t);KG=null;KU={};kotCloseOv();home()}
+function kotRules(){if(KG&&document.getElementById('kov'))return;kotOv(`<div class="ch"><h2 style="margin:0">❓ Kot Piece — ${T2('नियम','Rules')}</h2><span><button onclick="kRfs(-1)">A−</button><button onclick="kRfs(1)">A+</button></span></div><div class="how">${KOT_HOW.map(x=>`<p style="font-size:${PG.set.rfs||16}px">${x[li()]}</p>`).join('')}</div><div class="row"><button onclick="kotCloseOv()">${T2('बंद करें','Close')}</button></div>`,660)}
+function kotStart(m){
+  if(m===undefined)m=KU.daily?'daily':!!KU.practice;   // 'Play again' wahi mode rakhe
+  const prac=m===true,dly=m==='daily',fee=(!prac&&!dly)?KOT_FEE:0;
+  if(fee&&gems()<fee){kotNoGems();return}   // khelne ke liye 💎 chahiye
+  clearTimeout(KU.t);BOTS=pickBots(3);
+  KG=KotPiece.createInitialState(dly?{seed:today(),target:1}:{target:PG.set.ktarget||5});   // daily: aaj ka ek hi haath sabke liye
+  KU={show:null,t:null,busy:false,practice:prac,daily:dly,rec:false,fee,reward:0,hist:[]};if(fee){me().gems=gems()-fee;save()}
+  $.className='kot';kotRender();const d=KG.draw,o=d.length-Math.min(4,d.length);
+  kotOv(`<h2>🃏 ${T2('पत्ते कौन बाँटेगा?','Who deals?')}</h2><p style="font-size:17px;line-height:1.8">${d.slice(-4).map((c,i)=>`${pn((o+i)%4)}: <b>${rankName(c.r)}${SUITS[c.s]}</b>`).join(' · ')}</p><p>${pn(KG.dealer)} ${T2('को इक्का मिला — वही पत्ते बाँटेगा।','got the Ace — he deals.')}</p><p>${pn(KG.caller)} ${T2('पहले 5 पत्ते देखकर कट (रंग) बोलेगा।','will see the first 5 cards and name the trump.')}${KG.caller===0?' <b>'+T2('यानी आप!','That is you!')+'</b>':''}</p><div class="row"><button onclick="kotCloseOv();kotStep()">${T2('शुरू करें','Start')}</button></div>`);
+}
+function kotRender(){
+  const keep=document.getElementById('kov');
+  const g=KG,mine=KotPiece.hand(g,0),tr=KU.show?KU.show.cards:g.trick,L=li();
+  const my=g.phase==='play'&&g.turn===0&&!KU.busy,ok=my?kotValid(g.hands[0],g.trick):[],isOk=c=>ok.some(x=>x.s===c.s&&x.r===c.r);
+  const TP=[[439,286],[580,206],[439,160],[298,206]],CP=[[14,368],[828,200],[420,92],[14,250]];
+  const nm=pn(g.turn),who=g.turn===0;
+  let msg='',pan='';
+  if(g.phase==='call')who?pan=`<b>${T2('आपके पहले 5 पत्ते हैं। रंग (कट) बोलिए','Your first 5 cards. Name the trump')}</b><div class="row">${[0,1,2,3].map(s=>sBtn(s,'kotCall')).join('')}</div><div class="row"><button class="ghost" style="font-size:16px" onclick="kotAct(0,{t:'pass'})">${T2('नहीं बोलूँगा (13वाँ पत्ता तय करेगा)','Pass (13th card decides)')}</button></div>`:msg=`${nm} ${T2('रंग सोच रहा है…','is choosing the trump…')}`;
+  else if(g.phase==='change')who?pan=`<b>${T2('कट','Trump')}: ${kSp(g.trump)}${g.called?'':' ('+T2('13वें पत्ते से','from the 13th card')+')'}</b><p style="font-size:15px">${T2('रंग बदलने के लिए पहले आपको अपने सारे 13 पत्ते उठाने होंगे। 13 पत्ते देखने के बाद ही बदलने का मौका मिलेगा। साथी से कुछ नहीं पूछ सकते।','To change the trump you first pick up all 13 cards. You can change only after seeing them. You may not ask your partner.')}</p><div class="row"><button onclick="kotAct(0,{t:'change'})" style="font-size:17px">✋ ${T2('13 पत्ते उठाओ','Take all 13')}</button><button class="ghost" onclick="kotAct(0,{t:'keep'})" style="font-size:17px">${T2('नहीं','Keep')}</button></div>`:msg=`${nm} ${T2('सोच रहा है: रंग बदले?','is deciding: change trump?')}`;
+  else if(g.phase==='newtrump')who?pan=`<b>${T2('अपने 13 पत्ते देखिए। नया कट चुनिए या वही रखिए','See your 13 cards. Pick a new trump or keep it')}</b><p style="font-size:14px;margin:4px 0">⚠️ ${T2('रंग बदलने के बाद विरोधी टीम एक भी बार सर उठा ले, तो राउंड वहीं खत्म — विरोधी जीतेंगे और आपकी टीम पर कोट लगेगा।','If you change and the opponents collect even once, the round ends there — they win and your team gets Kot.')}</p><div class="row">${[0,1,2,3].filter(s=>s!==g.trump).map(s=>sBtn(s,'kotNew')).join('')}</div><div class="row"><button class="ghost" style="font-size:16px" onclick="kotAct(0,{t:'keepT'})">${T2('रंग वही रखो','Keep the same trump')}</button></div>`:msg=`${nm} ${T2('नया रंग चुन रहा है…','is picking the new trump…')}`;
+  else msg=KU.show?KU.note:who?T2('आपकी चाल — उठा हुआ पत्ता चलिए','Your turn — tap a raised card'):`${nm} ${T2('की चाल','to play')}`;
+  const co=kCoach(g),cb=kCoachBox(co);
+  const ch=p=>`<div class="kchip ${p===0?'kme':''} ${g.turn===p&&g.phase!=='roundEnd'?'on':''}" style="left:${CP[p][0]}px;top:${CP[p][1]}px"><div class="a">${avHTML(p)}</div><b>${pn(p)}</b><small>${p%2?T2('विरोधी','Opp'):p?T2('साथी','Partner'):T2('आप','You')} · 🃏${g.hands[p].length}</small><b style="color:#ffd54a;font-size:16px">${T2('सर','Sar')}: ${g.tw[p]}</b></div>`;
+  $.innerHTML=`<div style="position:absolute;inset:0;background:radial-gradient(#1f7a50,#0b3a26)"></div>
+  <div class="kbar"><button class="ghost sm" onclick="kotHome()">🏠</button>${KO.on&&ON.room?`<span>🌐${ON.room.pub?'':' '+ON.room.code}</span>`:''}${KU.practice?'<span>🎓 '+T2('अभ्यास','Practice')+'</span>':''}${KU.daily?'<span>📅 '+T2('डेली','Daily')+'</span>':''}${KU.practice&&KU.hist&&KU.hist.length?`<button class="ghost sm" onclick="kotUndo()">↩ ${T2('पीछे','Undo')}</button>`:''}<span>💎 ${gems()}</span><span>${T2('हम','Us')} ${g.score[0]} – ${g.score[1]} ${T2('वे','Them')} · 🎯${g.target}</span><span class="sp"></span><span>📦 ${T2('जमा','Pile')} ${g.pile}</span><span style="font-size:13px">${T2('उठी सर','Collected')}</span><span style="background:#1b8a4a;border:2px solid #ffd54a;border-radius:12px;padding:0 14px;font-size:22px">${T2('हम','Us')} <b>${g.won[0]}</b></span><span style="background:#a33;border:2px solid #ffd54a;border-radius:12px;padding:0 14px;font-size:22px">${T2('वे','Them')} <b>${g.won[1]}</b></span><button class="ghost sm" onclick="kotRules()">❓</button></div>
+  ${g.trump!=null&&g.phase!=='call'?`<div class="ktr"><div class="ts" style="color:${g.trump%2?'#d11f1f':'#111'}">${SUITS[g.trump]}</div>${T2('कट','TRUMP')}<small>${kHow(g)}</small></div>`:''}${kPile(g)}${cb}<div class="kmsg">${msg}${KO.on&&!KU.show&&['call','change','newtrump','play'].includes(g.phase)?`<small>⏱ <span id="ktm">${Math.max(0,Math.ceil((KO.end-Date.now())/1000))}</span></small>`:''}${g.phase==='play'&&!KU.show&&(g.pile>0)?`<small>📦 ${g.pile} ${T2('सर जमा हैं','tricks pending')} — ${pn(g.last)} ${T2('ने आख़िरी सर जीती। अगली भी वही जीते तो सब उठा लेगा','won the last one. If he wins the next too, he takes them all')}</small>`:''}${g.phase==='change'&&g.trump!=null?`<small>${kHow(g)} · ${T2('कट','trump')} ${kSp(g.trump)}</small>`:''}</div>${[0,1,2,3].map(ch).join('')}
+  ${tr.map(t=>`<div class="kt ${KU.show&&KU.show.w===t.p?'win':''}" style="left:${TP[t.p][0]}px;top:${TP[t.p][1]}px">${cardHTML(t.c)}</div>`).join('')}${pan?`<div class="kpan">${pan}</div>`:''}
+  <div class="hand ${mine.length>10?'':''}">${mine.map(c=>cardHTML(c,my?(isOk(c)?'ok':'no'):'')).join('')}</div>`;
+  [...$.querySelectorAll('.hand .card')].forEach((el,i)=>{const c=mine[i];if(co&&co.m.t==='play'&&co.m.c.s===c.s&&co.m.c.r===c.r)el.style.outline='4px solid #4dd0ff';if(my)el.onclick=()=>isOk(c)?kotAct(0,{t:'play',c}):flash(T2('यह पत्ता अभी नहीं चल सकता','This card cannot be played now'))});
+  if(keep)$.appendChild(keep);
+}
+const kHow=g=>g.by==null?'':g.how==='call'?`${pn(g.by)} ${T2('ने बोला','called it')}`:g.how==='13th'?`${pn(g.by)} ${T2('का 13वाँ पत्ता','13th card')}`:`${pn(g.by)} ${T2('ने बदला','changed it')}`;
+function kPile(g){
+  const L=KU.show?g.pileT.slice(0,-1):g.pileT;if(!L.length)return'';
+  return `<div style="position:absolute;left:14px;top:100px;width:372px;z-index:2"><div style="color:#ffd54a;font-weight:700;font-size:14px;margin-bottom:3px">📦 ${T2('जमा सर — उठने तक यहीं रहेंगी','Pile — stays until collected')}: ${g.pile}</div><div style="display:flex;flex-wrap:wrap;gap:6px 8px">${L.slice(-8).map(tk=>`<div style="position:relative;width:82px;height:50px">${tk.cards.map((t,i)=>`<div style="position:absolute;left:${i*16}px;top:0;width:34px;height:50px;z-index:${t.p===tk.w?5:i}"><div style="transform:scale(.415);transform-origin:0 0;width:82px;height:118px;${t.p===tk.w?'filter:drop-shadow(0 0 4px #ffd54a)':''}">${cardHTML(t.c)}</div></div>`).join('')}</div>`).join('')}</div></div>`;
+}
+const kSp=s=>`<span style="background:#fff;border-radius:6px;padding:0 7px;color:${s%2?'#d11f1f':'#111'}">${SUITS[s]}</span>`;
+const kotCall=s=>kotAct(0,{t:'call',s}),kotNew=s=>kotAct(0,{t:'trump',s});
+function kotAct(p,m){
+  if(!KG||KU.busy||KG.turn!==p)return;clearTimeout(KU.t);
+  if(KO.on){kotOnSend(m);return}   // online: chaal server ko bhejo, jawab me naya state aayega
+  if(p===0&&KU.practice){const co=kCoach(KG);if(co){(KU.hist=KU.hist||[]).push(KG);   // practice: chaal ke baad sahi/galat batao
+    const same=co.m.t===m.t&&(m.t==='play'?co.m.c.s===m.c.s&&co.m.c.r===m.c.r:(m.t==='call'||m.t==='trump')?co.m.s===m.s:true);
+    KU.fb={ok:same,a:co.a,b:co.b}}}
+  const n=KotPiece.applyMove(KG,p,m),done=m.t==='play'&&!n.trick.length;
+  KG=n;
+  if(done){const w=n.lastTrick.w,tm=w%2?T2('विरोधी टीम','the opponents'):T2('आपकी टीम','your team');
+    KU.note=n.lastGot>0?`🎉 ${pn(w)} ${T2('ने लगातार 2 सर जीतीं — पूरी','won 2 in a row — all')} <b>${n.lastGot}</b> ${T2('सर उठाईं','tricks taken')} (${tm})`:`${pn(w)} ${T2('ने सर जीती','won the trick')}<small>${T2('📦 जमा हुई, अभी किसी को नहीं मिली','kept in the 📦 pile, nobody has it yet')}</small>`;
+    KU.show=n.lastTrick;KU.busy=true;kotRender();KU.t=setTimeout(()=>{KU.show=null;KU.busy=false;kotRender();kotStep()},2600)}
+  else{kotRender();kotStep()}
+}
+function kotStep(){
+  const g=KG;clearTimeout(KU.t);if(!g||KU.busy||KO.on)return;
+  if(g.phase==='roundEnd'||g.phase==='over')return kotEnd();
+  if(g.turn===0)return;
+  KU.t=setTimeout(()=>{const mv=KotPiece.getValidMoves(g,g.turn);kotAct(g.turn,(KotBots[KU.daily?'medium':PG.set.level]||KotBots.medium)(g,g.turn,mv))},g.phase==='play'?900:1300);
+}
+function kotEnd(){
+  const g=KG,r=g.roundInfo,over=g.phase==='over',win=g.score[0]>g.score[1];
+  if(over)return KO.on?kotOnOver(win):kotBig(win);
+  KO.intro=0;kotOv(`<h2>${over?(win?'🏆 '+T2('आपकी टीम जीत गई!','Your team won!'):T2('इस बार विरोधी जीते','Opponents won this time')):(r.wt===0?'✅ '+T2('राउंड जीता','Round won'):'❌ '+T2('राउंड हारे','Round lost'))}</h2>
+  <p style="font-size:17px;line-height:1.8">${T2('आपकी टीम की सर','Your team tricks')}: <b>${g.won[0]}</b> · ${T2('विरोधी','Opponents')}: <b>${g.won[1]}</b>${r.early?`<br>⚠️ ${pn(r.chBy)} ${T2('की टीम ने रंग बदला था, पर दूसरी टीम ने सर उठा ली — राउंड वहीं खत्म','team changed the trump, but the other team collected tricks — round ended there')}`:''}${r.kot?`<br>🔥 <b>KOT!</b> ${r.wt===0?T2('विरोधियों पर कोट — 2 अंक','Kot on the opponents — 2 points'):T2('आप पर कोट — विरोधियों को 2 अंक','Kot on you — 2 points to them')}`:''}<br>${T2('अंक','Score')}: <b>${g.score[0]} – ${g.score[1]}</b>${over?'':`<br>${T2('अगला बाँटने वाला','Next dealer')}: ${pn(g.nextDealer)}`}</p>
+  <div class="row">${over?`<button onclick="kotStart()">${T2('फिर खेलें','Play again')}</button><button class="ghost" onclick="kotHome()">🏠</button>`:KO.on?`<div class="cdn">${T2('अगला राउंड','Next round in')} <b id="kcd">${Math.max(0,Math.ceil((KO.end-Date.now())/1000))}</b> ${T2('सेकंड में','sec')}</div>`:`<button onclick="kotNext()">${T2('अगला राउंड','Next round')}</button>`}</div>`);
+}
+function kotBig(win){kotRecord(win);if(KU.daily)return kotDailyEnd(win);
+  const g=KG,big=(t,n,c)=>`<div style="text-align:center"><div style="font-size:15px">${t}</div><div style="font-size:78px;font-weight:900;line-height:1;color:${c}">${n}</div></div>`;
+  const rows=g.history.map((h,i)=>`<tr><td>${i+1}</td><td>${h.won[0]}</td><td>${h.won[1]}</td><td>${h.wt===0?'✅ '+T2('हम जीते','We won'):'❌ '+T2('वे जीते','They won')}${h.kot?' 🔥 KOT':''}</td></tr>`).join('');
+  kotOv(`<h2 style="font-size:30px;text-align:center">${win?'🏆 '+T2('आपकी टीम जीत गई!','Your team won!'):T2('इस बार विरोधी जीते','Opponents won this time')}</h2>
+  <div style="display:flex;justify-content:center;align-items:center;gap:34px;margin:6px 0 10px">${big(T2('आपकी टीम','Your team')+'<br><small>'+pn(0)+' + '+pn(2)+'</small>',g.score[0],win?'#ffd54a':'#fff')}<div style="font-size:44px">–</div>${big(T2('विरोधी','Opponents')+'<br><small>'+pn(1)+' + '+pn(3)+'</small>',g.score[1],win?'#fff':'#ffd54a')}</div>
+  <table class="bigt" style="width:100%;font-size:17px;text-align:center;border-collapse:collapse"><tr><th>${T2('राउंड','Round')}</th><th>${T2('हम की सर','Our tricks')}</th><th>${T2('वे की सर','Their tricks')}</th><th>${T2('नतीजा','Result')}</th></tr>${rows}</table>
+  ${(!KU.practice&&!KU.daily)?`<p style="text-align:center;font-size:17px">💎 ${T2('एंट्री','Entry')} −${KU.fee} · ${win?T2('इनाम','Prize')+' <b style="color:#ffd54a">+'+KU.reward+'</b>':T2('इस बार इनाम नहीं','no prize this time')}</p>`:''}${KU.practice?`<p style="text-align:center;font-size:14px">🎓 ${T2('अभ्यास खेल — लीडरबोर्ड में नहीं गिना जाएगा','Practice game — not counted on the leaderboard')}</p>`:''}<div class="row"><button onclick="kotStart()">${T2('फिर खेलें','Play again')}</button><button class="ghost" onclick="kotHome()">🏠 ${T2('होम','Home')}</button></div>`,720);
+}
+function kotNext(){kotCloseOv();KG=KotPiece.nextRound(KG);KU.busy=false;kotRender();kotStep()}
+
+
+/* ============ 9. GAME CHUNNA + KOT PIECE DASHBOARD ============ */
+PG.set.ktarget=PG.set.ktarget||5;
+const homeCB=home;
+home=function(){const g=PG.set.game;if(g==='kot')kotDash();else if(g==='cb')homeCB();else hub()};
+function pickGame(g){PG.set.game=g;home()}
+function hub(){
+  if((ON.active||ON.room)&&!ON.keep)onlineLeave();
+  G=null;KG=null;clearTimeout(KU.t);KU={};PG.set.game='';$.className='';
+  const u=me(),k=u.kot||{won:0,played:0};
+  $.innerHTML=`<div class="top"><div class="prof" onclick="pick()"><div class="av">${avHTML(0)}</div><div class="pi"><b>${u.name}</b><div class="gm">💎 ${gems()}</div></div><button class="plus" onclick="event.stopPropagation();gemsBox()">+</button></div>
+   <div class="pills"><button class="pl big">🎮 ${T2('अपना गेम चुनिए','Choose your game')}</button></div>
+   <div class="ibs"><button class="wb iconb" onclick="settings()">⚙</button></div></div>
+  <div class="tl4" style="left:130px;width:700px;top:150px">
+   <div class="tl" style="height:270px" onclick="pickGame('cb')"><div class="ic">🃏</div>Call Break<small>${T2('4–6 खिलाड़ी · बॉट्स · ऑनलाइन','4–6 players · bots · online')}</small><small>🏆 ${u.won||0} ${T2('जीत','wins')}</small></div>
+   <div class="tl" style="height:270px;background:linear-gradient(#1f8a52,#126a3a);border-color:#52c88a;box-shadow:0 6px 0 #0a3a22" onclick="pickGame('kot')"><div class="ic">♠</div>Kot Piece<small>${T2('2 बनाम 2 · जोड़ी में · बॉट्स · ऑनलाइन','2 vs 2 · partners · bots · online')}</small><small>🏆 ${k.won||0} ${T2('जीत','wins')}</small></div></div>`;
+  if(bonusDone!==today()){bonusDone=today();setTimeout(bonusCheck,350)}
+}
+function kotDash(){
+  if((ON.active||ON.room)&&!ON.keep)onlineLeave();
+  G=null;KG=null;clearTimeout(KU.t);KU={};$.className='';
+  const u=me(),S=PG.set,kd=u.kotDaily&&u.kotDaily.date===today()?T2('आज का बेस्ट: ','Today best: ')+u.kotDaily.score+' '+T2('सर','tricks'):T2('रोज़ नया हाथ','A new hand daily'),LVN={easy:T2('आसान','Easy'),medium:T2('मध्यम','Medium'),hard:T2('कठिन','Hard')};
+  $.innerHTML=`<div class="top"><div class="prof" onclick="pick()"><div class="av">${avHTML(0)}</div><div class="pi"><b>${u.name}</b><div class="gm">💎 ${gems()}</div></div><button class="plus" onclick="event.stopPropagation();gemsBox()">+</button></div>
+   <div class="pills"><button class="pl big" onclick="kotSetup()">♠ Kot Piece · 2 ${T2('बनाम','vs')} 2 · 🎯${S.ktarget} ${T2('अंक','pts')} · ${LVN[S.level]} ▾</button></div>
+   <div class="ibs"><button class="wb iconb" onclick="kotLb()">🏆</button><button class="wb iconb" onclick="hub()">🎮</button><button class="wb iconb" onclick="kotRules()">❓</button><button class="wb iconb" onclick="settings()">⚙</button></div><button class="gb sharepill" onclick="shareApp()">📤 ${T2('शेयर करो','Share')}</button></div>
+  <div class="tl4">
+   <div class="tl" onclick="kotStart(false)"><div class="ic">🤖</div>${T2('बॉट्स के साथ खेलो','Play vs Bots')}<small>2 ${T2('बनाम','vs')} 2 · 🎯${S.ktarget} ${T2('अंक','pts')} · 🎟 ${KOT_FEE} 💎</small></div>
+   <div class="tl" onclick="kotStart(true)"><div class="ic">🎓</div>${T2('अभ्यास','Practice')}<small>${T2('कोच के साथ सीखो','Learn with the coach')}</small></div>
+   <div class="tl" onclick="kotStart('daily')"><div class="ic">📅</div>${T2('डेली चैलेंज','Daily Challenge')}<small>${kd}</small></div>
+   <div class="tl" onclick="kotOnline()"><div class="ic">🌐</div>${T2('ऑनलाइन खेलो','Play Online')}<small>${T2('दोस्तों के साथ','With friends')}</small></div></div>`;
+}
+function kotOnline(){BOXFN=kotOnlineHTML;modal(kotOnlineHTML());if(serverUrl())onConnect()}
+function kotLb(){
+  const us=Object.values(PG.users).filter(x=>x.kot&&x.kot.played).sort((a,b)=>b.kot.won-a.kot.won||b.kot.pts-a.kot.pts).slice(0,10);
+  modal(`<h2>🏆 Kot Piece ${T2('लीडरबोर्ड (इस फ़ोन पर)','Leaderboard (this phone)')}</h2>${us.length?us.map((x,i)=>`<div class="lb"><span style="width:26px">${['🥇','🥈','🥉'][i]||i+1}</span><div class="mini">${avOf(x.av)}</div><b>${x.name}</b><span>${x.kot.won}/${x.kot.played} ${T2('जीत','wins')} · 🔥${x.kot.kots} KOT</span></div>`).join(''):`<p>${T2('अभी कोई खेल नहीं हुआ। एक खेल जीतकर अपना नाम दर्ज कीजिए!','No games yet. Win one to get on the board!')}</p>`}<div class="row"><button onclick="closeM()">${T2('बंद करें','Close')}</button></div>`);
+}
+function kotRecord(win){
+  if(KU.rec||KU.practice)return;KU.rec=true;
+  const u=me(),g=KG,kots=g.history.filter(h=>h.kot&&h.wt===0).length;u.kot=u.kot||{played:0,won:0,kots:0,pts:0};
+  const add=()=>{u.kot.played++;if(win)u.kot.won++;u.kot.kots+=kots;u.kot.pts+=g.score[0]};
+  if(!KU.daily){add();if(win){KU.reward=KOT_WIN+(kots>0?KOT_KOT:0);u.gems=(u.gems||0)+KU.reward}save();return}
+  const t=today(),first=!(u.kotDaily&&u.kotDaily.date===t),my=g.won[0];   // daily: roz pehli baar hi ginti me, baad me sirf best score
+  u.kotDaily={date:t,score:first?my:Math.max(u.kotDaily.score,my)};
+  KU.dres={best:u.kotDaily.score,first,bonus:0};
+  if(first){add();if(u.kotPaid!==t){u.kotPaid=t;u.gems=(u.gems||0)+25;KU.dres.bonus=25}}
+  save();
+}
+function kotDailyEnd(win){
+  const g=KG,r=g.roundInfo,d=KU.dres||{},big=(t,n,c)=>`<div style="text-align:center"><div style="font-size:15px">${t}</div><div style="font-size:70px;font-weight:900;line-height:1;color:${c}">${n}</div></div>`;
+  kotOv(`<h2 style="font-size:28px;text-align:center">📅 ${T2('डेली चैलेंज','Daily Challenge')} — ${win?'✅ '+T2('जीते!','Won!'):'❌ '+T2('हारे','Lost')}</h2>
+  <div style="display:flex;justify-content:center;align-items:center;gap:30px;margin:6px 0">${big(T2('आपकी टीम की सर','Your team tricks'),g.won[0],win?'#ffd54a':'#fff')}<div style="font-size:40px">–</div>${big(T2('विरोधी की सर','Opponent tricks'),g.won[1],win?'#fff':'#ffd54a')}</div>
+  <p style="text-align:center;font-size:17px;line-height:1.8">${r.early?`⚠️ ${pn(r.chBy)} ${T2('की टीम ने रंग बदला था, पर दूसरी टीम ने सर उठा ली — राउंड वहीं खत्म','team changed the trump, but the other team collected tricks — round ended there')}<br>`:''}${r.kot?`🔥 <b>KOT!</b> ${r.wt===0?T2('विरोधियों पर कोट','Kot on the opponents'):T2('आप पर कोट','Kot on you')}<br>`:''}🏅 ${T2('आज का बेस्ट','Best today')}: <b>${d.best} ${T2('सर','tricks')}</b>${d.bonus?`<br>💎 +${d.bonus} ${T2('डेली बोनस','daily bonus')}`:''}${d.first?'':`<br><small>${T2('दोबारा खेलने पर सिर्फ बेस्ट स्कोर बदलता है','Replays only update your best score')}</small>`}</p>
+  <div class="row"><button onclick="kotStart('daily')">${T2('फिर खेलें','Play again')}</button><button class="ghost" onclick="kotHome()">🏠 ${T2('होम','Home')}</button></div>`,600);
+}
+function kotSetupHTML(){
+  const S=PG.set,b=(on,f,t)=>`<button class="${on?'':'ghost'}" onclick="${f}">${t}</button>`;
+  return `<h2>🎛 ${T2('Kot Piece सेटिंग','Kot Piece settings')}</h2>
+  <div class="lbl">🎯 ${T2('कितने अंक पर खेल खत्म','Game ends at')}</div><div class="seg">${[3,5,7].map(n=>b(S.ktarget===n,`kotPref('ktarget',${n})`,n+' '+T2('अंक','points'))).join('')}</div>
+  <div class="lbl">🤖 ${T2('बॉट का स्तर','Bot level')}</div><div class="seg">${[['easy',T2('आसान','Easy')],['medium',T2('मध्यम','Medium')],['hard',T2('कठिन','Hard')]].map(([k,t])=>b(S.level===k,`kotPref('level','${k}')`,t)).join('')}</div>
+  <div class="row"><button class="gb" onclick="closeM()">✔ ${T2('ठीक है','Done')}</button></div>`}
+function kotSetup(){BOXFN=kotSetupHTML;modal(kotSetupHTML())}
+function kotPref(k,v){PG.set[k]=v;save();document.querySelector('#pk .box').innerHTML=kotSetupHTML()}
+const KOT_FEE=10,KOT_WIN=25,KOT_KOT=10;
+function kotNoGems(){kotOv(`<h2>💎 ${T2('जेम्स कम हैं','Not enough gems')}</h2><p>${T2('इस खेल के लिए '+KOT_FEE+' 💎 चाहिए। अभ्यास और डेली चैलेंज फ्री हैं।','This game needs '+KOT_FEE+' 💎. Practice and Daily are free.')}</p><div class="row"><button onclick="gemsBox()">💎 ${T2('फ्री जेम्स','Free gems')}</button><button class="ghost" onclick="kotStart(true)">🎓 ${T2('अभ्यास','Practice')}</button><button class="ghost" onclick="kotCloseOv()">${T2('बंद करें','Close')}</button></div>`)}
+function kotUndo(){if(!KU.practice||KU.busy||!KU.hist||!KU.hist.length)return;clearTimeout(KU.t);kotCloseOv();KG=KU.hist.pop();KU.fb=null;KU.show=null;kotRender();kotStep()}
+function kCfs(d){PG.set.kcfs=Math.max(10,Math.min(22,(PG.set.kcfs||13)+d));save();kotRender()}
+function kRfs(d){const v=Math.max(11,Math.min(28,(PG.set.rfs||16)+d));PG.set.rfs=v;save();document.querySelectorAll('#kov .how p').forEach(e=>e.style.fontSize=v+'px')}
+function kCoachBox(co){
+  if(!KU.practice)return'';
+  const f=KU.fb,fb=f?`<div class="fbx ${f.ok?'ok':''}"><b>${f.ok?'✅ '+T2('सही चाल!','Good move!'):'💡 '+T2('कोच की सलाह थी','Coach suggested')}</b> ${f.ok?f.b:f.a+' — '+f.b}</div>`:'';
+  const body=co?`<div class="a">${co.a}</div><div>${co.b}</div><small>${co.c}</small>`:`<small>${T2('अपनी चाल का इंतज़ार…','Waiting for your turn…')}</small>`;
+  return `<div class="kcoach" style="font-size:${PG.set.kcfs||13}px"><div class="ch"><b>🎓 ${T2('कोच','Coach')}</b><span><button onclick="kCfs(-1)">A−</button><button onclick="kCfs(1)">A+</button></span></div>${fb}${body}</div>`;
+}
+function kCoach(g){   // practice: kya chalna hai aur kyon (bot wali soch se)
+  if(!KU.practice||g.turn!==0||KU.busy||KU.show||g.phase==='roundEnd'||g.phase==='over')return null;
+  const mv=KotPiece.getValidMoves(g,0);if(!mv.length)return null;
+  const m=KotBots.medium(g,0,mv),hand=g.hands[0].slice(0,g.vis[0]),nm=c=>rankName(c.r)+SUITS[c.s],sn=x=>SUITS[x]+' '+SUITN[x][li()];
+  const cnt=x=>hand.filter(c=>c.s===x).length,big=x=>hand.filter(c=>c.s===x&&c.r>=12).length;
+  const oth=[0,1,2,3].filter(x=>x!==g.trump).sort((x,y)=>cnt(y)+big(y)-cnt(x)-big(x))[0];
+  let a,b,c='';
+  if(g.phase==='call'){
+    if(m.t==='call'){a=T2('कट बोलिए: '+sn(m.s),'Name the trump: '+sn(m.s));b=T2(`आपके 5 पत्तों में ${sn(m.s)} के ${cnt(m.s)} पत्ते हैं (A/K/Q बड़े: ${big(m.s)})। जिस रंग के ज़्यादा और बड़े पत्ते हों, वही कट बनाइए — कट वाला पत्ता बाकी रंगों से सर जीतता है।`,`You hold ${cnt(m.s)} cards of ${sn(m.s)} in your 5 (${big(m.s)} big: A/K/Q). Name your longest, strongest suit — a trump beats the other suits.`)}
+    else{a=T2('"नहीं बोलूँगा" चुनिए','Choose "Pass"');b=T2('5 पत्तों में कोई रंग ज़्यादा मज़बूत नहीं है। ऐसे में आपके 13वें पत्ते का रंग ही कट बनेगा।','No suit is clearly strong in your 5 cards, so the suit of your 13th card becomes the trump.')}
+    c=T2('ध्यान रहे: विरोधी 13 पत्ते देखकर कट बदल सकते हैं, पर बदलने के बाद वे एक भी सर उठवा बैठे तो उन पर कोट लगता है।','Opponents may change the trump after seeing 13 cards, but if you then collect even once they get Kot.');
+  }else if(g.phase==='change'){
+    if(m.t==='change'){a=T2('"13 पत्ते उठाओ" दबाइए','Press "Take all 13"');b=T2(`आपके पास ${sn(oth)} में दम है (${cnt(oth)} पत्ते, ${big(oth)} बड़े)। 13 पत्ते देखने के बाद ही बदलने का फैसला कीजिए।`,`Your ${sn(oth)} looks strong (${cnt(oth)} cards, ${big(oth)} big). Decide only after seeing all 13.`)}
+    else{a=T2('"नहीं" चुनिए','Choose "No"');b=T2('अभी दूसरे रंग में खास दम नहीं दिखता। बेवजह जोखिम न लें।','No other suit looks strong yet. Do not take a needless risk.')}
+    c=T2('रंग बदलने के बाद विरोधी एक भी बार सर उठा लें तो राउंड वहीं खत्म और आप पर कोट।','If you change and the opponents collect even once, the round ends and you get Kot.');
+  }else if(g.phase==='newtrump'){
+    if(m.t==='trump'){a=T2('नया कट: '+sn(m.s),'New trump: '+sn(m.s));b=T2(`13 पत्तों में ${sn(m.s)} के ${cnt(m.s)} पत्ते हैं (बड़े: ${big(m.s)}) — हाथ काफ़ी मज़बूत है।`,`You hold ${cnt(m.s)} cards of ${sn(m.s)} (${big(m.s)} big) — a strong hand.`)}
+    else{a=T2('"रंग वही रखो" चुनिए','Choose "Keep the same trump"');b=T2('13 पत्ते देखकर भी कोई दूसरा रंग इतना मज़बूत नहीं कि बदलने का जोखिम लिया जाए।','Even with 13 cards no other suit is strong enough to justify the risk.')}
+    c=T2('बदलने पर विरोधी एक भी सर उठा लें तो आप हार जाएँगे और कोट लगेगा।','If you change and the opponents collect once, you lose with Kot.');
+  }else{
+    const lead=!g.trick.length,cur=lead?null:kotWinner(g.trick,g.trump),pw=cur===2,win=!lead&&kotWinner([...g.trick,{p:0,c:m.c}],g.trump)===0;
+    a=T2('यह पत्ता चलिए: '+nm(m.c),'Play this card: '+nm(m.c));
+    if(lead)b=g.last===0?T2('आपने पिछली सर जीती थी। अब यह सर भी जीती तो जमा सारी सर आपकी टीम की हो जाएँगी — बड़ा पत्ता चलिए।','You won the last trick. Win this one too and you collect the whole pile — lead high.'):g.pile>0?T2('सर जमा हैं पर आपकी लगातार जीत नहीं चल रही। बड़ा पत्ता चलकर सर जीतने की कोशिश कीजिए।','Tricks are in the pile but you are not on a streak. Lead high and try to win.'):T2('अभी कोई सर जमा नहीं है — छोटा पत्ता चलकर बड़े पत्ते बचाइए।','No pile yet — lead low and save your big cards.');
+    else if(pw)b=T2('आपका साथी जीत रहा है। उसे मत दबाइए — छोटा पत्ता चलिए, ताकि वह लगातार 2 सर जीतकर जमा सर उठा सके।','Your partner is winning. Do not beat him — play low so he can win two in a row and collect the pile.');
+    else if(win)b=T2('यह पत्ता अभी सर जीत सकता है। अगली सर भी आप ही जीतें तो जमा सारी सर उठा लेंगे।','This card can win the trick. Win the next one too and you take the whole pile.');
+    else b=T2('यह सर जीतना मुश्किल है — सबसे छोटा पत्ता चलिए और कट/बड़े पत्ते बचाइए।','Hard to win this trick — play your lowest card and save trumps and big cards.');
+    c=(!lead&&!hand.some(x=>x.s===g.trick[0].c.s))?T2('इस रंग का पत्ता नहीं है, इसलिए कोई भी पत्ता चल सकता है; कट लगाना ज़रूरी नहीं।','You have no card of this suit, so any card is allowed; trumping is not compulsory.'):T2(`📦 ${g.pile} सर जमा हैं। सर तभी उठती है जब एक ही खिलाड़ी लगातार 2 सर जीते।`,`📦 ${g.pile} tricks in the pile. They are collected only when one player wins 2 in a row.`);
+  }
+  return {m,a,b,c,t:a};
+}
+
+/* ============ 10. KOT PIECE: ONLINE ============ */
+const KOT_ON_WIN=20;   // online jeetne par 💎 (nakli). Entry fee nahi.
+const kotOnOpts=()=>({game:'kot',target:PG.set.ktarget||5,level:PG.set.level});
+const kotOnQuick=()=>onConnect(()=>onSend({t:'quick',...kotOnOpts()}));
+const kotOnCreate=()=>onConnect(()=>onSend({t:'create',...kotOnOpts()}));
+function kotOnPref(k,v){PG.set[k]=v;save();refreshBox()}
+function kotOnlineHTML(){
+  const S=PG.set,b=(on,f,t)=>`<button class="${on?'':'ghost'}" onclick="${f}">${t}</button>`;
+  return `<h2>🌐 ${T2('Kot Piece ऑनलाइन','Kot Piece Online')}</h2>
+  <div class="lbl">${T2('सर्वर का पता','Server address')} ${ON.ok?'🟢':'⚪'}</div><input id="srv" value="${serverUrl()}" placeholder="wss://your-server.com/ws" onchange="setServer(this.value)">
+  <div class="lbl">🎯 ${T2('कितने अंक पर खेल खत्म','Game ends at')}</div><div class="seg">${[3,5,7].map(n=>b(S.ktarget===n,`kotOnPref('ktarget',${n})`,n+' '+T2('अंक','points'))).join('')}</div>
+  <div class="lbl">🤖 ${T2('खाली सीट पर बॉट का स्तर','Bot level for empty seats')}</div><div class="seg">${[['easy',T2('आसान','Easy')],['medium',T2('मध्यम','Medium')],['hard',T2('कठिन','Hard')]].map(([k,t])=>b(S.level===k,`kotOnPref('level','${k}')`,t)).join('')}</div>
+  <div class="row"><button class="gb" onclick="kotOnQuick()">⚡ ${T2('क्विक मैच','Quick match')}</button><button class="yb" onclick="kotOnCreate()">➕ ${T2('प्राइवेट रूम','Private room')}</button></div>
+  <div class="lbl">🔑 ${T2('रूम कोड से जुड़िए','Join with a room code')}</div><div class="row"><input id="jc" maxlength="5" placeholder="ABCDE" style="text-transform:uppercase"><button onclick="onJoin(document.getElementById('jc').value)">${T2('जुड़ें','Join')}</button></div>
+  <div class="row"><button class="ghost" onclick="closeM()">${T2('बंद करें','Close')}</button></div>`;
+}
+const onSit=i=>onSend({t:'sit',i});
+function kotRoomHTML(){
+  const r=ON.room,hum=r.seats.filter(s=>s.k==='human').length;
+  const LVN={easy:T2('आसान','Easy'),medium:T2('मध्यम','Medium'),hard:T2('कठिन','Hard')};
+  const mine=r.you%2;
+  const seat=i=>{const s=r.seats[i];
+    if(s.k==='empty')return `<div class="rs empty" onclick="onSit(${i})" style="cursor:pointer"><div class="mini">＋</div><b>${T2('खाली','Empty')}</b><small>${T2('यहाँ बैठें','Tap to sit')}</small></div>`;
+    return `<div class="rs ${s.k}"><div class="mini">${s.e||'🙂'}</div><b>${s.name[li()]}</b><small>${i===r.host?'👑 ':''}${i===r.you?T2('आप','You'):s.k==='bot'?T2('बॉट','Bot'):''}</small></div>`};
+  const team=(t,ttl,col)=>`<div style="flex:1;border:2px solid ${col};border-radius:12px;padding:6px"><div style="text-align:center;font-weight:800;color:${col};font-size:14px">${ttl}</div><div class="rseats" style="grid-template-columns:1fr 1fr">${seat(t)}${seat(t+2)}</div></div>`;
+  return `<h2>🌐 ♠ ${r.pub?T2('क्विक मैच','Quick match'):T2('प्राइवेट रूम','Private room')} ${r.pub?'':`<span class="code">${r.code}</span>`}</h2>
+  <div class="lbl">Kot Piece · 🎯 ${r.target} ${T2('अंक','points')} · ${LVN[r.level]}</div>
+  <div style="display:flex;gap:8px">${team(mine,'🟢 '+T2('आपकी टीम (साथी सामने)','Your team (partner opposite)'),'#52c88a')}${team(1-mine,'🔴 '+T2('विरोधी टीम','Opponents'),'#e07070')}</div>
+  <div class="lbl">${r.pub?T2('खिलाड़ी ढूँढ रहे हैं… खाली सीटों पर बॉट बैठेंगे','Looking for players… empty seats will be filled by bots'):T2('कोड दोस्तों को भेजिए। सीट पर टैप करके जगह बदल सकते हैं। खाली सीटों पर बॉट बैठेंगे।','Send the code to friends. Tap an empty seat to move. Empty seats will be filled by bots.')}</div>
+  <div class="row">${r.you===r.host?`<button class="gb" onclick="onStart()">▶ ${T2('शुरू करें','Start')} (${hum}/4)</button>`:`<div class="cdn">${T2('होस्ट के शुरू करने का इंतज़ार…','Waiting for the host…')}</div>`}${r.pub?'':'<button class="wb" onclick="shareCode()">📤</button>'}<button class="ghost" onclick="closeM()">${T2('बाहर निकलें','Leave')}</button></div>`;
+}
+/* server ka state apne seat ke hisaab se ghumana: main hamesha seat 0, saamne wala seat 2 (saathi) */
+function kotRot(m){
+  const g=m.G,s=m.seat,L=p=>p==null?p:(p-s+4)%4,R=a=>a.map((_,i)=>a[(i+s)%4]),T=a=>s%2?[a[1],a[0]]:a,tm=t=>t==null?t:(s%2?1-t:t);
+  const tk=t=>t&&({cards:t.cards.map(x=>({p:L(x.p),c:x.c})),w:L(t.w)});
+  const o={...g,dealer:L(g.dealer),caller:L(g.caller),turn:L(g.turn),changer:L(g.changer),by:L(g.by),last:L(g.last),nextDealer:L(g.nextDealer),
+    hands:R(g.hands),vis:R(g.vis),tw:R(g.tw),score:T(g.score),won:T(g.won),chTeam:tm(g.chTeam),
+    trick:g.trick.map(x=>({p:L(x.p),c:x.c})),pileT:g.pileT.map(tk),lastTrick:tk(g.lastTrick),
+    history:g.history.map(h=>({...h,won:T(h.won),wt:tm(h.wt)}))};
+  if(g.roundInfo)o.roundInfo={...g.roundInfo,wt:tm(g.roundInfo.wt),chBy:L(g.roundInfo.chBy)};
+  return o;
+}
+function kotOnEnter(m){
+  const pk=document.getElementById('pk');if(pk)pk.remove();ui.modal=null;
+  clearTimeout(KU.t);kotCloseOv();
+  KO.on=true;KO.q=[];KO.pending=0;KO.tn=m.tn;KO.rec=false;KO.reward=0;KO.end=Date.now()+(m.ms||0);
+  PG.set.game='kot';$.className='kot';KU={show:null,busy:false,online:true,hist:[]};
+  setBots();KG=kotRot(m);snd.deal();kotRender();
+  clearInterval(KO.iv);KO.iv=setInterval(()=>{const v=Math.max(0,Math.ceil((KO.end-Date.now())/1000));['ktm','kcd'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=v})},500);
+  const d=m.G.draw;
+  if(d&&m.G.round===0&&m.G.phase==='call'){   // shuru me: kaun baantega, kaun rang bolega
+    const o=d.length-Math.min(4,d.length),dp=i=>((o+i)%4-m.seat+4)%4;
+    KO.intro=1;kotOv(`<h2>🃏 ${T2('पत्ते कौन बाँटेगा?','Who deals?')}</h2><p style="font-size:17px;line-height:1.8">${d.slice(-4).map((c,i)=>`${pn(dp(i))}: <b>${rankName(c.r)}${SUITS[c.s]}</b>`).join(' · ')}</p><p>${pn(KG.dealer)} ${T2('को इक्का मिला — वही पत्ते बाँटेगा।','got the Ace — he deals.')}</p><p>${pn(KG.caller)} ${T2('पहले 5 पत्ते देखकर कट (रंग) बोलेगा।','will see the first 5 cards and name the trump.')}${KG.caller===0?' <b>'+T2('यानी आप!','That is you!')+'</b>':''}</p><div class="row"><button onclick="KO.intro=0;kotCloseOv()">OK</button></div>`);
+    setTimeout(()=>{if(KO.intro&&KO.on){KO.intro=0;kotCloseOv()}},4500);
+  }
+  kotOnAfter();
+}
+function kotOnState(m){if(!KO.on){kotOnEnter(m);return}KO.q.push(m);kotOnDrain()}
+function kotOnDrain(){while(KO.q.length&&!KU.busy)kotOnApply(KO.q.shift())}
+function kotOnApply(m){
+  const prev=KG,ng=kotRot(m);KO.pending=0;KO.end=Date.now()+(m.ms||0);
+  const tcomp=m.tn>KO.tn;KO.tn=m.tn;KG=ng;setBots();
+  if(prev&&ng.round>prev.round){kotCloseOv();KO.intro=0;snd.deal()}
+  if((prev&&ng.trick.length>prev.trick.length)||tcomp)snd.play();
+  if(tcomp&&ng.lastTrick){
+    const w=ng.lastTrick.w,t=w%2?T2('विरोधी टीम','the opponents'):T2('आपकी टीम','your team');
+    KU.note=ng.lastGot>0?`🎉 ${pn(w)} ${T2('ने लगातार 2 सर जीतीं — पूरी','won 2 in a row — all')} <b>${ng.lastGot}</b> ${T2('सर उठाईं','tricks taken')} (${t})`:`${pn(w)} ${T2('ने सर जीती','won the trick')}<small>${T2('📦 जमा हुई, अभी किसी को नहीं मिली','kept in the 📦 pile, nobody has it yet')}</small>`;
+    KU.show=ng.lastTrick;KU.busy=true;kotRender();snd.win();if(w===0)vib();
+    const gg=KG;KU.t=setTimeout(()=>{if(!KO.on)return;KU.show=null;KU.busy=false;kotRender();kotOnAfter();kotOnDrain()},2400);
+  }else{kotRender();kotOnAfter()}
+}
+function kotOnAfter(){
+  const g=KG;if(!g||KU.busy)return;
+  if(g.phase==='roundEnd'||g.phase==='over')kotEnd();
+  else if(g.turn===0&&!document.getElementById('kov')){snd.turn();vib()}
+}
+function kotOnSend(m){
+  if(KO.pending)return;KO.pending=1;setTimeout(()=>KO.pending=0,2500);
+  if(m.t==='play'){snd.play();vib()}else snd.bid();
+  const o={t:m.t};if(m.t==='call'||m.t==='trump')o.s=m.s;if(m.t==='play')o.c={s:m.c.s,r:m.c.r};
+  onSend({t:'move',m:o});
+}
+function kotOnRecord(win){
+  if(KO.rec)return;KO.rec=true;
+  const u=me(),g=KG,kots=g.history.filter(h=>h.kot&&h.wt===0).length;u.kot=u.kot||{played:0,won:0,kots:0,pts:0};
+  u.kot.played++;if(win)u.kot.won++;u.kot.kots+=kots;u.kot.pts+=g.score[0];
+  KO.reward=win?KOT_ON_WIN:0;if(win)u.gems=(u.gems||0)+KO.reward;save();snd.end();
+}
+function kotOnAgain(){ON.keep=1;KO.on=false;clearInterval(KO.iv);KG=null;kotCloseOv();onSend({t:'again'});kotDash();ON.keep=0}
+function kotOnOver(win){
+  kotOnRecord(win);KO.intro=0;
+  const g=KG,big=(t,n,c)=>`<div style="text-align:center"><div style="font-size:15px">${t}</div><div style="font-size:78px;font-weight:900;line-height:1;color:${c}">${n}</div></div>`;
+  const rows=g.history.map((h,i)=>`<tr><td>${i+1}</td><td>${h.won[0]}</td><td>${h.won[1]}</td><td>${h.wt===0?'✅ '+T2('हम जीते','We won'):'❌ '+T2('वे जीते','They won')}${h.kot?' 🔥 KOT':''}</td></tr>`).join('');
+  kotOv(`<h2 style="font-size:30px;text-align:center">${win?'🏆 '+T2('आपकी टीम जीत गई!','Your team won!'):T2('इस बार विरोधी जीते','Opponents won this time')}</h2>
+  <div style="display:flex;justify-content:center;align-items:center;gap:34px;margin:6px 0 10px">${big(T2('आपकी टीम','Your team')+'<br><small>'+pn(0)+' + '+pn(2)+'</small>',g.score[0],win?'#ffd54a':'#fff')}<div style="font-size:44px">–</div>${big(T2('विरोधी','Opponents')+'<br><small>'+pn(1)+' + '+pn(3)+'</small>',g.score[1],win?'#fff':'#ffd54a')}</div>
+  <table class="bigt" style="width:100%;font-size:17px;text-align:center;border-collapse:collapse"><tr><th>${T2('राउंड','Round')}</th><th>${T2('हम की सर','Our tricks')}</th><th>${T2('वे की सर','Their tricks')}</th><th>${T2('नतीजा','Result')}</th></tr>${rows}</table>
+  <p style="text-align:center;font-size:17px">${win?'💎 '+T2('इनाम','Prize')+' <b style="color:#ffd54a">+'+KO.reward+'</b>':T2('इस बार इनाम नहीं','no prize this time')}</p>
+  <div class="row"><button onclick="kotOnAgain()">${T2('फिर खेलें','Play again')}</button><button class="ghost" onclick="kotHome()">🏠 ${T2('होम','Home')}</button></div>`,720);
+}
+
+PG.set.game='';
 PG.cur&&me()?home():login();
 </script>
 <script>if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
