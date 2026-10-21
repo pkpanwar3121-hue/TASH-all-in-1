@@ -1,9 +1,9 @@
 'use strict';
-/* Taash Adda - online multiplayer server (Call Break + Kot Piece)
-   Purana naam: Patte Ghar - online multiplayer server (koi extra package nahi chahiye, sirf Node.js 18+)
+/* Patte Ghar - online multiplayer server (koi extra package nahi chahiye, sirf Node.js 18+)
    - ../www/index.html se wahi game-engine padhta hai jo app me chalta hai (ek hi rules, ek hi bots)
    - game server par chalta hai: patte server baantta hai, har khiladi ko sirf apne patte dikhte hain
-   - rooms: private (code se), quick match (khali seat par bots), disconnect par bot chal deta hai, wapas judne par control mil jata hai */
+   - rooms: private (code se), quick match (khali seat par bots), disconnect par bot chal deta hai, wapas judne par control mil jata hai
+   - 2 game: Call Break ('cb') aur Kot Piece ('kot', 4 khiladi, seat 0&2 ek team, 1&3 doosri) */
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto');
 
 const PORT = +process.env.PORT || 8080;
@@ -15,8 +15,8 @@ const T = {                                   // samay (ms). test ke liye env se
   botMin: +process.env.BOT_MIN_MS || 1500, botMax: +process.env.BOT_MAX_MS || 3000,
   bidMin: +process.env.BID_MIN_MS || 1000, bidMax: +process.env.BID_MAX_MS || 1600,
   emptyRoom: +process.env.EMPTY_ROOM_MS || 60000,
-  kturn: +process.env.KTURN_MS || 25000,      // Kot Piece: khiladi ke paas chal ke liye
-  khold: +process.env.KHOLD_MS || 2800        // Kot Piece: sar poori hone ke baad patte dikhte hain
+  kturn: +process.env.KOT_TURN_MS || 30000,         // Kot Piece: rang bolne/badalne me sochne ka samay thoda zyada
+  kround: +process.env.KOT_ROUND_WAIT_MS || 10000   // Kot Piece: round ke beech ka score-screen
 };
 
 /* ---------- game engine: index.html se ---------- */
@@ -25,15 +25,10 @@ function loadEngine() {
   const h = fs.readFileSync(WWW, 'utf8');
   const a = h.indexOf('/* ============ 1. CARD LIBRARY'), b = h.indexOf('/* ============ 4. DATA');
   if (a < 0 || b < 0) throw new Error('engine markers index.html me nahi mile');
-  // crypto parameter: purane Node me bhi engine ka shuffle/rand chale
-  return new Function('crypto', h.slice(a, b) + ';return {CallBreak,Bots,KotPiece,KotBots}')(crypto.webcrypto);
+  return new Function(h.slice(a, b) + ';return {CallBreak,Bots,KotPiece,KotBots}')();
 }
 const { CallBreak, Bots, KotPiece, KotBots } = loadEngine();
-/* har game ka engine, bots aur kaun-kaun si phase me khiladi ko chalna hota hai */
-const GM = {
-  cb:  { eng: CallBreak, bots: Bots,    acts: ['bid', 'play'] },
-  kot: { eng: KotPiece,  bots: KotBots, acts: ['call', 'change', 'newtrump', 'play'] }
-};
+const ENG = r => r.game === 'kot' ? KotPiece : CallBreak;      // is room ka engine
 const rnd = n => crypto.randomInt(Math.max(1, n));
 
 /* ---------- minimal WebSocket (RFC 6455) ---------- */
@@ -80,38 +75,38 @@ const EMOS = ['👍','😂','😮','🔥','👏','😡','🙏'];
 
 /* ---------- rooms ---------- */
 const clients = new Set(), rooms = new Map(), sessions = new Map();   // sessions: token -> {code, seat}
-const LEVELS = ['easy', 'medium', 'hard'];
+const LV = l => ['easy', 'medium', 'hard'].includes(l) ? l : 'medium';
 const norm = o => o.game === 'kot'
-  ? { game: 'kot', n: 4, mode: 'target', rounds: 5, target: [3, 5, 7].includes(o.target) ? o.target : 5, level: LEVELS.includes(o.level) ? o.level : 'medium' }
+  ? { game: 'kot', n: 4, mode: 'rounds', rounds: 5, target: 21, ktarget: [3, 5, 7].includes(o.ktarget) ? o.ktarget : 5, level: LV(o.level) }
   : {
-    game: 'cb', n: [4, 5, 6].includes(o.n) ? o.n : 4, mode: o.mode === 'target' ? 'target' : 'rounds',
+    game: 'cb', ktarget: 5,
+    n: [4, 5, 6].includes(o.n) ? o.n : 4, mode: o.mode === 'target' ? 'target' : 'rounds',
     rounds: [1, 3, 5].includes(o.rounds) ? o.rounds : 5, target: [11, 21].includes(o.target) ? o.target : 21,
-    level: LEVELS.includes(o.level) ? o.level : 'medium'
+    level: LV(o.level)
   };
-const keyOf = o => [o.game, o.n, o.mode, o.rounds, o.target, o.level].join('|');
+const keyOf = o => [o.game, o.n, o.mode, o.rounds, o.target, o.ktarget, o.level].join('|');
 function newCode() { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let c; do { c = Array.from({ length: 5 }, () => A[rnd(A.length)]).join(''); } while (rooms.has(c)); return c; }
 function mkRoom(o, pub) {
-  const q = norm(o), r = { ...q, eng: GM[q.game].eng, code: newCode(), key: keyOf(q), pub: !!pub, phase: 'lobby', seats: Array.from({ length: q.n }, () => ({ k: 'empty' })),
+  const q = norm(o), r = { ...q, code: newCode(), key: keyOf(q), pub: !!pub, phase: 'lobby', seats: Array.from({ length: q.n }, () => ({ k: 'empty' })),
     G: null, host: -1, tn: 0, timer: null, startAt: 0, holdUntil: 0, deadline: 0, emptyT: null };
   rooms.set(r.code, r); return r;
 }
 const humans = r => r.seats.filter(s => s.k === 'human');
 const liveClient = s => s.k === 'human' && s.c && s.c.ws.open ? s.c : null;
 function roomMsg(r, you) {
-  return { t: 'room', game: r.game, code: r.code, you, host: r.host, n: r.n, mode: r.mode, rounds: r.rounds, target: r.target, level: r.level, phase: r.phase, pub: r.pub,
+  return { t: 'room', game: r.game, ktarget: r.ktarget, code: r.code, you, host: r.host, n: r.n, mode: r.mode, rounds: r.rounds, target: r.target, level: r.level, phase: r.phase, pub: r.pub,
     startIn: r.startAt ? Math.max(0, r.startAt - Date.now()) : 0, seats: r.seats.map(s => ({ k: s.k, name: s.name, e: s.e, away: !!s.away })) };
 }
 function bcastRoom(r) { r.seats.forEach((s, i) => { const c = liveClient(s); if (c) c.ws.send(roomMsg(r, i)); }); }
-function view(G, seat) { const v = JSON.parse(JSON.stringify(G)); v.hands = G.hands.map((h, i) => i === seat ? h : h.map(() => 0)); delete v.seed; return v; }
-/* Kot Piece: apne patte (jitne dikhne chahiye utne), baaki sab ke sirf ginti. Seed bhi nahi bhejte */
-function kview(G, seat) {
-  const v = JSON.parse(JSON.stringify(G)); delete v.seed;
-  v.hands = G.hands.map((h, i) => i === seat ? h.map((c, k) => k < G.vis[i] ? c : 0) : h.map(() => 0));
-  return v;
+function view(G, seat, game) {
+  const v = JSON.parse(JSON.stringify(G));
+  // Kot Piece: apne bhi sirf utne patte bhejte hain jitne abhi dikhne chahiye (pehle 5, rang badalne par 13)
+  v.hands = G.hands.map((h, i) => i === seat ? (game === 'kot' ? h.slice(0, G.vis[i]) : h) : h.map(() => 0));
+  delete v.seed; return v;
 }
 function sendState(r, s, i) {
   const c = liveClient(s); if (!c) return;
-  c.ws.send({ t: 'state', game: r.game, seat: i, G: r.game === 'kot' ? kview(r.G, i) : view(r.G, i), tn: r.tn, ms: Math.max(0, r.deadline - Date.now()) });
+  c.ws.send({ t: 'state', seat: i, G: view(r.G, i, r.game), tn: r.tn, ms: Math.max(0, r.deadline - Date.now()) });
 }
 function sendStates(r) { r.seats.forEach((s, i) => sendState(r, s, i)); }
 function pickBot(r) {
@@ -122,7 +117,8 @@ function pickBot(r) {
 function destroy(r) { clearTimeout(r.timer); clearTimeout(r.emptyT); rooms.delete(r.code); r.seats.forEach(s => { if (s.tok) sessions.delete(s.tok); }); }
 
 function addHuman(r, c) {
-  const i = r.seats.findIndex(s => s.k === 'empty'); if (i < 0) return false;
+  const order = r.game === 'kot' ? [0, 2, 1, 3] : r.seats.map((_, j) => j);      // Kot Piece: doosra khiladi saamne (saathi) baithta hai
+  const i = order.find(j => r.seats[j].k === 'empty'); if (i === undefined) return false;
   r.seats[i] = { k: 'human', c, tok: c.token, name: [c.name, c.name], e: c.e, away: false, idle: 0 };
   c.room = r; c.seat = i; sessions.set(c.token, { code: r.code, seat: i }); if (r.host < 0) r.host = i;
   clearTimeout(r.emptyT); return true;
@@ -141,7 +137,7 @@ function start(r) {
   if (r.phase !== 'lobby') return; clearTimeout(r.timer); r.startAt = 0;
   if (!humans(r).length) return destroy(r);
   r.seats = r.seats.map(s => s.k === 'empty' ? pickBot(r) : s);
-  r.G = r.game === 'kot' ? KotPiece.createInitialState({ target: r.target })
+  r.G = r.game === 'kot' ? KotPiece.createInitialState({ target: r.ktarget })
     : CallBreak.createInitialState({ players: r.n, rounds: r.rounds, target: r.mode === 'target' ? r.target : 0 });
   r.phase = 'playing'; r.tn = 0; r.holdUntil = 0; bcastRoom(r); advance(r);
 }
@@ -149,12 +145,11 @@ function advance(r) { sched(r); sendStates(r); }
 function sched(r) {
   clearTimeout(r.timer); const G = r.G; if (!G) return;
   if (G.phase === 'roundEnd') {
-    const wait = T.round + (r.game === 'kot' ? 2600 : 0);      // Kot: aakhri sar dikhane ka samay bhi
-    r.deadline = Date.now() + wait;
-    r.timer = setTimeout(() => { r.G = r.eng.nextRound(r.G); r.holdUntil = 0; advance(r); }, wait); return;
+    const rw = r.game === 'kot' ? T.kround : T.round;
+    r.deadline = Date.now() + rw;
+    r.timer = setTimeout(() => { r.G = ENG(r).nextRound(r.G); r.holdUntil = 0; advance(r); }, rw); return;
   }
   if (G.phase === 'over') { r.phase = 'over'; r.deadline = 0; return; }
-  if (!GM[r.game].acts.includes(G.phase)) return;
   const seat = G.turn, s = r.seats[seat], auto = s.k === 'bot' || s.away;
   let ms = auto ? (G.phase !== 'play' ? T.bidMin + rnd(T.bidMax - T.bidMin) : T.botMin + rnd(T.botMax - T.botMin)) : (r.game === 'kot' ? T.kturn : T.turn);
   ms += Math.max(0, r.holdUntil - Date.now());
@@ -163,13 +158,14 @@ function sched(r) {
 }
 function applyMove(r, seat, m) {
   const G = r.G, done = G.phase === 'play' && G.trick.length === G.n - 1;
-  r.G = r.eng.applyMove(G, seat, m);
-  if (done) { r.tn++; r.holdUntil = Date.now() + (r.game === 'kot' ? T.khold : T.hold); }
+  r.G = ENG(r).applyMove(G, seat, m);
+  if (done) { r.tn++; r.holdUntil = Date.now() + T.hold; }
   advance(r);
 }
 function autoMove(r, seat, idle) {
-  const G = r.G; if (!G || G.turn !== seat || !GM[r.game].acts.includes(G.phase)) return;
-  const B = GM[r.game].bots, s = r.seats[seat], mv = r.eng.getValidMoves(G, seat);
+  const G = r.G; if (!G || G.turn !== seat) return;
+  const s = r.seats[seat], mv = ENG(r).getValidMoves(G, seat); if (!mv.length) return;
+  const B = r.game === 'kot' ? KotBots : Bots;
   const bot = s.k === 'bot' ? (B[r.level] || B.medium) : B.medium;
   if (idle && s.k === 'human') { s.idle = (s.idle || 0) + 1; if (s.idle >= 2) s.away = true; }   // 2 baar time khatam: bot kheleg
   applyMove(r, seat, bot(G, seat, mv) || mv[0]);
@@ -177,9 +173,14 @@ function autoMove(r, seat, idle) {
 function onMove(c, m) {
   const r = c.room; if (!r || r.phase !== 'playing' || !m) return c.ws.send({ t: 'err', msg: 'game chal nahi raha' });
   const G = r.G; if (G.turn !== c.seat) return c.ws.send({ t: 'err', msg: 'abhi aapki baari nahi hai', code: 'turn' });
-  const mv = r.eng.getValidMoves(G, c.seat);
-  const same = (a, b) => a.t === b.t && a.s === b.s && a.n === b.n && (a.c ? !!b.c && a.c.s === b.c.s && a.c.r === b.c.r : !b.c);
-  const ok = typeof m.t === 'string' ? mv.find(x => same(x, m)) : null;
+  const mv = ENG(r).getValidMoves(G, c.seat);
+  let ok = null;
+  if (r.game === 'kot') {
+    ok = mv.find(x => x.t === m.t && (m.t === 'play' ? !!m.c && x.c.s === m.c.s && x.c.r === m.c.r : (m.t === 'call' || m.t === 'trump') ? x.s === m.s : true)) || null;
+  } else {
+    ok = m.t === 'bid' ? mv.find(x => x.t === 'bid' && x.n === m.n)
+      : m.t === 'play' && m.c ? mv.find(x => x.t === 'play' && x.c.s === m.c.s && x.c.r === m.c.r) : null;
+  }
   if (!ok) return c.ws.send({ t: 'err', msg: 'ye chal sahi nahi hai', code: 'illegal' });
   const s = r.seats[c.seat]; s.idle = 0; s.away = false;
   applyMove(r, c.seat, ok);
@@ -221,12 +222,6 @@ function handle(c, m) {
       if (r.phase !== 'lobby') return c.ws.send({ t: 'err', msg: 'is room ka game shuru ho chuka hai', code: 'started' });
       if (!r.seats.some(s => s.k === 'empty')) return c.ws.send({ t: 'err', msg: 'room bhar chuka hai', code: 'full' });
       leave(c); addHuman(r, c); bcastRoom(r); break;
-    }
-    case 'sit': {                                           // lobby me seat badalna (Kot Piece: saamne wala partner hota hai)
-      const r = c.room; if (!r || r.phase !== 'lobby') return;
-      const i = m.i | 0, old = c.seat; if (i < 0 || i >= r.n || !r.seats[i] || r.seats[i].k !== 'empty' || i === old) return;
-      r.seats[i] = r.seats[old]; r.seats[old] = { k: 'empty' }; c.seat = i; sessions.set(c.token, { code: r.code, seat: i });
-      if (r.host === old) r.host = i; bcastRoom(r); break;
     }
     case 'start': { const r = c.room; if (r && r.phase === 'lobby' && r.host === c.seat) start(r); break; }
     case 'move': onMove(c, m.m); break;
