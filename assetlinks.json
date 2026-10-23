@@ -1,0 +1,11 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.taashadda.game",
+      "sha256_cert_fingerprints":
+        ["31:AE:02:E1:28:8B:88:C4:44:B6:EC:A9:24:76:5B:E2:C1:84:35:23:CD:10:85:F2:B6:89:0D:99:5E:B0:62:53"]
+    }
+  }
+]
