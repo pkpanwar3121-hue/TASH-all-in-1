@@ -3,7 +3,7 @@
    - ../www/index.html se wahi game-engine padhta hai jo app me chalta hai (ek hi rules, ek hi bots)
    - game server par chalta hai: patte server baantta hai, har khiladi ko sirf apne patte dikhte hain
    - rooms: private (code se), quick match (khali seat par bots), disconnect par bot chal deta hai, wapas judne par control mil jata hai
-   - 2 game: Call Break ('cb') aur Kot Piece ('kot', 4 khiladi, seat 0&2 ek team, 1&3 doosri) */
+   - 3 game: Call Break ('cb'), Kot Piece ('kot', 4 khiladi, seat 0&2 ek team, 1&3 doosri) aur Rang Bid ('rang', 4 khiladi, sab alag) */
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto');
 
 const PORT = +process.env.PORT || 8080;
@@ -25,10 +25,10 @@ function loadEngine() {
   const h = fs.readFileSync(WWW, 'utf8');
   const a = h.indexOf('/* ============ 1. CARD LIBRARY'), b = h.indexOf('/* ============ 4. DATA');
   if (a < 0 || b < 0) throw new Error('engine markers index.html me nahi mile');
-  return new Function(h.slice(a, b) + ';return {CallBreak,Bots,KotPiece,KotBots}')();
+  return new Function(h.slice(a, b) + ';return {CallBreak,Bots,KotPiece,KotBots,RangBid,RangBots}')();
 }
-const { CallBreak, Bots, KotPiece, KotBots } = loadEngine();
-const ENG = r => r.game === 'kot' ? KotPiece : CallBreak;      // is room ka engine
+const { CallBreak, Bots, KotPiece, KotBots, RangBid, RangBots } = loadEngine();
+const ENG = r => r.game === 'kot' ? KotPiece : r.game === 'rang' ? RangBid : CallBreak;      // is room ka engine
 const rnd = n => crypto.randomInt(Math.max(1, n));
 
 /* ---------- minimal WebSocket (RFC 6455) ---------- */
@@ -76,7 +76,9 @@ const EMOS = ['👍','😂','😮','🔥','👏','😡','🙏'];
 /* ---------- rooms ---------- */
 const clients = new Set(), rooms = new Map(), sessions = new Map();   // sessions: token -> {code, seat}
 const LV = l => ['easy', 'medium', 'hard'].includes(l) ? l : 'medium';
-const norm = o => o.game === 'kot'
+const norm = o => o.game === 'rang'
+  ? { game: 'rang', n: 4, mode: o.mode === 'target' ? 'target' : 'rounds', rounds: [3, 5].includes(o.rounds) ? o.rounds : 5, target: [11, 21, 31].includes(o.target) ? o.target : 11, ktarget: 5, level: LV(o.level) }
+  : o.game === 'kot'
   ? { game: 'kot', n: 4, mode: 'rounds', rounds: 5, target: 21, ktarget: [3, 5, 7].includes(o.ktarget) ? o.ktarget : 5, level: LV(o.level) }
   : {
     game: 'cb', ktarget: 5,
@@ -101,7 +103,7 @@ function bcastRoom(r) { r.seats.forEach((s, i) => { const c = liveClient(s); if 
 function view(G, seat, game) {
   const v = JSON.parse(JSON.stringify(G));
   // Kot Piece: apne bhi sirf utne patte bhejte hain jitne abhi dikhne chahiye (pehle 5, rang badalne par 13)
-  v.hands = G.hands.map((h, i) => i === seat ? (game === 'kot' ? h.slice(0, G.vis[i]) : h) : h.map(() => 0));
+  v.hands = G.hands.map((h, i) => i === seat ? ((game === 'kot' || game === 'rang') ? h.slice(0, G.vis[i]) : h) : h.map(() => 0));
   delete v.seed; return v;
 }
 function sendState(r, s, i) {
@@ -112,7 +114,8 @@ function sendStates(r) { r.seats.forEach((s, i) => sendState(r, s, i)); }
 function pickBot(r) {
   const used = new Set(r.seats.filter(s => s.name).map(s => s.name[1]));
   let x; do { x = POOL[rnd(POOL.length)]; } while (used.has(x[1]));
-  const f = FACE[x[2]]; return { k: 'bot', name: [x[0], x[1]], e: f[rnd(f.length)], away: false };
+  const usedE = new Set(r.seats.filter(q => q.e).map(q => q.e)), f0 = FACE[x[2]], f = f0.filter(z => !usedE.has(z));   // bots ke avatar alag-alag
+  const ff = f.length ? f : f0; return { k: 'bot', name: [x[0], x[1]], e: ff[rnd(ff.length)], away: false };
 }
 function destroy(r) { clearTimeout(r.timer); clearTimeout(r.emptyT); rooms.delete(r.code); r.seats.forEach(s => { if (s.tok) sessions.delete(s.tok); }); }
 
@@ -137,7 +140,8 @@ function start(r) {
   if (r.phase !== 'lobby') return; clearTimeout(r.timer); r.startAt = 0;
   if (!humans(r).length) return destroy(r);
   r.seats = r.seats.map(s => s.k === 'empty' ? pickBot(r) : s);
-  r.G = r.game === 'kot' ? KotPiece.createInitialState({ target: r.ktarget })
+  r.G = r.game === 'rang' ? RangBid.createInitialState(r.mode === 'target' ? { target: r.target } : { rounds: r.rounds })
+    : r.game === 'kot' ? KotPiece.createInitialState({ target: r.ktarget })
     : CallBreak.createInitialState({ players: r.n, rounds: r.rounds, target: r.mode === 'target' ? r.target : 0 });
   r.phase = 'playing'; r.tn = 0; r.holdUntil = 0; bcastRoom(r); advance(r);
 }
@@ -145,13 +149,13 @@ function advance(r) { sched(r); sendStates(r); }
 function sched(r) {
   clearTimeout(r.timer); const G = r.G; if (!G) return;
   if (G.phase === 'roundEnd') {
-    const rw = r.game === 'kot' ? T.kround : T.round;
+    const rw = r.game === 'cb' ? T.round : T.kround;
     r.deadline = Date.now() + rw;
     r.timer = setTimeout(() => { r.G = ENG(r).nextRound(r.G); r.holdUntil = 0; advance(r); }, rw); return;
   }
   if (G.phase === 'over') { r.phase = 'over'; r.deadline = 0; return; }
   const seat = G.turn, s = r.seats[seat], auto = s.k === 'bot' || s.away;
-  let ms = auto ? (G.phase !== 'play' ? T.bidMin + rnd(T.bidMax - T.bidMin) : T.botMin + rnd(T.botMax - T.botMin)) : (r.game === 'kot' ? T.kturn : T.turn);
+  let ms = auto ? (G.phase !== 'play' ? T.bidMin + rnd(T.bidMax - T.bidMin) : T.botMin + rnd(T.botMax - T.botMin)) : (r.game === 'kot' ? T.kturn : T.turn);   // Rang Bid: 20 second (client ka ring bhi yahi dikhata hai)
   ms += Math.max(0, r.holdUntil - Date.now());
   r.deadline = Date.now() + ms;
   r.timer = setTimeout(() => autoMove(r, seat, !auto), ms);
@@ -165,9 +169,10 @@ function applyMove(r, seat, m) {
 function autoMove(r, seat, idle) {
   const G = r.G; if (!G || G.turn !== seat) return;
   const s = r.seats[seat], mv = ENG(r).getValidMoves(G, seat); if (!mv.length) return;
-  const B = r.game === 'kot' ? KotBots : Bots;
+  const B = r.game === 'kot' ? KotBots : r.game === 'rang' ? RangBots : Bots;
   const bot = s.k === 'bot' ? (B[r.level] || B.medium) : B.medium;
   if (idle && s.k === 'human') { s.idle = (s.idle || 0) + 1; if (s.idle >= 2) s.away = true; }   // 2 baar time khatam: bot kheleg
+  if (r.game === 'rang' && idle && s.k === 'human' && G.phase === 'call') return applyMove(r, seat, { t: 'pass' });   // samay khatam: rang nahi bolega
   applyMove(r, seat, bot(G, seat, mv) || mv[0]);
 }
 function onMove(c, m) {
@@ -175,7 +180,10 @@ function onMove(c, m) {
   const G = r.G; if (G.turn !== c.seat) return c.ws.send({ t: 'err', msg: 'abhi aapki baari nahi hai', code: 'turn' });
   const mv = ENG(r).getValidMoves(G, c.seat);
   let ok = null;
-  if (r.game === 'kot') {
+  if (r.game === 'rang') {
+    const sv = x => x == null ? null : x;
+    ok = mv.find(x => x.t === m.t && (m.t === 'play' ? !!m.c && x.c.s === m.c.s && x.c.r === m.c.r : (m.t === 'call' || m.t === 'bid') ? x.n === m.n && sv(x.s) === sv(m.s) : true)) || null;
+  } else if (r.game === 'kot') {
     ok = mv.find(x => x.t === m.t && (m.t === 'play' ? !!m.c && x.c.s === m.c.s && x.c.r === m.c.r : (m.t === 'call' || m.t === 'trump') ? x.s === m.s : true)) || null;
   } else {
     ok = m.t === 'bid' ? mv.find(x => x.t === 'bid' && x.n === m.n)
@@ -225,6 +233,7 @@ function handle(c, m) {
     }
     case 'start': { const r = c.room; if (r && r.phase === 'lobby' && r.host === c.seat) start(r); break; }
     case 'move': onMove(c, m.m); break;
+    case 'av': { c.e = [...clean(m.e, 8)].slice(0, 2).join('') || c.e; const r = c.room, s = r && r.seats[c.seat]; if (s && s.k === 'human' && r.phase === 'lobby') { s.e = c.e; bcastRoom(r); } break; }   // room ke andar avatar badalna
     case 'emo': { const r = c.room; if (r && EMOS.includes(m.e)) r.seats.forEach(s => { const x = liveClient(s); if (x) x.ws.send({ t: 'emo', seat: c.seat, e: m.e }); }); break; }
     case 'again': {
       const r = c.room; if (!r) return;
