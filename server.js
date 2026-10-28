@@ -104,6 +104,11 @@ function view(G, seat, game) {
   const v = JSON.parse(JSON.stringify(G));
   // Kot Piece: apne bhi sirf utne patte bhejte hain jitne abhi dikhne chahiye (pehle 5, rang badalne par 13)
   v.hands = G.hands.map((h, i) => i === seat ? ((game === 'kot' || game === 'rang') ? h.slice(0, G.vis[i]) : h) : h.map(() => 0));
+  // Rang Bid: bolti (call) ke samay doosron ka rang chhupa rehta hai; bolti khatam hone par trump sabko dikhta hai
+  if (game === 'rang' && G.phase === 'call') {
+    if (v.call.hi && v.call.hi.p !== seat) v.call.hi.s = null;
+    v.log = v.log.map(x => (!x.pass && x.p !== seat) ? { ...x, s: null } : x);
+  }
   delete v.seed; return v;
 }
 function sendState(r, s, i) {
