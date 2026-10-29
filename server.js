@@ -239,7 +239,9 @@ function handle(c, m) {
     case 'start': { const r = c.room; if (r && r.phase === 'lobby' && r.host === c.seat) start(r); break; }
     case 'move': onMove(c, m.m); break;
     case 'av': { c.e = [...clean(m.e, 8)].slice(0, 2).join('') || c.e; const r = c.room, s = r && r.seats[c.seat]; if (s && s.k === 'human' && r.phase === 'lobby') { s.e = c.e; bcastRoom(r); } break; }   // room ke andar avatar badalna
-    case 'emo': { const r = c.room; if (r && EMOS.includes(m.e)) r.seats.forEach(s => { const x = liveClient(s); if (x) x.ws.send({ t: 'emo', seat: c.seat, e: m.e }); }); break; }
+    case 'emo': { const r = c.room; const okq = typeof m.e === 'string' && /^q\d{1,2}$/.test(m.e) && +m.e.slice(1) < 14;   // taiyaar sandesh q0..q13
+      if (c.lastEmo && Date.now() - c.lastEmo < 700) break; c.lastEmo = Date.now();
+      if (r && (EMOS.includes(m.e) || okq)) r.seats.forEach(s => { const x = liveClient(s); if (x) x.ws.send({ t: 'emo', seat: c.seat, e: m.e }); }); break; }
     case 'again': {
       const r = c.room; if (!r) return;
       if (r.phase === 'over') {
