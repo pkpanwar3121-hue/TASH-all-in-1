@@ -1,5 +1,5 @@
 /* Taash Adda service worker: pehle internet se lata hai, na mile to purani copy dikhata hai */
-const CACHE = 'taash-adda-v7';
+const CACHE = 'taash-adda-v8';
 const FILES = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).catch(() => {}));
