@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Taash Adda</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0e4a32">
@@ -230,6 +230,19 @@ body.tbl .kbar{background:none!important}body.tbl .kbar::before{content:'';posit
 #tkb{position:absolute;left:14px;top:62px;z-index:20;background:#000b;color:#fff;font-weight:800;font-size:20px;padding:4px 12px;border-radius:16px;border:2px solid #ffffff55;pointer-events:none}
 #tkb.low{background:#c62828;border-color:#ffd54a;animation:tkp .5s ease-in-out infinite}
 @keyframes tkp{50%{transform:scale(1.14)}}
+/* ---- bade patte ---- */
+.card{width:98px;height:141px;border-radius:11px}
+.card i{top:7px;left:9px;font-size:36px}.card i small{font-size:31px;margin-top:1px}.card span{right:10px;bottom:6px;font-size:68px}
+.hand .card{margin-left:-52px}.hand .card:first-child{margin-left:0}.hand .card.ok{transform:translateY(-18px)}
+.hand.sm .card{margin-left:-34px}.hand.sm .card:first-child{margin-left:0}
+.trick{top:128px}
+.tc.p0{left:111px;top:112px}.tc.p2{left:111px;top:0}.tc.p3{left:8px;top:56px}.tc.p1{left:214px;top:56px}
+.kcoach{left:662px;width:290px}
+/* ---- bid ke ank bade ---- */
+.bids{gap:8px}.bids button{width:58px;padding:13px 0;font-size:26px;font-weight:800}
+.kpan.rb button{font-size:25px;padding:9px 16px}.kpan.rb .sb{min-width:96px}
+#tkb{font-size:26px;padding:5px 15px}
+.kchip.kme .rbub.L{left:0;top:-34px}
 </style>
 </head>
 <body><div id="bg"></div><div id="stage"><div id="app"></div></div>
@@ -298,7 +311,7 @@ const CallBreak={
     if(s.trick.length===s.n){
       const w=trickWinner(s.trick);s.won[w]++;s.lastTrick={cards:s.trick,w};s.trick=[];s.turn=w;
       if(s.hands.every(h=>!h.length)){
-        const mul={4:1,5:1.5,6:2}[s.n];   // chhote haath me score dheere badhta hai, isliye 5 khiladi x1.5, 6 khiladi x2
+        const mul=1;   // 5 ya 6 khiladi me bhi ank wahi: jitni bid boli utne hi
         s.roundScore=s.bids.map((b,i)=>Math.round((s.won[i]>=b?b+(s.won[i]-b)*.1:-b)*mul*10)/10);
         s.totals=s.totals.map((t,i)=>Math.round((t+s.roundScore[i])*10)/10);
         s.history.push({bids:s.bids,won:s.won,score:s.roundScore});
@@ -700,6 +713,7 @@ PG.users=PG.users||{};PG.set=Object.assign({rounds:5,level:'medium',sound:true,l
 if(!PG.set.v2){PG.set.v2=1;PG.set.theme='wood'}
 if(!PG.set.v3){PG.set.v3=1;PG.set.tune='energy';if((PG.set.mvol||0)<55)PG.set.mvol=55}   // naya energetic music default
 if(!PG.set.v4){PG.set.v4=1;PG.set.tune='cool'}
+if(!PG.set.v5){PG.set.v5=1;if(PG.set.playmode==='drag')PG.set.playmode='both'}   // patta dabane se bhi chale
 const save=()=>{try{localStorage.setItem('pg2',JSON.stringify(PG))}catch(e){}};
 const me=()=>PG.users[PG.cur];
 const POOL=[['राहुल','Rahul','m'],['अमित','Amit','m'],['विक्रम','Vikram','m'],['अर्जुन','Arjun','m'],['संदीप','Sandeep','m'],['रोहित','Rohit','m'],['करण','Karan','m'],['मनोज','Manoj','m'],['दीपक','Deepak','m'],['सुनील','Sunil','m'],['गुरप्रीत','Gurpreet','m'],['इमरान','Imran','m'],['रवि','Ravi','m'],
@@ -736,12 +750,16 @@ function thump(f0,f1,d,v,w=0){   // dheema 'thup' (patta mez par girne ki)
   g.gain.setValueAtTime(v,T);g.gain.exponentialRampToValueAtTime(.001,T+d);o.connect(g);g.connect(out());o.start(T);o.stop(T+d+.02)}
 function duck(){   // card ki awaaz ke samay music thoda dheema, taaki awaaz saaf sunai de
   if(!AC||!MUG)return;const g=MUG.gain,T=AC.currentTime;try{g.cancelScheduledValues(T);g.setTargetAtTime(mGain()*.3,T,.015);g.setTargetAtTime(mGain(),T+.45,.15)}catch(e){}}
-function sip(w=0,v=1,c=2250){   // naram 'sip' — patte ke sarakne ki awaaz (video jaisi: 2-4 kHz, halki chadhai, ~0.1 sec)
-  if(!sndOn())return;const n=Math.floor(AC.sampleRate*.11),b=AC.createBuffer(1,n,AC.sampleRate),x=b.getChannelData(0);
-  for(let i=0;i<n;i++){const t=i/n;x[i]=(Math.random()*2-1)*Math.min(1,t/.13)*Math.pow(1-t,2.1)}
-  const T=AC.currentTime+w,j=1+(Math.random()-.5)*.28;
-  const mk=(type,f,q,g)=>{const s=AC.createBufferSource(),fl=AC.createBiquadFilter(),gn=AC.createGain();s.buffer=b;fl.type=type;fl.frequency.value=f*j;fl.Q.value=q;gn.gain.value=g;s.connect(fl);fl.connect(gn);gn.connect(out());s.start(T)};
-  mk('bandpass',c,.7,v*2.1);mk('bandpass',750,.8,v*.9);mk('lowpass',4200,.5,v*.12)}
+let _nz=null;
+function sip(w=0,v=1){   // 'sip': pehle halka 's' (oonchi hawa), phir beech ki naram 'ip' — chaudi awaaz, koi tinn/chink jaisi goonj nahi
+  if(!sndOn())return;if(!_nz||_nz.sampleRate!==AC.sampleRate){const n=Math.floor(AC.sampleRate*.4);_nz=AC.createBuffer(1,n,AC.sampleRate);const x=_nz.getChannelData(0);for(let i=0;i<n;i++)x[i]=Math.random()*2-1}
+  const T=AC.currentTime+w,j=1+(Math.random()-.5)*.2,off=Math.random()*.15;
+  const M={soft:[1,1,1,1],bright:[1.9,1.4,.55,.15],deep:[.25,.5,1,1.35]}[PG.set.cs||'soft']||[1,1,1,1];   // aawaz ka tareeka (Settings me chun sakte hain)
+  [[3600,.5,.51,.012,.03],[1500,.5,.38,.014,.06],[600,.6,1,.018,.09],[200,.6,.44,.02,.09]].forEach(([f,q,g0,att,tau],li)=>{g0*=M[li];   // [kendra Hz, chaudai, taakat, chadhne ka samay, girne ka samay]
+    const s=AC.createBufferSource(),fl=AC.createBiquadFilter(),g=AC.createGain();
+    s.buffer=_nz;fl.type='bandpass';fl.frequency.value=f*j;fl.Q.value=q;
+    g.gain.setValueAtTime(0,T);g.gain.linearRampToValueAtTime(g0*v,T+att);g.gain.setTargetAtTime(0,T+att,tau);
+    s.connect(fl);fl.connect(g);g.connect(out());s.start(T,off,.3);s.stop(T+.3)})}
 function blip(f,d,v,w=0){if(!sndOn())return;const T=AC.currentTime+w,o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=f;
   g.gain.setValueAtTime(v,T);g.gain.exponentialRampToValueAtTime(.001,T+d);o.connect(g);g.connect(out());o.start(T);o.stop(T+d+.02)}
 function clk(d,type,f,v,w=0,q=.9){   // chhota 'tik' click
@@ -762,16 +780,106 @@ function buzz(){   // galat patta: bijli ('current') jaisi bzzzt
   env.gain.setValueAtTime(0,T);env.gain.linearRampToValueAtTime(1.25,T+.01);env.gain.setValueAtTime(1.25,T+.22);env.gain.exponentialRampToValueAtTime(.001,T+.36);
   o.connect(fl);o2.connect(fl);fl.connect(tr);tr.connect(env);env.connect(out());[o,o2,lf].forEach(x=>{x.start(T);x.stop(T+.4)});
   clk(.3,'bandpass',2400,1.1,0,1.6)}
+/* ---- patte ki asli awaaz (Card-flip-sound-effect.mp3, file me hi jodi gayi hai) ---- */
+const CARD_B64="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";
+let CBUF=null,_cl=false;
+function loadCard(){   // pehli touch par awaaz decode karke taiyar rakhta hai
+  if(_cl||!AC)return;_cl=true;
+  try{const bin=atob(CARD_B64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+    const p=AC.decodeAudioData(u.buffer,b=>{CBUF=b},()=>{_cl=false});if(p&&p.catch)p.catch(()=>{_cl=false})}catch(e){_cl=false}}
+function playCard(v=1.6){   // patta chalte hi: mp3 ki awaaz (halka sa alag pitch har baar)
+  if(!sndOn())return;
+  if(!CBUF){sip(0,1.5);sip(.11,1);return}   // mp3 abhi decode na hui ho to purani awaaz
+  const s=AC.createBufferSource(),g=AC.createGain();
+  s.buffer=CBUF;s.playbackRate.value=.96+Math.random()*.1;g.gain.value=v;
+  s.connect(g);g.connect(out());s.start(AC.currentTime,.08)}
+function dealSnd(){   // patte bantne ki awaaz: pehle tez fent (shuffle), phir ek-ek patta chaaron taraf
+  if(!sndOn())return;duckLong(2);
+  if(!CBUF){let t=0;for(let i=0;i<13;i++){sip(t,.8+Math.random()*.5);t+=.06+Math.random()*.04}return}
+  const T=AC.currentTime+.02,snap=(w,pan,v,rate)=>{const s=AC.createBufferSource(),g=AC.createGain(),pn=AC.createStereoPanner?AC.createStereoPanner():null;
+    s.buffer=CBUF;s.playbackRate.value=rate;g.gain.value=v;s.connect(g);if(pn){pn.pan.value=pan;g.connect(pn);pn.connect(out())}else g.connect(out());
+    s.start(T+w,.13,.2)};
+  for(let i=0;i<7;i++)snap(i*.045,(Math.random()-.5)*.4,.8,1.15+Math.random()*.2);   // fent
+  const PAN=[0,.8,0,-.8];
+  for(let i=0;i<16;i++)snap(.45+i*.085,PAN[i%4],1.5,.92+Math.random()*.16)}   // baantna
 const snd={
-  play:()=>{duck();sip(0,1);sip(.085,.7,2000)},   // 'sip sip'
+  play:()=>{duck();playCard()},   // sip sip   // patta chalna: pehle tez awaaz, phir halki doosri (video jaisi)
   bid:()=>tone(330,.22,.35),
   turn:()=>tone(659,.4,.25),
   win:()=>{duck();tone(523,.5,.8);tone(659,.55,.8,.12);tone(784,.6,.7,.24)},
-  deal:()=>{duck();let t=0;for(let i=0;i<13;i++){sip(t,.55+Math.random()*.3,1900+Math.random()*700);t+=.045+Math.random()*.035}thump(150,65,.14,.3,t)},   // phatphat sip sip sip
+  deal:()=>dealSnd(),   // phatphat — patte bantne ki awaaz
   tick:(k=1)=>{[0,.19].forEach(w=>{clk(.025,'bandpass',3000,2.2*k,w,1.1);blip(1900,.05,.5*k,w)})},   // tik tik
   err:()=>buzz(),
   end:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.65,.7,i*.18))};
 const vib=()=>{if(PG.set.vib&&navigator.vibrate)try{navigator.vibrate(12)}catch(e){}};
+/* ============ JEET KI DHUN + PATAKHE (teeno games ke final scoreboard par) ============ */
+function brass(f,t,d,v){   // turhi / shehnai jaisi tez dhun
+  const o=AC.createOscillator(),o2=AC.createOscillator(),fl=AC.createBiquadFilter(),g=AC.createGain();
+  o.type='sawtooth';o2.type='square';o.frequency.value=f;o2.frequency.value=f;o2.detune.value=7;
+  fl.type='lowpass';fl.frequency.setValueAtTime(700,t);fl.frequency.linearRampToValueAtTime(3200,t+.08);fl.frequency.exponentialRampToValueAtTime(900,t+d);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.03);g.gain.setValueAtTime(v*.8,t+d*.7);g.gain.exponentialRampToValueAtTime(.001,t+d);
+  o.connect(fl);o2.connect(fl);fl.connect(g);g.connect(out());o.start(t);o2.start(t);o.stop(t+d+.05);o2.stop(t+d+.05)}
+function duckLong(sec){if(!AC||!MUG)return;const g=MUG.gain,T=AC.currentTime;try{g.cancelScheduledValues(T);g.setTargetAtTime(mGain()*.22,T,.05);g.setTargetAtTime(mGain(),T+sec,.4)}catch(e){}}
+function dhol(w,v=1){thump(150,52,.2,1.5*v,w);clk(.05,'lowpass',900,.8*v,w,.8)}
+function fanfare(){   // jeet ki dhun: dhol + turhi
+  if(!sndOn())return;duckLong(8);const T=AC.currentTime+.05;
+  [[0,3],[.3,3],[.6,3],[.9,2],[1.2,2],[1.5,2],[1.8,3],[2.1,3],[2.4,3],[2.7,2]].forEach(([w,x])=>{dhol(w,x===3?1:.75)});   // dhol ki tak-dhin
+  for(let i=0;i<16;i++)dhol(3+i*.3,i%2?.6:1);
+  [[523,0,.28],[523,.3,.28],[659,.6,.28],[784,.9,.55],[659,1.5,.28],[784,1.8,.28],[1047,2.1,.9],
+   [880,3.2,.3],[784,3.5,.3],[880,3.8,.3],[1047,4.1,.5],[1175,4.7,.3],[1319,5,.3],[1568,5.3,1.4]]
+   .forEach(([f,w,d])=>brass(f,T+w,d,.32));
+  [[262,0,1.4],[330,0,1.4],[392,0,1.4],[349,3.2,1.8],[440,3.2,1.8],[262,5.3,2],[330,5.3,2],[392,5.3,2]].forEach(([f,w,d])=>brass(f,T+w,d,.12));}
+function boom(v=1){   // patakhe ka dhamaka + chatar-patar
+  if(!sndOn())return;thump(130,30,.5,1.7*v);nz(.55,'lowpass',1100,110,.55*v,0,.7);
+  for(let i=0;i<10;i++)clk(.035,'highpass',3200+Math.random()*3500,.9*v*(.4+Math.random()),.06+Math.random()*.5,.8)}
+function whistle(){   // rocket upar jaane ki seeti
+  if(!sndOn())return;const T=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();
+  o.type='sine';o.frequency.setValueAtTime(500,T);o.frequency.exponentialRampToValueAtTime(1900,T+.7);
+  g.gain.setValueAtTime(0,T);g.gain.linearRampToValueAtTime(.16,T+.1);g.gain.linearRampToValueAtTime(0,T+.72);
+  o.connect(g);g.connect(out());o.start(T);o.stop(T+.75)}
+let CEL=null,CELt=0;
+function celebrate(alive,ready){   // alive(): scoreboard abhi bhi khula hai?  ready(): scoreboard dikh gaya?
+  const now=Date.now();if(CEL||now-CELt<20000)return;CELt=now;CEL={};
+  const wait=setInterval(()=>{if(!alive()&&Date.now()-now>1500){clearInterval(wait);CEL=null;return}
+    if(Date.now()-now>8000){clearInterval(wait);CEL=null;return}
+    if(ready()){clearInterval(wait);run()}},120);
+  function run(){
+    const W=1400,H=760,s=Math.min(2,Math.max(1,FIT.k*(devicePixelRatio||1))),cv=document.createElement('canvas');
+    cv.width=W*s;cv.height=H*s;cv.style.cssText=`position:absolute;left:-220px;top:-110px;width:${W}px;height:${H}px;pointer-events:none;z-index:60`;
+    stage.appendChild(cv);const c=cv.getContext('2d');c.scale(s,s);
+    const P=[],RK=[],t0=performance.now();let last=t0,nextL=t0+150,done=false;
+    fanfare();
+    const R=(a,b)=>a+Math.random()*(b-a);
+    function launch(){whistle();
+      const side=Math.random();let x=side<.35?R(150,420):side<.7?R(980,1250):R(450,950);
+      RK.push({x,y:H-60,vx:R(-.6,.6),vy:-R(11,14.5),hue:R(0,360),tx:x})}
+    function burst(x,y,hue){boom(.9);const n=Math.floor(R(70,110)),ring=Math.random()<.4,two=Math.random()<.5;
+      for(let i=0;i<n;i++){const a=Math.PI*2*i/n+R(-.05,.05),sp=ring?4.2:R(1,5);
+        P.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,l:1,dec:R(.008,.016),h:two&&i%2?hue+150:hue,sz:R(1.4,2.6)})}
+      for(let i=0;i<14;i++)P.push({x,y,vx:R(-1,1),vy:R(-1,1),l:1,dec:R(.02,.03),h:50,sz:2.6,tw:1})}
+    function frame(now){
+      if(!cv.isConnected)return;
+      const dt=Math.min(3,(now-last)/16.67);last=now;const el=now-t0;
+      const stop=!alive()||el>14000;
+      c.globalCompositeOperation='destination-out';c.fillStyle='rgba(0,0,0,'+(stop&&!P.length?1:.2)+')';c.fillRect(0,0,W,H);
+      c.globalCompositeOperation='lighter';
+      if(!stop&&now>=nextL){launch();if(Math.random()<.4)setTimeout(()=>{if(cv.isConnected)launch()},180);nextL=now+R(450,900)}
+      // anar (zameen se phootte fountain)
+      if(!stop&&el<11000)[260,1140].forEach(fx=>{for(let k=0;k<3;k++)P.push({x:fx+R(-6,6),y:H-40,vx:R(-1.3,1.3),vy:-R(4,8.5),l:1,dec:R(.014,.024),h:R(30,50),sz:R(1.2,2.2)})});
+      for(let i=RK.length-1;i>=0;i--){const r=RK[i];r.x+=r.vx*dt;r.y+=r.vy*dt;r.vy+=.15*dt;
+        c.fillStyle='hsl('+r.hue+',100%,75%)';c.beginPath();c.arc(r.x,r.y,2.4,0,7);c.fill();
+        if(r.vy>-1.2||r.y<R(110,300)){RK.splice(i,1);burst(r.x,r.y,r.hue)}}
+      for(let i=P.length-1;i>=0;i--){const p=P[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=.06*dt;p.vx*=.992;p.l-=p.dec*dt;
+        if(p.l<=0){P.splice(i,1);continue}
+        const a=p.tw?(Math.random()<.5?p.l:0):p.l;
+        c.fillStyle='hsla('+p.h+',100%,'+(55+p.l*20)+'%,'+a+')';c.beginPath();c.arc(p.x,p.y,p.sz*(.5+p.l*.5),0,7);c.fill()}
+      if(stop&&!P.length&&!RK.length){cv.remove();CEL=null;return}
+      requestAnimationFrame(frame)}
+    requestAnimationFrame(frame);
+    CEL={cv};
+  }
+}
+
 /* ---- dheemi mithi dhun: 2 dhunein (Lori, Raag) ---- */
 let MUG,MU=null,mT=0,mI=0;
 const mGain=()=>PG.set.music?PG.set.mvol/100:0;
@@ -871,7 +979,7 @@ function setMVol(v){PG.set.mvol=+v;if(MUG)MUG.gain.value=mGain();save();const e=
 document.addEventListener('visibilitychange',()=>{if(AC)document.hidden?AC.suspend():AC.resume()});
 let fsTried=false;
 document.addEventListener('pointerdown',()=>{
-  try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume();if(PG.set.music&&!MU)music(true)}catch(e){}
+  try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume();loadCard();if(PG.set.music&&!MU)music(true)}catch(e){}
   if(!fsTried){fsTried=true;try{const d=document.documentElement;if(d.requestFullscreen)d.requestFullscreen().then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape')).catch(()=>{})}catch(e){}}
 });
 
@@ -893,7 +1001,7 @@ if(window.visualViewport)visualViewport.addEventListener('resize',fit);
   new MutationObserver(f).observe(a,{attributes:true,attributeFilter:['class']});f()})();   // game table poori screen par
 fit();setTimeout(fit,300);setTimeout(fit,1200);setTimeout(fit,3000);   // app khulte waqt size der se milta hai
 let G=null,ui={hold:false,show:null,modal:null};
-const BOT_MIN=1500,BOT_MAX=3000,HUMAN_MS=10000;   // bot ka soch-samay aur aapka samay (ms)
+const BOT_MIN=1500,BOT_MAX=3000,HUMAN_MS=15000;   // bot ka soch-samay aur aapka samay (ms)
 const SC=['#111','#d11f1f','#111','#d11f1f'];   // ♠♣ kaala, ♥♦ laal
 const cardHTML=(c,x='',st='')=>`<div class="card s${c.s} ${x}" style="--c:${SC[c.s]};${st}"><i>${rankName(c.r)}<small>${SUITS[c.s]}</small></i><span>${SUITS[c.s]}</span></div>`;
 const EMOJI=['😎','🦁','🐯','🦊','🐼','🐸','🦉','🐵','🐲','🤖','👑','🥷','🧙','🎩','🐻','🐨','🐰','🐶','🐱','🦄','🐧','🦅','🐺','🦈','🐙','🦋','🐢','🐘','🦒','🦓','😈','🤠','🥳','😏','🤓','🧛','🧞','👽','👻','💀','🔥','⭐','🌟','💎','🎯','⚡','🌈','🍀','🚀','🏆','🍕','🎸','⚽','🏏','🚗','🌹'];
@@ -993,13 +1101,13 @@ const SEATS={
  6:[[[34,418,'h'],[812,270,'r'],[812,140,'r'],[480,52,'rc'],[36,140,'l'],[36,270,'l']],[[818,418,'h'],[812,270,'r'],[812,140,'r'],[480,52,'rc'],[150,418,'l'],[34,418,'l']]]};
 function tcPos(p){   // patta har khiladi ki taraf se table ke beech aata hai
   const n=G.n,a=2*Math.PI*p/n,rx=n===6?122:105,ry=n===6?80:66;
-  return `left:${(160+rx*Math.sin(a)-41).toFixed(0)}px;top:${(125+ry*Math.cos(a)-59).toFixed(0)}px;--dx:${(Math.sin(a)*320).toFixed(0)}px;--dy:${(Math.cos(a)*200).toFixed(0)}px;--sc:${n>4?.8:1}`;
+  return `left:${(160+rx*Math.sin(a)-49).toFixed(0)}px;top:${(125+ry*Math.cos(a)-70).toFixed(0)}px;--dx:${(Math.sin(a)*320).toFixed(0)}px;--dy:${(Math.cos(a)*200).toFixed(0)}px;--sc:${n>4?.8:1}`;
 }
 function chip(p){
   const on=G.turn===p&&!ui.hold&&ui.dur&&['bid','play'].includes(G.phase);
   const ring=on?`<svg class="ring" viewBox="0 0 60 60"><circle class="bg" cx="30" cy="30" r="27"/><circle class="fg" cx="30" cy="30" r="27" style="animation-duration:${ui.dur}ms;animation-delay:-${Math.min(Date.now()-ui.t0,ui.dur)}ms"/></svg>`:'';
   const [L,T,k]=SEATS[G.n][G.practice?1:0][p],n=Math.min(G.hands[p].length,13);
-  const bd=G.bids[p],wn=G.won[p],mulx={4:1,5:1.5,6:2}[G.n],pt=bd!=null&&wn>=bd?`<div class="pt">✓ ${fmt(Math.round((bd+(wn-bd)*.1)*mulx*10)/10)}</div>`:'';
+  const bd=G.bids[p],wn=G.won[p],mulx=1,pt=bd!=null&&wn>=bd?`<div class="pt">✓ ${fmt(Math.round((bd+(wn-bd)*.1)*mulx*10)/10)}</div>`:'';
   const fc={l:'bf3',r:'bf1',row:'bf2',rc:'bf2'}[k],fan=p&&n&&fc?`<div class="bf ${fc}">${Array.from({length:n},(_,i)=>`<i style="left:${i*2.6}px;transform:rotate(${(i-(n-1)/2)*5}deg)"></i>`).join('')}</div>`:'';
   const pos=`left:${L}px;top:${T}px;right:auto;bottom:auto${k==='rc'?';transform:translateX(-50%)':''}`;
   return `<div class="chip ${k==='rc'||k==='row'?'rowc':''} ${on?'on':''} ${ui.show&&ui.show.w===p?'won':''}" id="sx${p}" style="${pos}"><div class="av" ${p?'':'onclick="pick()"'}>${ring}${avHTML(p)}${fan}${pt}${ui.emo&&ui.emo[p]?`<div class="eb">${emoHTML(ui.emo[p])}</div>`:''}</div><div class="nm">${pn(p)}</div><div class="sc">Bid ${G.bids[p]??'-'} · Jeete ${G.won[p]}</div></div>`;
@@ -1008,7 +1116,7 @@ function render(){
   $.className=(G.practice?'prac ':'')+'n'+G.n;
   const tr=ui.show?ui.show.cards:G.trick,mine=G.hands[0],myTurn=G.phase==='play'&&G.turn===0&&!ui.hold;
   const ok=myTurn?validCards(mine,G.trick):[],isOk=c=>ok.some(x=>x.s===c.s&&x.r===c.r),bidding=G.phase==='bid'&&G.turn===0;
-  const msg=G.phase==='play'?(ui.show?`${pn(ui.show.w)} ne hath jeeta`:myTurn?(ui.forced?T2('सिर्फ़ यही पत्ता चल सकता है — अपने आप चल रहा है','Only this card is playable — playing it automatically'):ui.hint?'💡 Hint: ye patta khelo':(PG.set.playmode==='tap'?'Aapki baari':T2('आपकी बारी — पत्ते को ऊपर खींचिए','Your turn — drag a card up'))):''):'';
+  const msg=G.phase==='play'?(ui.show?`${pn(ui.show.w)} ne hath jeeta`:myTurn?(ui.forced?T2('सिर्फ़ यही पत्ता चल सकता है — अपने आप चल रहा है','Only this card is playable — playing it automatically'):ui.hint?'💡 Hint: ye patta khelo':(PG.set.playmode==='tap'?T2('आपकी बारी — पत्ते पर टैप कीजिए','Your turn — tap a card'):PG.set.playmode==='drag'?T2('आपकी बारी — पत्ते को ऊपर खींचिए','Your turn — drag a card up'):T2('आपकी बारी — पत्ते पर टैप कीजिए या ऊपर खींचिए','Your turn — tap a card or drag it up'))):''):'';
   $.innerHTML=`<div class="bar"><div class="rp"><span>📋</span><div>${G.target?`<span>${T2('राउंड','Round')} ${G.round+1} · 🎯 ${G.target}</span>`:`<span>Round ${G.round+1} / ${G.rounds}</span>`}${G.practice?' <em class="pr">Practice</em>':''}${G.daily?' <em class="pr">📅</em>':''}</div></div><div class="bt2"><span class="gp">💎 ${gems()}</span>${G.practice?`<button class="wb ib" onclick="hint()">🎓</button><button class="wb ib" onclick="undo()">↩</button><button class="wb ib" onclick="toggleLang()">🌐</button>`:''}${ON.active?'<button class="wb ib" onclick="emoBox()">😀</button>':''}<button class="wb ib mutebtn" onclick="muteTog()">${PG.set.music?'🔊':'🔇'}</button><button class="wb ib" onclick="lastTrick()">🕘</button><button class="wb ib" onclick="ui.modal='score';render()">📋</button><button class="wb ib" onclick="settings()">⚙</button><button class="wb ib" onclick="home()">🏠</button></div></div>
   <div class="trick">${tr.map((t,i)=>`<div class="tc ${!ui.show&&i===tr.length-1?'new':''} ${ui.show&&ui.show.w===t.p?'win':''}" style="${tcPos(t.p)}">${cardHTML(t.c)}</div>`).join('')}</div>
   ${Array.from({length:G.n},(_,p)=>chip(p)).join('')}<div class="msg">${msg}</div>${G.practice&&ui.hint?coachHTML():''}${G.practice&&ui.fb?fbHTML():''}
@@ -1096,7 +1204,7 @@ function recordResult(){
   if(!G.practice){ui.gain=payFor(ranks()[0]);
     if(G.daily&&u.dailyPaid!==G.daily){u.dailyPaid=G.daily;ui.dbonus=25}
     u.gems=(u.gems||0)+ui.gain+ui.dbonus;ui.gain+=ui.dbonus}
-  save();snd.end();
+  save();celebrate(()=>G&&G.phase==='over',()=>!!document.querySelector('.ov.peach'));
 }
 function today(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()}
 const T2=(h,e)=>li()?e:h;
@@ -1176,7 +1284,7 @@ const HOW=[['🎯 लक्ष्य: हर राउंड में आपन
 ['🎓 नए हैं? Practice में खेलिए: कोच हर चाल से पहले बताएगा कि क्या करना है और क्यों।','🎓 New? Play Practice: the coach tells you what to do and why before every move.']];
 HOW.push(['👥 खिलाड़ी: 4 से 6। 5 खिलाड़ियों में दो और 6 में चारों 2 के पत्ते हटा दिए जाते हैं (5 खिलाड़ी: 10-10 पत्ते, 6 खिलाड़ी: 8-8 पत्ते)।','👥 Players: 4 to 6. With 5 players two 2s are removed, with 6 players all four 2s (10 cards each for 5 players, 8 each for 6).'],
  ['🎯 खेल दो तरह का: राउंड वाला (1, 3 या 5 राउंड) या टारगेट वाला, जिसमें जो सबसे पहले 11 या 21 अंक पर पहुँचे वह जीतता है। ऊपर के बटनों से चुनिए।','🎯 Two ways to play: Rounds (1, 3 or 5) or Target, where the first to reach 11 or 21 points wins. Pick with the buttons at the top.'],
- ['✖️ 5 खिलाड़ियों में अंक ×1.5 और 6 में ×2 गिने जाते हैं (पत्ते कम होने के कारण), ताकि 11 या 21 का लक्ष्य जल्दी पहुँचे।','✖️ With 5 players points count ×1.5 and with 6 players ×2 (hands are smaller), so the 11 or 21 target is reached in a similar number of rounds.']);
+ ['✖️ 5 या 6 खिलाड़ियों में भी अंक वैसे ही गिने जाते हैं — जितनी बिड बोली, उतने ही अंक।','✖️ With 5 or 6 players points count the same way — exactly as many as you bid.']);
 HOW.push(['👆 पत्ता चलाना: पत्ते को उँगली से पकड़कर ऊपर मेज़ की ओर खींचिए और छोड़ दीजिए। (सेटिंग्स में "टैप" या "दोनों" भी चुन सकते हैं।)','👆 Playing a card: hold the card with your finger, drag it up to the table and let go. (Settings also offers Tap or Both.)'],
  ['🌐 ऑनलाइन: "ऑनलाइन खेलो" में क्विक मैच खेलिए, या प्राइवेट रूम बनाकर कोड दोस्तों को भेजिए। खाली सीटों पर बॉट बैठते हैं।','🌐 Online: use "Play Online" for a Quick Match, or create a private room and send the code to friends. Empty seats are filled by bots.']);
 function howto(){modal(`<h2>❓ Kaise khelein</h2><div class="how">${HOW.map(x=>`<p>${x[li()]}</p>`).join('')}</div><div class="row"><button onclick="closeM()">Band karo</button></div>`)}
@@ -1192,13 +1300,15 @@ function settingsHTML(){
   <div class="lbl">${T2('धुन','Tune')}</div><div class="seg">${b(S.tune==='tez',"setSet('tune','tez')",T2('तेज़ ⚡','Fast ⚡'))}${b(S.tune==='chill',"setSet('tune','chill')",T2('शांत 🌙','Chill 🌙'))}${b(S.tune==='cool',"setSet('tune','cool')",T2('आराम की धुन 🎶','Relaxed 🎶'))}${b(S.tune==='energy',"setSet('tune','energy')",T2('एनर्जेटिक बीट 🔥','Energetic beat 🔥'))}${b(S.tune==='lori',"setSet('tune','lori')",T2('लोरी (म्यूज़िक-बॉक्स)','Lullaby (music box)'))}${b(S.tune==='raag',"setSet('tune','raag')",T2('राग (बाँसुरी)','Raag (flute)'))}</div>
   <div class="lbl">${T2('वाइब्रेशन','Vibration')}</div><div class="seg">${b(S.vib,"setSet('vib',true)",T2('चालू','On'))}${b(!S.vib,"setSet('vib',false)",T2('बंद','Off'))}</div>
   <div class="lbl">${T2('पत्ता चलाने का तरीका','How to play a card')}</div><div class="seg">${b(S.playmode==='drag',"setSet('playmode','drag')",T2('खींचकर','Drag'))}${b(S.playmode==='tap',"setSet('playmode','tap')",T2('टैप','Tap'))}${b(S.playmode==='both',"setSet('playmode','both')",T2('दोनों','Both'))}</div>
+  <div class="lbl">🃏 ${T2('पत्तों की आवाज़ (दबाकर सुनिए)','Card sound (tap to hear)')}</div><div class="seg">${b((S.cs||'soft')==='soft',"setSet('cs','soft')",T2('नरम','Soft'))}${b(S.cs==='deep',"setSet('cs','deep')",T2('गहरी','Deep'))}${b(S.cs==='bright',"setSet('cs','bright')",T2('तेज़','Bright'))}</div>
+  <div class="lbl">${T2('पूरी स्क्रीन','Full screen')}</div><div class="seg">${b(S.fs!==false,"setSet('fs',true)",T2('चालू','On'))}${b(S.fs===false,"setSet('fs',false)",T2('बंद','Off'))}</div>
   <div class="lbl">${T2('टेबल','Table')}</div><div class="seg">${[['wood','🟫'],['green','🟢'],['blue','🔵'],['dark','⚫']].map(([k,e])=>b(S.theme===k,`setSet('theme','${k}')`,e)).join('')}</div>
   <div class="lbl">${T2('पत्तों का डिज़ाइन','Card design')}</div><div class="seg">${[['classic','⚪ '+T2('क्लासिक','Classic')],['four','🌈 '+T2('4 रंग','4-colour')],['dark','🌑 '+T2('डार्क','Dark')],['royal','👑 '+T2('रॉयल','Royal')]].map(([k,t])=>b((S.cd||'classic')===k,`setSet('cd','${k}')`,t)).join('')}</div>
   <div class="cdprev">${[[0,14],[1,13],[2,12],[3,11]].map(([s,r])=>cardHTML({s,r},'mini')).join('')}</div>
   <div class="row"><button class="ghost" onclick="closeM();logout()">${T2('खिलाड़ी बदलें','Switch player')}</button><button onclick="closeM()">${T2('बंद करें','Close')}</button></div>`}
 function settings(){modal(settingsHTML())}
 function badCard(m){snd.err();flash(m)}
-function setSet(k,v){PG.set[k]=v;save();if(k==='theme')document.body.dataset.th=v;if(k==='cd')applyCD();if(k==='music')music(v);if(k==='tune')music(PG.set.music);document.querySelector('#pk .box').innerHTML=settingsHTML();if(k==='sound'&&v)snd.bid()}
+function setSet(k,v){PG.set[k]=v;save();if(k==='theme')document.body.dataset.th=v;if(k==='cs')setTimeout(()=>snd.play(),60);if(k==='fs'){if(v)goFull();else if(document.fullscreenElement)document.exitFullscreen()}if(k==='cd')applyCD();if(k==='music')music(v);if(k==='tune')music(PG.set.music);document.querySelector('#pk .box').innerHTML=settingsHTML();if(k==='sound'&&v)snd.bid()}
 function setVol(v){PG.set.vol=+v;if(MG)MG.gain.value=gainOf();save();const e=document.getElementById('vv');if(e)e.textContent=v+'%'}
 
 /* game flow */
@@ -1229,7 +1339,7 @@ function step(){
       ui.timer=setTimeout(()=>{if(G!==g||ui.hold||ui.modal)return;act(0,mv0[0])},G.practice?2600:900);return}}
   if(human&&G.practice){ui.dur=0;ui.fb=null;ui.hint=PG.set.coach?computeHint():null;render();snd.turn();return}   // practice: koi timer nahi
   ui.t0=Date.now();
-  ui.dur=human?HUMAN_MS:(G.phase==='bid'?1000+rand(600):BOT_MIN+rand(BOT_MAX-BOT_MIN));
+  ui.dur=human?(G.phase==='play'?HUMAN_MS:10000):(G.phase==='bid'?1000+rand(600):BOT_MIN+rand(BOT_MAX-BOT_MIN));
   render();if(human)snd.turn();
   ui.timer=setTimeout(()=>{
     if(G!==g||ui.hold||ui.modal)return;
@@ -1435,7 +1545,7 @@ function sendEmo(e){
   window._emoT=Date.now()+1500;onSend({t:'emo',e});const o=document.getElementById('emop');if(o)o.remove();
 }
 /* ============ 8. KOT PIECE: SCREEN ============ */
-document.head.insertAdjacentHTML('beforeend','<style>.kbar{position:absolute;left:0;right:0;top:0;height:46px;display:flex;gap:12px;align-items:center;padding:0 12px;background:#000a;color:#fff;font-weight:700;font-size:15px;z-index:5}.kbar .sp{flex:1}.kbar button{padding:5px 12px}.kchip{position:absolute;display:flex;flex-direction:column;align-items:center;color:#fff;font-size:13px;width:120px;padding:4px;z-index:2}.kchip .a{font-size:32px;line-height:1.1}.kchip.on{outline:3px solid #ffd54a;border-radius:12px;background:#0005}.kt{position:absolute;transform:scale(.86)}.kt.win .card{outline:4px solid #ffd54a}.kpan{position:absolute;left:150px;right:150px;top:92px;background:#12261df2;border:2px solid #ffd54a;border-radius:14px;padding:14px;color:#fff;text-align:center;z-index:6;line-height:1.5}.kpan .row{justify-content:center;flex-wrap:wrap}.kpan button{flex:none;min-width:96px;font-size:22px}.kmsg{position:absolute;left:0;right:0;top:48px;text-align:center;color:#ffd54a;font-weight:700;font-size:16px;line-height:1.35;text-shadow:0 1px 3px #000}.kmsg small{display:block;color:#fff;font-size:14px;font-weight:600}.kme{flex-direction:row;width:auto;gap:8px;align-items:center;background:#0007;border-radius:12px;padding:4px 12px;white-space:nowrap}.kme .a{font-size:26px}.ktr{position:absolute;right:12px;top:52px;width:122px;background:#fff;border:3px solid #ffd54a;border-radius:14px;text-align:center;color:#222;font-weight:800;padding:4px 2px;z-index:4;box-shadow:0 4px 10px #0008}.ktr .ts{font-size:68px;line-height:1.05}.ktr small{display:block;font-size:12px;color:#444;font-weight:700}.bigt th{color:#ffd54a;padding:6px}.bigt td{padding:6px;border-top:1px solid #fff3}.kcoach{position:absolute;left:640px;top:296px;width:306px;max-height:94px;overflow:auto;background:#12261df2;border:2px solid #ffd54a;border-radius:12px;padding:6px 9px;color:#fff;line-height:1.35;z-index:5}.kcoach .a{font-weight:800;color:#9be7ff;margin:2px 0}.kcoach b{color:#ffd54a}.kcoach small{display:block;color:#ddd}.kcoach .fbx{border-bottom:1px solid #fff3;padding-bottom:3px;margin-bottom:3px}.kcoach .fbx.ok b{color:#8fe0a8}.kcoach .ch button{padding:1px 8px;font-size:13px}</style>');
+document.head.insertAdjacentHTML('beforeend','<style>.kbar{position:absolute;left:0;right:0;top:0;height:46px;display:flex;gap:12px;align-items:center;padding:0 12px;background:#000a;color:#fff;font-weight:700;font-size:15px;z-index:5}.kbar .sp{flex:1}.kbar button{padding:5px 12px}.kchip{position:absolute;display:flex;flex-direction:column;align-items:center;color:#fff;font-size:13px;width:120px;padding:4px;z-index:2}.kchip .a{font-size:32px;line-height:1.1}.kchip.on{outline:3px solid #ffd54a;border-radius:12px;background:#0005}.kt{position:absolute;transform:none}.kt.win .card{outline:4px solid #ffd54a}.kpan{position:absolute;left:150px;right:150px;top:92px;background:#12261df2;border:2px solid #ffd54a;border-radius:14px;padding:14px;color:#fff;text-align:center;z-index:6;line-height:1.5}.kpan .row{justify-content:center;flex-wrap:wrap}.kpan button{flex:none;min-width:96px;font-size:22px}.kmsg{position:absolute;left:0;right:0;top:48px;text-align:center;color:#ffd54a;font-weight:700;font-size:16px;line-height:1.35;text-shadow:0 1px 3px #000}.kmsg small{display:block;color:#fff;font-size:14px;font-weight:600}.kme{flex-direction:row;width:auto;gap:8px;align-items:center;background:#0007;border-radius:12px;padding:4px 12px;white-space:nowrap}.kme .a{font-size:26px}.ktr{position:absolute;right:12px;top:52px;width:122px;background:#fff;border:3px solid #ffd54a;border-radius:14px;text-align:center;color:#222;font-weight:800;padding:4px 2px;z-index:4;box-shadow:0 4px 10px #0008}.ktr .ts{font-size:68px;line-height:1.05}.ktr small{display:block;font-size:12px;color:#444;font-weight:700}.bigt th{color:#ffd54a;padding:6px}.bigt td{padding:6px;border-top:1px solid #fff3}.kcoach{position:absolute;left:640px;top:296px;width:306px;max-height:94px;overflow:auto;background:#12261df2;border:2px solid #ffd54a;border-radius:12px;padding:6px 9px;color:#fff;line-height:1.35;z-index:5}.kcoach .a{font-weight:800;color:#9be7ff;margin:2px 0}.kcoach b{color:#ffd54a}.kcoach small{display:block;color:#ddd}.kcoach .fbx{border-bottom:1px solid #fff3;padding-bottom:3px;margin-bottom:3px}.kcoach .fbx.ok b{color:#8fe0a8}.kcoach .ch button{padding:1px 8px;font-size:13px}</style>');
 const KOT_HOW=[
 ['🎯 लक्ष्य: 4 खिलाड़ी, 2 टीमें। सामने बैठा खिलाड़ी आपका साथी है। 13 में से 7 या ज़्यादा सर उठाने वाली टीम राउंड जीतती है।','🎯 Goal: 4 players, 2 teams. The player opposite you is your partner. The team that collects 7 or more of the 13 tricks wins the round.'],
 ['🃏 पत्ते बाँटने वाला: सबको एक-एक पत्ता मिलता है। जिसे सबसे पहले इक्का (A) मिले, वह पत्ते बाँटेगा।','🃏 Who deals: everyone gets one card. The first player to get an Ace deals.'],
@@ -1473,7 +1583,7 @@ function kotRender(){
   const keep=document.getElementById('kov');
   const g=KG,mine=KotPiece.hand(g,0),tr=KU.show?KU.show.cards:g.trick,L=li();
   const my=g.phase==='play'&&g.turn===0&&!KU.busy,ok=my?kotValid(g.hands[0],g.trick):[],isOk=c=>ok.some(x=>x.s===c.s&&x.r===c.r);
-  const TP=[[439,286],[580,206],[439,160],[298,206]],CP=[[14,368],[828,200],[420,92],[14,250]];
+  const TP=[[425,244],[556,200],[452,204],[316,200]],CP=[[14,338],[828,200],[420,92],[14,234]];
   const nm=pn(g.turn),who=g.turn===0;
   let msg='',pan='';
   if(g.phase==='call')who?pan=`<b>${T2('आपके पहले 5 पत्ते हैं। रंग (कट) बोलिए','Your first 5 cards. Name the trump')}</b><div class="row">${[0,1,2,3].map(s=>sBtn(s,'kotCall')).join('')}</div><div class="row"><button class="ghost" style="font-size:16px" onclick="kotAct(0,{t:'pass'})">${T2('नहीं बोलूँगा (13वाँ पत्ता तय करेगा)','Pass (13th card decides)')}</button></div>`:msg=`${nm} ${T2('रंग सोच रहा है…','is choosing the trump…')}`;
@@ -1503,19 +1613,20 @@ function kotAct(p,m){
   if(p===0&&KU.practice){const co=kCoach(KG);if(co){(KU.hist=KU.hist||[]).push(KG);   // practice: chaal ke baad sahi/galat batao
     const same=co.m.t===m.t&&(m.t==='play'?co.m.c.s===m.c.s&&co.m.c.r===m.c.r:(m.t==='call'||m.t==='trump')?co.m.s===m.s:true);
     KU.fb={ok:same,a:co.a,b:co.b}}}
+  m.t==='play'?snd.play():snd.bid();   // offline Kot Piece me awaaz yahin missing thi
   const n=KotPiece.applyMove(KG,p,m),done=m.t==='play'&&!n.trick.length;
   KG=n;
   if(done){const w=n.lastTrick.w,tm=w%2?T2('विरोधी टीम','the opponents'):T2('आपकी टीम','your team');
     KU.note=n.lastGot>0?`🎉 ${pn(w)} ${T2('ने लगातार 2 सर जीतीं — पूरी','won 2 in a row — all')} <b>${n.lastGot}</b> ${T2('सर उठाईं','tricks taken')} (${tm})`:`${pn(w)} ${T2('ने सर जीती','won the trick')}<small>${T2('📦 जमा हुई, अभी किसी को नहीं मिली','kept in the 📦 pile, nobody has it yet')}</small>`;
-    KU.show=n.lastTrick;KU.busy=true;kotRender();KU.t=setTimeout(()=>{KU.show=null;KU.busy=false;kotRender();kotStep()},2600)}
+    KU.show=n.lastTrick;KU.busy=true;kotRender();setTimeout(snd.win,350);KU.t=setTimeout(()=>{KU.show=null;KU.busy=false;kotRender();kotStep()},2600)}
   else{kotRender();kotStep()}
 }
 function kotStep(){
   const g=KG;clearTimeout(KU.t);if(!g||KU.busy||KU.online)return;
   if(g.phase==='roundEnd'||g.phase==='over')return kotEnd();
-  if(g.turn===0){   // aapki chaal: patta 10 second me chalna hai (bolti 20 second), warna apne aap chal jaata hai
+  if(g.turn===0){   // aapki chaal: patta 15 second me chalna hai (bolti 20 second), warna apne aap chal jaata hai
     if(KU.practice||!['call','change','newtrump','play'].includes(g.phase))return;
-    const d=g.phase==='play'?10000:20000;KU.t0=Date.now();KU.dl=d;
+    const d=g.phase==='play'?15000:20000;KU.t0=Date.now();KU.dl=d;
     KU.t=setTimeout(()=>{if(KG!==g||KG.turn!==0||KU.busy)return;const mv=KotPiece.getValidMoves(g,0);flash(T2('समय खत्म — अपने आप चल दिया','Time up — auto move'));kotAct(0,KotBots.medium(g,0,mv))},d);return}
   KU.t=setTimeout(()=>{const mv=KotPiece.getValidMoves(g,g.turn);kotAct(g.turn,(KotBots[KU.daily?'medium':PG.set.level]||KotBots.medium)(g,g.turn,mv))},g.phase==='play'?900:1300);
 }
@@ -1526,7 +1637,7 @@ function kotEnd(){
   <p style="font-size:17px;line-height:1.8">${T2('आपकी टीम की सर','Your team tricks')}: <b>${g.won[0]}</b> · ${T2('विरोधी','Opponents')}: <b>${g.won[1]}</b>${r.early?`<br>⚠️ ${pn(r.chBy)} ${T2('की टीम ने रंग बदला था, पर दूसरी टीम ने सर उठा ली — राउंड वहीं खत्म','team changed the trump, but the other team collected tricks — round ended there')}`:''}${r.kot?`<br>🔥 <b>KOT!</b> ${r.wt===0?T2('विरोधियों पर कोट — 2 अंक','Kot on the opponents — 2 points'):T2('आप पर कोट — विरोधियों को 2 अंक','Kot on you — 2 points to them')}`:''}<br>${T2('अंक','Score')}: <b>${g.score[0]} – ${g.score[1]}</b>${over?'':`<br>${T2('अगला बाँटने वाला','Next dealer')}: ${pn(g.nextDealer)}`}</p>
   <div class="row">${over?`<button onclick="kotStart()">${T2('फिर खेलें','Play again')}</button><button class="ghost" onclick="kotHome()">🏠</button>`:KU.online?`<small>${T2('अगला राउंड कुछ सेकंड में अपने आप शुरू होगा…','Next round starts automatically in a few seconds…')}</small><button class="ghost" onclick="kotHome()">🏠</button>`:`<button onclick="kotNext()">${T2('अगला राउंड','Next round')}</button>`}</div>`);
 }
-function kotBig(win){kotRecord(win);if(KU.daily)return kotDailyEnd(win);
+function kotBig(win){kotRecord(win);celebrate(()=>KG&&KG.phase==='over',()=>!!document.getElementById('kov'));if(KU.daily)return kotDailyEnd(win);
   const g=KG,big=(t,n,c)=>`<div style="text-align:center"><div style="font-size:15px">${t}</div><div style="font-size:78px;font-weight:900;line-height:1;color:${c}">${n}</div></div>`;
   const rows=g.history.map((h,i)=>`<tr><td>${i+1}</td><td>${h.won[0]}</td><td>${h.won[1]}</td><td>${h.wt===0?'✅ '+T2('हम जीते','We won'):'❌ '+T2('वे जीते','They won')}${h.kot?' 🔥 KOT':''}</td></tr>`).join('');
   kotOv(`<h2 style="font-size:30px;text-align:center">${win?'🏆 '+T2('आपकी टीम जीत गई!','Your team won!'):T2('इस बार विरोधी जीते','Opponents won this time')}</h2>
@@ -1815,14 +1926,14 @@ function rangBidPanel(g){
 function rangClock(g){
   if(RU.online)return;
   const key=[g.phase,g.turn,g.trick.length,g.played.length,g.log.length,g.bids.filter(x=>x!=null).length,g.round].join('|');
-  if(RU.key!==key){RU.key=key;RU.t0=Date.now();RU.dur=g.turn===0?(RU.practice?0:(g.phase==='play'?10000:20000)):(g.phase==='play'?1000:g.phase==='bid'?1400:1700)}
+  if(RU.key!==key){RU.key=key;RU.t0=Date.now();RU.dur=g.turn===0?(RU.practice?0:(g.phase==='play'?15000:20000)):(g.phase==='play'?1000:g.phase==='bid'?1400:1700)}
 }
 function rangOk(hand,trick){return rangValid(hand,trick,RG.trump)}   // insaan par bhi wahi niyam
 function rangRender(){
   const keep=document.getElementById('rov'),g=RG,mine=RangBid.hand(g,0),tr=RU.show?RU.show.cards:g.trick,L=li();
   const live=['call','bid','play'].includes(g.phase)&&!RU.busy;if(live)rangClock(g);
   const my=g.phase==='play'&&g.turn===0&&!RU.busy,ok=my?rangOk(g.hands[0],g.trick):[],isOk=c=>ok.some(x=>x.s===c.s&&x.r===c.r);
-  const TP=[[439,286],[580,206],[439,160],[298,206]],CP=[[14,368],[828,200],[420,92],[14,250]],who=g.turn===0&&!RU.busy,hi=g.call.hi;
+  const TP=[[425,244],[556,200],[452,204],[316,200]],CP=[[14,338],[828,200],[420,92],[14,234]],who=g.turn===0&&!RU.busy,hi=g.call.hi;
   const SD=['L','R','L','L'];
   let msg='',pan='';
   const last=g.log[g.log.length-1],lastTxt=last?(last.pass?`${pn(last.p)} ${T2('ने पास किया','passed')}`:(rKnown(last.p,g)&&last.s!=null)?`📢 ${pn(last.p)} ${T2('ने बोला','called')} ${SUITS[last.s]} ${T2('पर','on')} ${last.n}`:`📢 ${pn(last.p)} ${T2('ने','called')} ${last.n} ${T2('बोला — 🔒 रंग छुपा है','— 🔒 suit hidden')}`):'';
@@ -1935,6 +2046,7 @@ function rangScoreHTML(g,mode){      // mode: 'round' | 'over' | 'view'
 function rangEnd(){
   const g=RG,over=g.phase==='over',top=Math.max(...g.totals),win=g.totals[0]===top;
   if(over)rangRecord(win);
+  if(over)celebrate(()=>RG&&RG.phase==='over',()=>!!document.getElementById('rov'));
   if(over&&RU.daily)return rangDailyEnd();
   if(!over){
     const n0=RU.online?Math.max(1,Math.ceil((RU.dl-(Date.now()-RU.t0))/1000)):10;
@@ -2075,6 +2187,11 @@ setInterval(()=>{
 const THEME_BG={wood:'#dd9c46',green:'#3b9a68',blue:'#3573b0',red:'#a64343',dark:'#212c26'};
 function applyChrome(){const c=THEME_BG[PG.set.theme]||THEME_BG.wood;document.documentElement.style.background=c;document.body.style.background=c;const m=document.querySelector('meta[name=theme-color]');if(m)m.content=c}
 new MutationObserver(applyChrome).observe(document.body,{attributes:true,attributeFilter:['data-th']});applyChrome();
+
+/* ---- poori screen: upar ki status bar aur neeche ki bar chhup jaaye (pehle tap par) ---- */
+function goFull(){if(PG.set.fs===false)return;const e=document.documentElement;if(document.fullscreenElement||!e.requestFullscreen)return;try{const p=e.requestFullscreen({navigationUI:'hide'});if(p&&p.catch)p.catch(()=>{})}catch(_){}}
+document.addEventListener('pointerdown',goFull,{passive:true});
+document.addEventListener('fullscreenchange',()=>{setTimeout(()=>{try{fit()}catch(e){}},150)});
 </script>
 </body>
 </html>

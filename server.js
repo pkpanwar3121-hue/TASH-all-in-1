@@ -15,6 +15,7 @@ const T = {                                   // samay (ms). test ke liye env se
   botMin: +process.env.BOT_MIN_MS || 1500, botMax: +process.env.BOT_MAX_MS || 3000,
   bidMin: +process.env.BID_MIN_MS || 1000, bidMax: +process.env.BID_MAX_MS || 1600,
   emptyRoom: +process.env.EMPTY_ROOM_MS || 60000,
+  play: +process.env.PLAY_MS || 15000,             // teeno game: patta chalne ke liye 15 second
   kturn: +process.env.KOT_TURN_MS || 30000,         // Kot Piece: rang bolne/badalne me sochne ka samay thoda zyada
   kround: +process.env.KOT_ROUND_WAIT_MS || 10000   // Kot Piece: round ke beech ka score-screen
 };
@@ -160,7 +161,7 @@ function sched(r) {
   }
   if (G.phase === 'over') { r.phase = 'over'; r.deadline = 0; return; }
   const seat = G.turn, s = r.seats[seat], auto = s.k === 'bot' || s.away;
-  let ms = auto ? (G.phase !== 'play' ? T.bidMin + rnd(T.bidMax - T.bidMin) : T.botMin + rnd(T.botMax - T.botMin)) : (r.game === 'kot' ? T.kturn : T.turn);   // Rang Bid: 20 second (client ka ring bhi yahi dikhata hai)
+  let ms = auto ? (G.phase !== 'play' ? T.bidMin + rnd(T.bidMax - T.bidMin) : T.botMin + rnd(T.botMax - T.botMin)) : (G.phase === 'play' ? T.play : (r.game === 'kot' ? T.kturn : T.turn));   // Rang Bid: 20 second (client ka ring bhi yahi dikhata hai)
   ms += Math.max(0, r.holdUntil - Date.now());
   r.deadline = Date.now() + ms;
   r.timer = setTimeout(() => autoMove(r, seat, !auto), ms);
