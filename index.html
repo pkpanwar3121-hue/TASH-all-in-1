@@ -242,7 +242,7 @@ body.tbl .kbar{background:none!important}body.tbl .kbar::before{content:'';posit
 .bids{gap:8px}.bids button{width:58px;padding:13px 0;font-size:26px;font-weight:800}
 .kpan.rb button{font-size:25px;padding:9px 16px}.kpan.rb .sb{min-width:96px}
 #tkb{font-size:26px;padding:5px 15px}
-.kchip.kme .rbub.L{left:0;top:-34px}
+.kchip.kme .rbub.L{left:calc(100% + 10px);top:14px}
 </style>
 </head>
 <body><div id="bg"></div><div id="stage"><div id="app"></div></div>
@@ -1583,7 +1583,7 @@ function kotRender(){
   const keep=document.getElementById('kov');
   const g=KG,mine=KotPiece.hand(g,0),tr=KU.show?KU.show.cards:g.trick,L=li();
   const my=g.phase==='play'&&g.turn===0&&!KU.busy,ok=my?kotValid(g.hands[0],g.trick):[],isOk=c=>ok.some(x=>x.s===c.s&&x.r===c.r);
-  const TP=[[425,244],[556,200],[452,204],[316,200]],CP=[[14,338],[828,200],[420,92],[14,234]];
+  const TP=[[431,262],[540,232],[431,200],[322,232]],CP=[[14,338],[828,200],[420,92],[14,234]];
   const nm=pn(g.turn),who=g.turn===0;
   let msg='',pan='';
   if(g.phase==='call')who?pan=`<b>${T2('आपके पहले 5 पत्ते हैं। रंग (कट) बोलिए','Your first 5 cards. Name the trump')}</b><div class="row">${[0,1,2,3].map(s=>sBtn(s,'kotCall')).join('')}</div><div class="row"><button class="ghost" style="font-size:16px" onclick="kotAct(0,{t:'pass'})">${T2('नहीं बोलूँगा (13वाँ पत्ता तय करेगा)','Pass (13th card decides)')}</button></div>`:msg=`${nm} ${T2('रंग सोच रहा है…','is choosing the trump…')}`;
@@ -1933,7 +1933,7 @@ function rangRender(){
   const keep=document.getElementById('rov'),g=RG,mine=RangBid.hand(g,0),tr=RU.show?RU.show.cards:g.trick,L=li();
   const live=['call','bid','play'].includes(g.phase)&&!RU.busy;if(live)rangClock(g);
   const my=g.phase==='play'&&g.turn===0&&!RU.busy,ok=my?rangOk(g.hands[0],g.trick):[],isOk=c=>ok.some(x=>x.s===c.s&&x.r===c.r);
-  const TP=[[425,244],[556,200],[452,204],[316,200]],CP=[[14,338],[828,200],[420,92],[14,234]],who=g.turn===0&&!RU.busy,hi=g.call.hi;
+  const TP=[[431,262],[540,232],[431,200],[322,232]],CP=[[14,338],[828,200],[420,92],[14,234]],who=g.turn===0&&!RU.busy,hi=g.call.hi;
   const SD=['L','R','L','L'];
   let msg='',pan='';
   const last=g.log[g.log.length-1],lastTxt=last?(last.pass?`${pn(last.p)} ${T2('ने पास किया','passed')}`:(rKnown(last.p,g)&&last.s!=null)?`📢 ${pn(last.p)} ${T2('ने बोला','called')} ${SUITS[last.s]} ${T2('पर','on')} ${last.n}`:`📢 ${pn(last.p)} ${T2('ने','called')} ${last.n} ${T2('बोला — 🔒 रंग छुपा है','— 🔒 suit hidden')}`):'';
