@@ -3,7 +3,8 @@
    - ../www/index.html se wahi game-engine padhta hai jo app me chalta hai (ek hi rules, ek hi bots)
    - game server par chalta hai: patte server baantta hai, har khiladi ko sirf apne patte dikhte hain
    - rooms: private (code se), quick match (khali seat par bots), disconnect par bot chal deta hai, wapas judne par control mil jata hai
-   - 3 game: Call Break ('cb'), Kot Piece ('kot', 4 khiladi, seat 0&2 ek team, 1&3 doosri) aur Rang Bid ('rang', 4 khiladi, sab alag) */
+   - 5 game: Call Break ('cb'), Kot Piece ('kot', 4 khiladi, seat 0&2 ek team, 1&3 doosri), Rang Bid ('rang', 4 khiladi, sab alag),
+   Seep ('seep', 2 ya 4 khiladi, 4 me seat 0&2 ek team) aur Bhabhi-Devar ('bhabhi', 3 se 8 khiladi, sab alag) */
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto');
 
 const PORT = +process.env.PORT || 8080;
@@ -12,8 +13,8 @@ const T = {                                   // samay (ms). test ke liye env se
   hold: +process.env.HOLD_MS || 1900,         // hath poora hone ke baad clients patte dikhate hain
   round: +process.env.ROUND_WAIT_MS || 8000,  // round ke beech ka score-screen
   quick: +process.env.QUICK_WAIT_MS || 12000, // quick match me doosre khiladi ka intezaar
-  botMin: +process.env.BOT_MIN_MS || 1500, botMax: +process.env.BOT_MAX_MS || 3000,
-  bidMin: +process.env.BID_MIN_MS || 1000, bidMax: +process.env.BID_MAX_MS || 1600,
+  botMin: +process.env.BOT_MIN_MS || 1000, botMax: +process.env.BOT_MAX_MS || 2000,
+  bidMin: +process.env.BID_MIN_MS || 700, bidMax: +process.env.BID_MAX_MS || 1100,
   emptyRoom: +process.env.EMPTY_ROOM_MS || 60000,
   play: +process.env.PLAY_MS || 15000,             // teeno game: patta chalne ke liye 15 second
   kturn: +process.env.KOT_TURN_MS || 30000,         // Kot Piece: rang bolne/badalne me sochne ka samay thoda zyada
@@ -26,10 +27,33 @@ function loadEngine() {
   const h = fs.readFileSync(WWW, 'utf8');
   const a = h.indexOf('/* ============ 1. CARD LIBRARY'), b = h.indexOf('/* ============ 4. DATA');
   if (a < 0 || b < 0) throw new Error('engine markers index.html me nahi mile');
-  return new Function(h.slice(a, b) + ';return {CallBreak,Bots,KotPiece,KotBots,RangBid,RangBots}')();
+  const sl = (m1, m2) => { const x = h.indexOf(m1), y = h.indexOf(m2); if (x < 0 || y < 0 || y < x) throw new Error('engine markers index.html me nahi mile: ' + m1); return h.slice(x, y); };
+  const power = sl('function powerHand(h,st){', '/* ---- Rang Bol: bade bid ke ank'), seep = sl('const SeepEng=(()=>{', '/* ============ SEEP: SCREEN'), bhab = sl('const BhEng=(()=>{', '/* ============ BHABHI: SCREEN');
+  return new Function(h.slice(a, b) + '\n' + power + '\n' + seep + '\n' + bhab + ';return {CallBreak,Bots,KotPiece,KotBots,RangBid,RangBots,SeepEng,BhEng}')();
 }
-const { CallBreak, Bots, KotPiece, KotBots, RangBid, RangBots } = loadEngine();
-const ENG = r => r.game === 'kot' ? KotPiece : r.game === 'rang' ? RangBid : CallBreak;      // is room ka engine
+const { CallBreak, Bots, KotPiece, KotBots, RangBid, RangBots, SeepEng, BhEng } = loadEngine();
+
+/* Seep aur Bhabhi ke engine ko wahi interface dete hain jo baaki teen engine ka hai: createInitialState / getValidMoves / applyMove / nextRound */
+const SeepOL = {
+  createInitialState: r => SeepEng.create({ variant: r.sv, n: r.n, target: 100, minSeep: r.sm }),
+  getValidMoves: (G, p) => G.phase === 'bid' ? (p === G.bidder ? SeepEng.bidOptions(G).map(v => ({ t: 'bid', v })) : [])
+    : G.phase === 'play' && p === G.turn ? SeepEng.getMoves(G, p) : [],
+  applyMove: (G, p, m) => SeepEng.applyMove(G, p, m),
+  nextRound: G => SeepEng.nextDeal(G)
+};
+const BhOL = {
+  createInitialState: r => BhEng.create({ n: r.n, fr: r.fr, ask: r.ask, so: r.so }),
+  getValidMoves: (G, p) => BhEng.getMoves(G, p),
+  applyMove: (G, p, m) => BhEng.applyMove(G, p, m),
+  nextRound: G => G
+};
+const SeepBots = {}, BhBots = {};
+['easy', 'medium', 'hard'].forEach(l => {
+  SeepBots[l] = (G, p) => G.phase === 'bid' ? { t: 'bid', v: SeepEng.bots.bid(G) } : SeepEng.bots.move(G, p, l);
+  BhBots[l] = (G, p, mv) => BhEng.best(G, p, l, mv);
+});
+const ENG = r => r.game === 'kot' ? KotPiece : r.game === 'rang' ? RangBid : r.game === 'seep' ? SeepOL : r.game === 'bhabhi' ? BhOL : CallBreak;      // is room ka engine
+const BOTS_OF = r => r.game === 'kot' ? KotBots : r.game === 'rang' ? RangBots : r.game === 'seep' ? SeepBots : r.game === 'bhabhi' ? BhBots : Bots;
 const rnd = n => crypto.randomInt(Math.max(1, n));
 
 /* ---------- minimal WebSocket (RFC 6455) ---------- */
@@ -77,7 +101,12 @@ const EMOS = ['👍','😂','😮','🔥','👏','😡','🙏'];
 /* ---------- rooms ---------- */
 const clients = new Set(), rooms = new Map(), sessions = new Map();   // sessions: token -> {code, seat}
 const LV = l => ['easy', 'medium', 'hard'].includes(l) ? l : 'medium';
-const norm = o => o.game === 'rang'
+const clampN = (v, a, b, d) => Number.isInteger(v) ? Math.max(a, Math.min(b, v)) : d;
+const norm = o => o.game === 'seep'
+  ? { game: 'seep', n: o.n === 2 ? 2 : 4, mode: 'rounds', rounds: 5, target: 21, ktarget: 5, sv: o.sv === 'p30' ? 'p30' : 's100', sm: o.sm === 2 ? 2 : 1, level: LV(o.level) }
+  : o.game === 'bhabhi'
+  ? { game: 'bhabhi', n: clampN(o.n, 3, 8, 4), mode: 'rounds', rounds: 5, target: 21, ktarget: 5, fr: o.fr !== false, ask: !!o.ask, so: !!o.so, level: LV(o.level) }
+  : o.game === 'rang'
   ? { game: 'rang', n: 4, mode: o.mode === 'target' ? 'target' : 'rounds', rounds: [3, 5].includes(o.rounds) ? o.rounds : 5, target: [11, 21, 31].includes(o.target) ? o.target : 11, ktarget: 5, level: LV(o.level) }
   : o.game === 'kot'
   ? { game: 'kot', n: 4, mode: 'rounds', rounds: 5, target: 21, ktarget: [3, 5, 7].includes(o.ktarget) ? o.ktarget : 5, level: LV(o.level) }
@@ -87,7 +116,7 @@ const norm = o => o.game === 'rang'
     rounds: [1, 3, 5].includes(o.rounds) ? o.rounds : 5, target: [11, 21].includes(o.target) ? o.target : 21,
     level: LV(o.level)
   };
-const keyOf = o => [o.game, o.n, o.mode, o.rounds, o.target, o.ktarget, o.level].join('|');
+const keyOf = o => [o.game, o.n, o.mode, o.rounds, o.target, o.ktarget, o.level, o.sv, o.sm, o.fr, o.ask, o.so].join('|');
 function newCode() { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let c; do { c = Array.from({ length: 5 }, () => A[rnd(A.length)]).join(''); } while (rooms.has(c)); return c; }
 function mkRoom(o, pub) {
   const q = norm(o), r = { ...q, code: newCode(), key: keyOf(q), pub: !!pub, phase: 'lobby', seats: Array.from({ length: q.n }, () => ({ k: 'empty' })),
@@ -97,12 +126,17 @@ function mkRoom(o, pub) {
 const humans = r => r.seats.filter(s => s.k === 'human');
 const liveClient = s => s.k === 'human' && s.c && s.c.ws.open ? s.c : null;
 function roomMsg(r, you) {
-  return { t: 'room', game: r.game, ktarget: r.ktarget, code: r.code, you, host: r.host, n: r.n, mode: r.mode, rounds: r.rounds, target: r.target, level: r.level, phase: r.phase, pub: r.pub,
+  return { t: 'room', game: r.game, ktarget: r.ktarget, code: r.code, you, host: r.host, n: r.n, mode: r.mode, rounds: r.rounds, target: r.target, level: r.level, phase: r.phase, pub: r.pub, sv: r.sv, sm: r.sm, fr: r.fr, ask: r.ask, so: r.so,
     startIn: r.startAt ? Math.max(0, r.startAt - Date.now()) : 0, seats: r.seats.map(s => ({ k: s.k, name: s.name, e: s.e, away: !!s.away })) };
 }
 function bcastRoom(r) { r.seats.forEach((s, i) => { const c = liveClient(s); if (c) c.ws.send(roomMsg(r, i)); }); }
 function view(G, seat, game) {
   const v = JSON.parse(JSON.stringify(G));
+  if (game === 'seep' || game === 'bhabhi') {                       // doosron ke patte (aur Seep ki gaddi) kabhi nahi bhejte
+    v.hands = G.hands.map((h, i) => i === seat ? h : h.map(() => 0));
+    if (game === 'seep') { v.deck = G.deck.map(() => 0); if (G.hidden) v.table = G.table.map(i => ({ ...i, val: 0, cards: i.cards.map(() => ({ s: 0, r: 2 })) })); }
+    return v;
+  }
   // Kot Piece: apne bhi sirf utne patte bhejte hain jitne abhi dikhne chahiye (pehle 5, rang badalne par 13)
   v.hands = G.hands.map((h, i) => i === seat ? ((game === 'kot' || game === 'rang') ? h.slice(0, G.vis[i]) : h) : h.map(() => 0));
   // Rang Bid: bolti (call) ke samay doosron ka rang chhupa rehta hai; bolti khatam hone par trump sabko dikhta hai
@@ -126,7 +160,7 @@ function pickBot(r) {
 function destroy(r) { clearTimeout(r.timer); clearTimeout(r.emptyT); rooms.delete(r.code); r.seats.forEach(s => { if (s.tok) sessions.delete(s.tok); }); }
 
 function addHuman(r, c) {
-  const order = r.game === 'kot' ? [0, 2, 1, 3] : r.seats.map((_, j) => j);      // Kot Piece: doosra khiladi saamne (saathi) baithta hai
+  const order = (r.game === 'kot' || (r.game === 'seep' && r.n === 4)) ? [0, 2, 1, 3] : r.seats.map((_, j) => j);      // Kot Piece: doosra khiladi saamne (saathi) baithta hai
   const i = order.find(j => r.seats[j].k === 'empty'); if (i === undefined) return false;
   r.seats[i] = { k: 'human', c, tok: c.token, name: [c.name, c.name], e: c.e, away: false, idle: 0 };
   c.room = r; c.seat = i; sessions.set(c.token, { code: r.code, seat: i }); if (r.host < 0) r.host = i;
@@ -147,6 +181,8 @@ function start(r) {
   if (!humans(r).length) return destroy(r);
   r.seats = r.seats.map(s => s.k === 'empty' ? pickBot(r) : s);
   r.G = r.game === 'rang' ? RangBid.createInitialState(r.mode === 'target' ? { target: r.target } : { rounds: r.rounds })
+    : r.game === 'seep' ? SeepOL.createInitialState(r)
+    : r.game === 'bhabhi' ? BhOL.createInitialState(r)
     : r.game === 'kot' ? KotPiece.createInitialState({ target: r.ktarget })
     : CallBreak.createInitialState({ players: r.n, rounds: r.rounds, target: r.mode === 'target' ? r.target : 0 });
   r.phase = 'playing'; r.tn = 0; r.holdUntil = 0; bcastRoom(r); advance(r);
@@ -154,7 +190,7 @@ function start(r) {
 function advance(r) { sched(r); sendStates(r); }
 function sched(r) {
   clearTimeout(r.timer); const G = r.G; if (!G) return;
-  if (G.phase === 'roundEnd') {
+  if (G.phase === 'roundEnd' || G.phase === 'dealEnd') {
     const rw = r.game === 'cb' ? T.round : T.kround;
     r.deadline = Date.now() + rw;
     r.timer = setTimeout(() => { r.G = ENG(r).nextRound(r.G); r.holdUntil = 0; advance(r); }, rw); return;
@@ -167,18 +203,21 @@ function sched(r) {
   r.timer = setTimeout(() => autoMove(r, seat, !auto), ms);
 }
 function applyMove(r, seat, m) {
-  const G = r.G, done = G.phase === 'play' && G.trick.length === G.n - 1;
+  const G = r.G, done = !!G.trick && r.game !== 'bhabhi' && G.phase === 'play' && G.trick.length === G.n - 1;
   r.G = ENG(r).applyMove(G, seat, m);
   if (done) { r.tn++; r.holdUntil = Date.now() + T.hold; }
+  const ev = r.G.ev;
+  if (r.game === 'bhabhi' && ev && (ev.type === 'pick' || ev.type === 'discard')) { r.tn++; r.holdUntil = Date.now() + T.hold; }   // thulla / discard: clients chaal 1.8 sec dikhate hain
   advance(r);
 }
 function autoMove(r, seat, idle) {
   const G = r.G; if (!G || G.turn !== seat) return;
   const s = r.seats[seat], mv = ENG(r).getValidMoves(G, seat); if (!mv.length) return;
-  const B = r.game === 'kot' ? KotBots : r.game === 'rang' ? RangBots : Bots;
+  const B = BOTS_OF(r);
   const bot = s.k === 'bot' ? (B[r.level] || B.medium) : B.medium;
   if (idle && s.k === 'human') { s.idle = (s.idle || 0) + 1; if (s.idle >= 2) s.away = true; }   // 2 baar time khatam: bot kheleg
   if (r.game === 'rang' && idle && s.k === 'human' && G.phase === 'call') return applyMove(r, seat, { t: 'pass' });   // samay khatam: rang nahi bolega
+  if (r.game === 'bhabhi' && idle && s.k === 'human' && G.phase === 'ask') return applyMove(r, seat, { t: 'refuse' });   // samay khatam: patte nahi dega
   applyMove(r, seat, bot(G, seat, mv) || mv[0]);
 }
 function onMove(c, m) {
@@ -189,6 +228,12 @@ function onMove(c, m) {
   if (r.game === 'rang') {
     const sv = x => x == null ? null : x;
     ok = mv.find(x => x.t === m.t && (m.t === 'play' ? !!m.c && x.c.s === m.c.s && x.c.r === m.c.r : (m.t === 'call' || m.t === 'bid') ? x.n === m.n && sv(x.s) === sv(m.s) : true)) || null;
+  } else if (r.game === 'seep') {
+    const sig = x => JSON.stringify([x.a, x.take, x.use, x.hid, x.h]);
+    ok = m.t === 'bid' ? mv.find(x => x.t === 'bid' && x.v === m.v)
+      : m.t === 'play' && m.c ? mv.find(x => x.t === 'play' && x.c.s === m.c.s && x.c.r === m.c.r && sig(x) === sig(m)) : null;
+  } else if (r.game === 'bhabhi') {
+    ok = mv.find(x => x.t === m.t && (m.t === 'play' ? !!m.c && x.c.s === m.c.s && x.c.r === m.c.r : m.t === 'ask' ? x.to === m.to : true)) || null;
   } else if (r.game === 'kot') {
     ok = mv.find(x => x.t === m.t && (m.t === 'play' ? !!m.c && x.c.s === m.c.s && x.c.r === m.c.r : (m.t === 'call' || m.t === 'trump') ? x.s === m.s : true)) || null;
   } else {

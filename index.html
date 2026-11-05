@@ -243,9 +243,159 @@ body.tbl .kbar{background:none!important}body.tbl .kbar::before{content:'';posit
 .kpan.rb button{font-size:25px;padding:9px 16px}.kpan.rb .sb{min-width:96px}
 #tkb{font-size:26px;padding:5px 15px}
 .kchip.kme .rbub.L{left:calc(100% + 10px);top:14px}
+/* ===== UI upgrade: fonts, icons, home, cards, leaderboard, VFX ===== */
+html,body{font-family:'Baloo 2','Poppins',system-ui,Arial,sans-serif}
+h1,h2,.brand,.tl,.playnow,.sc2 b,.pos,.rs2,.gb,.yb,.pl,.nm,.sc,.medal,.code,.gain,.lv{font-family:'Lilita One','Baloo 2',system-ui,sans-serif;letter-spacing:.3px}
+.card{font-family:'Poppins',Arial,sans-serif}
+.ei{width:1.1em;height:1.1em;display:inline-block;vertical-align:-.2em;flex:none}
+.tl .ic .ei{width:54px;height:54px}
+.cf{width:100%;height:100%;display:block;border-radius:50%}.emo button svg{width:38px;height:38px;display:block}.emo button{padding:4px}
+.av svg.cf,.mini svg.cf,.kchip .a svg.cf{border-radius:50%}
+/* press feedback */
+button,.tl,.sc2,.prof,.playnow{transition:transform .08s,box-shadow .08s,filter .08s;-webkit-user-select:none;user-select:none}
+button:active:not(:disabled):not(.sharebtn):not(.playnow),.tl:active,.sc2:active,.prof:active{transform:translateY(4px) scale(.96);filter:brightness(.93)}
+.gb:active,.yb:active,.wb:active,.tl:active,.sc2:active,.playnow:active,.nav button:active{box-shadow:0 1px 0 #0007!important}
+.playnow:active{transform:translateY(7px) scale(.97)!important}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+/* home */
+.logo3d{position:absolute;left:50%;top:2px;transform:translateX(-50%);width:340px;height:108px;pointer-events:none;filter:drop-shadow(0 6px 8px #0007)}.logo3d svg{width:100%;height:100%}
+.playnow{position:absolute;left:280px;top:150px;width:400px;height:140px;border-radius:70px;background:linear-gradient(#7aea55,#2f9a1c);border:4px solid #d8ffc8;box-shadow:0 10px 0 #1c5e10,0 0 40px 8px #7dff5a88;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:pnglow 1.8s ease-in-out infinite}
+.playnow span{font-family:'Lilita One',sans-serif;font-size:54px;line-height:1;letter-spacing:3px;text-shadow:0 4px 0 #1c5e10}.playnow small{font-size:16px;font-weight:700;opacity:.95}
+@keyframes pnglow{50%{box-shadow:0 10px 0 #1c5e10,0 0 66px 18px #7dff5acc}}
+.subs{position:absolute;left:149px;top:314px;display:flex;gap:16px}
+.sc2{width:210px;height:102px;border-radius:18px;background:linear-gradient(#b6492f,#97351f);border:2px solid #d9784f;box-shadow:0 6px 0 #5b1f33;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:#fff;cursor:pointer;text-align:center}
+.sc2 .ei{width:34px;height:34px}.sc2 b{font-size:18px;font-weight:400}.sc2 small{font-size:12px;opacity:.92;font-weight:600}
+.nav{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;display:flex;gap:12px;background:#000b;border:2px solid #ffffff33;border-radius:38px;padding:8px 16px;backdrop-filter:blur(6px)}
+.nav button{width:56px;height:56px;border-radius:50%;padding:0;background:linear-gradient(#c0583a,#9c3e26);border:2px solid #e08a60;box-shadow:0 4px 0 #5b1f33;display:flex;align-items:center;justify-content:center}.nav .ei{width:30px;height:30px}
+/* premium cards */
+.card{background:linear-gradient(155deg,#fff 0,#fbf6ea 60%,#efe5cf 100%);box-shadow:0 1px 0 #fff inset,0 2px 3px #0004,0 9px 14px -5px #0008}
+.card::after{content:'';position:absolute;inset:4px;border:1px solid #0000001c;border-radius:8px;pointer-events:none}
+.card .fa{position:absolute;right:7px;bottom:7px;width:60px;height:76px}
+.hand{perspective:900px}.tc{perspective:700px}
+.hand .card.ok:hover{transform:translateY(-30px) rotate(-1.5deg)}
+@keyframes dealin{from{transform:translateY(-260px) rotate(-18deg) rotateY(180deg);opacity:0}}
+@keyframes fly{from{transform:translate(var(--dx,0),var(--dy,0)) rotateY(90deg);opacity:.3}}
+.bf i{border:2px solid #fff;background:radial-gradient(circle,#f5c542 0 3px,#0000 4px),repeating-linear-gradient(45deg,#7a1020 0 3px,#b01c35 3px 6px)}
+/* leaderboard */
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:8px;margin:14px 0 8px}
+.pcol{position:relative;width:140px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.pcol b{font-size:15px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pcol small{font-size:12px;opacity:.9}
+.pav{width:60px;height:60px;border-radius:50%;padding:3px;background:linear-gradient(#e6e9ee,#8d96a0)}
+.pcol.r1 .pav{width:84px;height:84px;background:linear-gradient(#fff3b0,#d99a1a);box-shadow:0 0 0 4px #ffd54a55,0 0 30px 10px #ffd54acc;animation:pnglow2 2s ease-in-out infinite}
+.pcol.r3 .pav{background:linear-gradient(#e0a070,#8a4f1d)}
+@keyframes pnglow2{50%{box-shadow:0 0 0 6px #ffd54a77,0 0 44px 16px #ffd54a}}
+.pavi{width:100%;height:100%;border-radius:50%;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center}.pavi img{width:100%;height:100%;object-fit:cover}
+.pcrown{width:44px;margin-bottom:-6px;z-index:2}.pcrown svg{width:100%;display:block}
+.ped{width:100%;border-radius:10px 10px 0 0;background:linear-gradient(#ffffff30,#0006);font-family:'Lilita One',sans-serif;font-size:26px;display:flex;align-items:center;justify-content:center}
+.r1 .ped{height:70px;background:linear-gradient(#f5c542cc,#8a5a0b99)}.r2 .ped{height:48px}.r3 .ped{height:34px}
+.tb{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700}.tb svg{width:16px;height:18px}
+.lb .tb{margin-right:2px}.tiers{display:flex;justify-content:space-around;font-size:11px;opacity:.9;margin:8px 0 2px}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Lilita+One&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
 </head>
 <body><div id="bg"></div><div id="stage"><div id="app"></div></div>
+<script>
+/* ===== UI upgrade helpers ===== */
+const ICONS={
+trophy:'<path d="M7 3h10v5a5 5 0 0 1-10 0z" fill="#f5c542"/><path d="M7 5H3c0 4 2 6 4.3 6.4M17 5h4c0 4-2 6-4.3 6.4" fill="none" stroke="#d99a1a" stroke-width="1.8"/><rect x="10.5" y="13" width="3" height="4" fill="#d99a1a"/><rect x="7" y="17" width="10" height="3.5" rx="1" fill="#b8860b"/><path d="M9.2 4.8v3.2" stroke="#fff6c8" stroke-width="1.4" stroke-linecap="round"/>',
+bot:'<rect x="4" y="7" width="16" height="13" rx="4" fill="#7ea6d6"/><rect x="11" y="3" width="2" height="4" fill="#4b6fa0"/><circle cx="12" cy="3" r="1.6" fill="#ff6b6b"/><circle cx="9" cy="13" r="2.2" fill="#fff"/><circle cx="15" cy="13" r="2.2" fill="#fff"/><circle cx="9" cy="13" r="1" fill="#223"/><circle cx="15" cy="13" r="1" fill="#223"/><rect x="8.5" y="17" width="7" height="1.6" rx=".8" fill="#4b6fa0"/>',
+globe:'<circle cx="12" cy="12" r="9.5" fill="#3b8fe0"/><path d="M6 8c3-2 4 1 6 0s2 3 0 4-1 4-3 5c-2-1-4-4-4-6s0-2 1-3zM15 5c2 1 4 3 4.5 6-2 0-3-1-3.5-3z" fill="#5fc16a"/><circle cx="12" cy="12" r="9.5" fill="none" stroke="#fff" stroke-opacity=".5"/>',
+cap:'<path d="M12 4 1.5 9 12 14l10.5-5z" fill="#2d3a55"/><path d="M6 12v4c0 1.5 3 3 6 3s6-1.5 6-3v-4l-6 3z" fill="#4b5f8c"/><path d="M21 9.5v6" stroke="#f5c542" stroke-width="1.6"/><circle cx="21" cy="16.5" r="1.4" fill="#f5c542"/>',
+cal:'<rect x="3" y="5" width="18" height="16" rx="3" fill="#fff"/><path d="M3 8a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v2H3z" fill="#e5484d"/><rect x="7" y="2.5" width="2" height="5" rx="1" fill="#7a1f24"/><rect x="15" y="2.5" width="2" height="5" rx="1" fill="#7a1f24"/><g fill="#6b7280"><rect x="6.5" y="13" width="3" height="3" rx=".6"/><rect x="10.5" y="13" width="3" height="3" rx=".6"/><rect x="14.5" y="13" width="3" height="3" rx=".6"/></g>',
+gem:'<path d="M6 3h12l4 6-10 12L2 9z" fill="#38d2f0"/><path d="M2 9h20M9 3l-2 6 5 12M15 3l2 6-5 12" fill="none" stroke="#e8fbff" stroke-opacity=".8"/><path d="M7.5 3h9L12 9z" fill="#9aeaff"/>',
+medal:'<path d="M7 2h4l1 7H8zM17 2h-4l-1 7h4z" fill="#e5484d"/><circle cx="12" cy="15" r="6.5" fill="#f5c542" stroke="#b8860b" stroke-width="1.5"/><path d="m12 11.5 1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.4z" fill="#fff6c8"/>',
+help:'<circle cx="12" cy="12" r="10" fill="#8b5cf6"/><path d="M9 9.5a3 3 0 1 1 4.5 2.6c-1 .6-1.5 1.2-1.5 2.2" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="17.6" r="1.4" fill="#fff"/>',
+gear:'<path fill-rule="evenodd" d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6zM10.3 2h3.4l.5 2.6 1.8.8 2.3-1.5 2.4 2.4-1.5 2.3.8 1.8 2.6.5v3.4l-2.6.5-.8 1.8 1.5 2.3-2.4 2.4-2.3-1.5-1.8.8-.5 2.6h-3.4l-.5-2.6-1.8-.8-2.3 1.5-2.4-2.4 1.5-2.3-.8-1.8L2 13.7v-3.4l2.6-.5.8-1.8-1.5-2.3 2.4-2.4 2.3 1.5 1.8-.8z" fill="#d5dbe4"/>',
+share:'<circle cx="18" cy="5.5" r="3.2" fill="#fff"/><circle cx="6" cy="12" r="3.2" fill="#fff"/><circle cx="18" cy="18.5" r="3.2" fill="#fff"/><path d="m8.6 10.6 6.8-3.9M8.6 13.4l6.8 3.9" stroke="#fff" stroke-width="1.8"/>',
+game:'<rect x="2" y="7" width="20" height="11" rx="5.5" fill="#5b6ee1"/><path d="M7 10v5M4.5 12.5h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="15.5" cy="11.5" r="1.3" fill="#ffd54a"/><circle cx="18.5" cy="14" r="1.3" fill="#ff6b6b"/>',
+users:'<circle cx="9" cy="8" r="3.5" fill="#f5b88a"/><path d="M2 20c0-4 3-6 7-6s7 2 7 6z" fill="#5ab982"/><circle cx="17" cy="9" r="2.8" fill="#e8a574"/><path d="M15.5 14.3c3.5-.4 6.5 1.2 6.5 5.7h-4.5" fill="#3b8fe0"/>',
+target:'<circle cx="12" cy="12" r="10" fill="#fff"/><circle cx="12" cy="12" r="7.5" fill="#e5484d"/><circle cx="12" cy="12" r="5" fill="#fff"/><circle cx="12" cy="12" r="2.5" fill="#e5484d"/>',
+repeat:'<path d="M4 11V9a4 4 0 0 1 4-4h8l-2-2.5M20 13v2a4 4 0 0 1-4 4H8l2 2.5" fill="none" stroke="#7bd88f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
+cards:'<rect x="3" y="4" width="12" height="16" rx="2" fill="#fff" stroke="#bbb" transform="rotate(-12 9 12)"/><rect x="9" y="4" width="12" height="16" rx="2" fill="#fff" stroke="#bbb" transform="rotate(10 15 12)"/><path d="M15 9.5c1-1.8 3.5-.8 3 1-.3 1.2-3 2.8-3 2.8s-2.7-1.6-3-2.8c-.5-1.8 2-2.8 3-1z" fill="#e5484d" transform="rotate(10 15 12)"/>',
+fire:'<path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-4 2-7 1 1 2 2 2 3 1-3 1-5 2-8z" fill="#ff8a1f"/><path d="M12 12c1 2 3 3 3 5a3 3 0 0 1-6 0c0-2 2-3 3-5z" fill="#ffd54a"/>',
+sliders:'<path d="M4 7h16M4 12h16M4 17h16" stroke="#cfd6df" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="7" r="2.4" fill="#ffd54a"/><circle cx="16" cy="12" r="2.4" fill="#ffd54a"/><circle cx="10" cy="17" r="2.4" fill="#ffd54a"/>',
+smile:'<circle cx="12" cy="12" r="10" fill="#ffd54a"/><circle cx="8.5" cy="10" r="1.4" fill="#4a2410"/><circle cx="15.5" cy="10" r="1.4" fill="#4a2410"/><path d="M7.5 14c1 2.5 8 2.5 9 0" fill="none" stroke="#4a2410" stroke-width="1.8" stroke-linecap="round"/>',
+star:'<path d="m12 2 3 6.5 7 .8-5.2 4.8 1.5 7L12 17.5 5.7 21l1.5-7L2 9.3l7-.8z" fill="#ffd54a" stroke="#d99a1a"/>',
+palette:'<path d="M12 2a10 10 0 1 0 0 20c1.7 0 2-1.3 1.2-2.3-.8-1 0-2.7 1.4-2.7H17a5 5 0 0 0 5-5C22 6 17.5 2 12 2z" fill="#f2b705"/><circle cx="7.5" cy="11" r="1.6" fill="#e5484d"/><circle cx="11" cy="7" r="1.6" fill="#3b8fe0"/><circle cx="16" cy="8" r="1.6" fill="#5ab982"/>',
+check:'<path d="m4 12.5 5 5L20 6.5" fill="none" stroke="#7bd88f" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>'};
+const ic=n=>`<svg class="ei" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||''}</svg>`;
+const EMAP={'🏆':'trophy','🤖':'bot','🌐':'globe','🎓':'cap','📅':'cal','💎':'gem','🏅':'medal','❓':'help','⚙':'gear','📤':'share','🎮':'game','👥':'users','🎯':'target','🔁':'repeat','🃏':'cards','🔥':'fire','🎛':'sliders','🙂':'smile','⭐':'star','🎨':'palette','✔':'check'};
+const EMRE=new RegExp('('+Object.keys(EMAP).join('|')+')\\uFE0F?','g'),EMTEST=new RegExp(EMRE.source);
+function svgify(root){
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),L=[];let n;
+  while(n=w.nextNode()){if(EMTEST.test(n.data)&&!/^(SCRIPT|STYLE|TEXTAREA|INPUT|TITLE)$/.test(n.parentNode.nodeName))L.push(n)}
+  L.forEach(t=>{const d=t.data,f=document.createDocumentFragment();let last=0,m;EMRE.lastIndex=0;
+    while(m=EMRE.exec(d)){if(m.index>last)f.append(d.slice(last,m.index));const s=document.createElement('span');s.innerHTML=ic(EMAP[m[1]]);f.append(s.firstChild);last=m.index+m[0].length}
+    if(last<d.length)f.append(d.slice(last));t.replaceWith(f)});
+}
+/* cartoon avatars (vector) — emoji ki jagah */
+function cartoon(e){
+  let i=-1;try{i=EMOJI.indexOf(e)}catch(_){}
+  if(i<0){i=0;for(const ch of String(e||'x'))i+=ch.codePointAt(0)}
+  const BG=['#ff8a65','#4fc3f7','#81c784','#ba68c8','#ffd54f','#f06292','#4db6ac','#9575cd'],SK=['#ffdbb4','#f1c27d','#e0ac69','#c68642','#8d5524'],HR=['#2b1d12','#6b3a1d','#c9a227','#8a8a8a','#b5301f','#111'];
+  const bg=BG[i%8],sh=BG[(i+3)%8],sk=SK[(i*3+1)%5],hr=HR[(i*5+2)%6],ey=i%3,mo=(i>>1)%3,hs=i%4,ac=(i*7+3)%7;
+  const hairB=hs===1?`<circle cx="50" cy="28" r="24" fill="${hr}"/>`:'';
+  const hairF=[`<path d="M26 44c-2-24 14-30 24-30s26 6 24 30c-4-10-10-14-24-14s-20 4-24 14z" fill="${hr}"/>`,'',`<path d="M26 44c-2-22 12-32 28-30 12 2 20 12 20 30-3-12-14-16-22-16-10 0-20 4-26 16z" fill="${hr}"/>`,''][hs];
+  const eyes=[`<circle cx="40" cy="46" r="3.2" fill="#222"/><circle cx="60" cy="46" r="3.2" fill="#222"/>`,`<path d="M35 47q5-6 10 0M55 47q5-6 10 0" stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"/>`,`<circle cx="40" cy="46" r="5.5" fill="#fff"/><circle cx="60" cy="46" r="5.5" fill="#fff"/><circle cx="40" cy="47" r="3" fill="#222"/><circle cx="60" cy="47" r="3" fill="#222"/>`][ey];
+  const mouth=[`<path d="M40 58q10 9 20 0" stroke="#7a2e2e" stroke-width="3" fill="none" stroke-linecap="round"/>`,`<path d="M40 56q10 14 20 0z" fill="#7a2e2e"/>`,`<path d="M42 60q8 5 16-3" stroke="#7a2e2e" stroke-width="3" fill="none" stroke-linecap="round"/>`][mo];
+  const acc=['',`<g fill="none" stroke="#222" stroke-width="2.5"><circle cx="40" cy="46" r="8"/><circle cx="60" cy="46" r="8"/><path d="M48 46h4"/></g>`,`<path d="M32 24l6-12 6 8 6-12 6 12 6-8 6 12z" fill="#f5c542" stroke="#b8860b" stroke-width="2"/>`,`<path d="M24 36c2-22 50-22 52 0z" fill="#e5484d"/><rect x="22" y="34" width="56" height="6" rx="3" fill="#b32a30"/>`,`<rect x="26" y="30" width="48" height="6" rx="3" fill="#3b8fe0"/>`,`<path d="M38 55c4-4 8-2 12 0 4-2 8-4 12 0-4 4-8 2-12 0-4 2-8 4-12 0z" fill="${hr}"/>`,`<path d="M28 28 26 8l15 12zM72 28 74 8 59 20z" fill="${hr}"/>`][ac];
+  return `<svg class="cf" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="${bg}"/>${hairB}<path d="M16 100c0-20 14-28 34-28s34 8 34 28z" fill="${sh}"/><rect x="43" y="62" width="14" height="14" fill="${sk}"/><ellipse cx="50" cy="46" rx="24" ry="26" fill="${sk}"/>${hairF}${eyes}<circle cx="34" cy="55" r="4" fill="#ff8a8a" opacity=".45"/><circle cx="66" cy="55" r="4" fill="#ff8a8a" opacity=".45"/>${mouth}${acc}</svg>`;
+}
+/* face cards J Q K — vector characters */
+function faceArt(r,s){
+  const col=SC[s],g='#f5c542',gd='#b8860b';
+  const crown=`<path d="M19 22l3-11 8 7 8-7 3 11z" fill="${g}" stroke="${gd}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  const hat=r===11?`<path d="M16 28c0-14 28-14 28 0z" fill="${col}"/><rect x="15" y="26" width="30" height="4" rx="2" fill="${g}"/><path d="M40 20c8-8 12-2 6 6" fill="none" stroke="${gd}" stroke-width="2"/>`:crown;
+  const hair=r===12?`<path d="M16 28c-4 14 0 26 7 30M44 28c4 14 0 26-7 30" stroke="#6b3a1d" stroke-width="6" fill="none" stroke-linecap="round"/>`:'';
+  const beard=r===13?`<path d="M18 38c2 14 22 14 24 0-5 5-19 5-24 0z" fill="#8b5a2b"/>`:'';
+  return `<svg class="fa" viewBox="0 0 60 76">${hair}<path d="M5 76c0-15 11-21 25-21s25 6 25 21z" fill="${col}"/><path d="M22 56l8 20 8-20z" fill="${g}"/><circle cx="30" cy="38" r="13" fill="#ffdcb0" stroke="#5a3a1d" stroke-width="1.2"/>${beard}<circle cx="25" cy="36" r="1.8" fill="#222"/><circle cx="35" cy="36" r="1.8" fill="#222"/><path d="M26 43q4 3 8 0" stroke="#7a2e2e" stroke-width="1.8" fill="none" stroke-linecap="round"/>${hat}</svg>`;
+}
+/* logo + tiers */
+const LOGO3D=`<svg viewBox="0 0 360 112"><defs><linearGradient id="mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6c8"/><stop offset=".35" stop-color="#f2c94c"/><stop offset=".55" stop-color="#a8761a"/><stop offset=".75" stop-color="#ffe27a"/><stop offset="1" stop-color="#8a5a0b"/></linearGradient></defs>
+<g transform="translate(180 62)"><g transform="rotate(-24)"><rect x="-19" y="-58" width="38" height="54" rx="6" fill="#fff" stroke="#999"/><text x="-12" y="-36" font-size="20" font-family="Arial" fill="#111">♠</text></g><g transform="rotate(24)"><rect x="-19" y="-58" width="38" height="54" rx="6" fill="#fff" stroke="#999"/><text x="-12" y="-36" font-size="20" font-family="Arial" fill="#d11f1f">♥</text></g><g><rect x="-19" y="-62" width="38" height="54" rx="6" fill="#fff" stroke="#999"/><text x="-12" y="-38" font-size="22" font-family="Arial" fill="#111">A</text><text x="-14" y="-16" font-size="26" font-family="Arial" fill="#d11f1f">♦</text></g></g>
+<text x="180" y="102" text-anchor="middle" textLength="300" lengthAdjust="spacingAndGlyphs" font-family="'Lilita One','Baloo 2',Impact,sans-serif" font-size="52" fill="#5b2a0a" stroke="#5b2a0a" stroke-width="9" stroke-linejoin="round">TAASH ADDA</text>
+<text x="180" y="102" text-anchor="middle" textLength="300" lengthAdjust="spacingAndGlyphs" font-family="'Lilita One','Baloo 2',Impact,sans-serif" font-size="52" fill="url(#mg)" stroke="#fff3b0" stroke-width="1">TAASH ADDA</text></svg>`;
+const TIERS=[['bronze','#cd7f32','#8a4f1d',5],['silver','#e1e5ea','#8d96a0',15],['gold','#f5c542','#b8860b',40],['diamond','#7be3ff','#2a9ad0',1e9]];
+const tierOf=w=>TIERS.find(t=>w<t[3])[0];
+function tierBadge(k){const t=TIERS.find(x=>x[0]===k),nm={bronze:T2('कांस्य','Bronze'),silver:T2('रजत','Silver'),gold:T2('स्वर्ण','Gold'),diamond:T2('हीरा','Diamond')}[k];
+  return `<span class="tb"><svg viewBox="0 0 16 18"><path d="M8 1 15 3.5v5c0 4-3 7-7 8.5C4 15.500 1 12.500 1 8.500v-5z" fill="${t[1]}" stroke="${t[2]}" stroke-width="1.3"/>${k==='diamond'?'<path d="M5 7h6l-3 5z" fill="#fff"/>':'<circle cx="8" cy="8.500" r="2.200" fill="'+t[2]+'"/>'}</svg>${nm}</span>`}
+function lbBody(us,extra){
+  if(!us.length)return `<p>${T2('अभी कोई खेल नहीं खेला गया','No games played yet')}</p>`;
+  const cell=(o,i)=>{if(!o)return '<div class="pcol"></div>';const w=o.st.won;return `<div class="pcol r${i+1}">${i===0?`<div class="pcrown">${CROWN}</div>`:''}<div class="pav"><div class="pavi">${avOf(o.x.av)}</div></div><b>${o.x.name}</b>${tierBadge(tierOf(w))}<small>${w}/${o.st.played} ${T2('जीत','wins')}</small><div class="ped">${i+1}</div></div>`};
+  const pod=[[us[1],1],[us[0],0],[us[2],2]].map(a=>cell(a[0],a[1])).join('');
+  const rest=us.slice(3).map((o,i)=>`<div class="lb"><span style="width:26px">${i+4}</span><div class="mini">${avOf(o.x.av)}</div>${tierBadge(tierOf(o.st.won))}<b>${o.x.name}</b><span>${o.st.won}/${o.st.played}${extra&&o.st.kots!=null?' · '+ic('fire')+o.st.kots+' KOT':''}</span></div>`).join('');
+  const lg=`<div class="tiers">${TIERS.map((t,i)=>`<span>${tierBadge(t[0])} ${i?TIERS[i-1][3]+'+':'0+'}</span>`).join('')}</div>`;
+  return `<div class="podium">${pod}</div>${rest}${lg}`;
+}
+/* VFX: confetti + coins + stars (Canvas) */
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  let c=document.getElementById('fx');if(c)c.remove();
+  c=document.createElement('canvas');c.id='fx';document.body.appendChild(c);
+  const W=c.width=innerWidth,H=c.height=innerHeight,x=c.getContext('2d'),cols=['#ffd54a','#ff6b6b','#5ab982','#4fc3f7','#ba68c8','#fff'],P=[];
+  for(let i=0;i<150;i++){const k=i%9===0?'coin':i%7===0?'star':'rect';P.push({x:Math.random()*W,y:-Math.random()*H*.5,vx:(Math.random()-.5)*5,vy:2+Math.random()*5,r:Math.random()*6,vr:(Math.random()-.5)*.3,s:7+Math.random()*9,k,c:cols[i%6],ph:Math.random()*6})}
+  const t0=performance.now();
+  (function f(t){x.clearRect(0,0,W,H);let alive=0;
+    P.forEach(p=>{p.vy+=.12;p.vx*=.995;p.x+=p.vx+Math.sin(p.ph+=.08);p.y+=p.vy;p.r+=p.vr;if(p.y<H+30)alive++;
+      x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;
+      if(p.k==='coin'){x.scale(Math.abs(Math.cos(p.ph)),1);x.fillStyle='#f5c542';x.beginPath();x.arc(0,0,p.s*.7,0,7);x.fill();x.strokeStyle='#b8860b';x.lineWidth=2;x.stroke();x.beginPath();x.arc(0,0,p.s*.4,0,7);x.stroke()}
+      else if(p.k==='star'){x.fillStyle='#ffe27a';x.beginPath();for(let j=0;j<10;j++){const a=j*Math.PI/5,r=j%2?p.s*.35:p.s*.8;x.lineTo(Math.cos(a)*r,Math.sin(a)*r)}x.closePath();x.fill()}
+      else{x.scale(1,Math.cos(p.ph));x.fillRect(-p.s/2,-p.s/3,p.s,p.s*.6)}
+      x.restore()});
+    if(alive&&t-t0<4500)requestAnimationFrame(f);else c.remove()})(t0);
+}
+let _cfT=0;
+(function(){
+  document.body.insertAdjacentHTML('beforeend','');
+  document.addEventListener('touchstart',()=>{},{passive:true});
+  const run=n=>{if(n.nodeType!==1)return;svgify(n);
+    const cr=n.matches('.crown')?n:n.querySelector('.crown');
+    if(cr&&cr.closest('.me')&&Date.now()-_cfT>3000){_cfT=Date.now();confetti()}};
+  const obs=new MutationObserver(ms=>{obs.disconnect();ms.forEach(m=>m.addedNodes.forEach(run));obs.takeRecords();obs.observe(document.body,{childList:true,subtree:true})});
+  obs.observe(document.body,{childList:true,subtree:true});
+})();
+</script>
 <script>
 /* ============ 1. CARD LIBRARY ============ */
 const SUITS=['♠','♥','♣','♦'];           // 0 = Spade (always trump in Call Break)
@@ -350,7 +500,7 @@ function kotValid(hand,trick){
   const same=hand.filter(c=>c.s===trick[0].c.s);
   return same.length?same:hand;            // rang ho to wahi, warna koi bhi patta
 }
-/* Rang Bid ka niyam (sab khiladi par: insaan, bot, online): 1) chale hue rang ka patta ho to wahi chalo, aur jeet sakte ho to BADA patta chalna zaroori
+/* Rang Bol ka niyam (sab khiladi par: insaan, bot, online): 1) chale hue rang ka patta ho to wahi chalo, aur jeet sakte ho to BADA patta chalna zaroori
    2) us rang ka patta na ho to kat (trump) chalna zaroori (kat pehle chal chuka ho to usse bada kat; bada kat na ho to koi bhi patta)  3) kat bhi na ho to apni marzi ka patta */
 function rangValid(hand,trick,tr){
   if(!trick.length)return hand;
@@ -459,7 +609,7 @@ function rangNextCaller(s,p){
   return -1;
 }
 const RangBid={
-  id:'rangbid',name:'Rang Bid',minPlayers:4,maxPlayers:4,supportsTeams:false,
+  id:'rangbid',name:'Rang Bol',minPlayers:4,maxPlayers:4,supportsTeams:false,
   createInitialState(o={}){
     const t=o.target||0;
     return this.deal({n:4,round:0,rounds:t?0:(o.rounds||5),target:t,dealer:o.dealer!=null?o.dealer:0,totals:[0,0,0,0],history:[],seed:o.seed});
@@ -468,11 +618,11 @@ const RangBid={
     const d=st.seed!=null?sshuffle(newDeck(),st.seed*31+st.round*7+3):shuffle(newDeck());
     const h=[[],[],[],[]];let idx=0;
     for(const cnt of [5,4,4])for(let k=0;k<4;k++){h[(st.dealer+1+k)%4].push(...d.slice(idx,idx+cnt));idx+=cnt}
-    return {...st,hands:h,vis:[5,5,5,5],call:{hi:null,passed:[false,false,false,false]},log:[],bids:[null,null,null,null],
+    powerHand(h,st);return {...st,hands:h,vis:[5,5,5,5],call:{hi:null,passed:[false,false,false,false]},log:[],bids:[null,null,null,null],
       trump:null,caller:null,callN:0,changedBy:null,won:[0,0,0,0],voids:[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],trick:[],played:[],turn:(st.dealer+1)%4,phase:'call',lastTrick:null,roundScore:null};
   },
   hand(st,p){return sortHand(st.hands[p].slice(0,st.vis[p]))},
-  minBid(st,p){return p===st.caller?st.callN:2},
+  minBid(st,p){return p===st.caller?st.callN:1},
   getValidMoves(st,p){
     if(st.phase==='call'){
       const m=[{t:'pass'}],lo=st.call.hi?st.call.hi.n+1:5;
@@ -722,7 +872,7 @@ const FACE={m:['👨','🧔','👳','👱','👴','🧑'],f:['👩','👩‍🦰
 function pickBots(k=3){const a=POOL.slice(),r=[];while(r.length<k){const x=a.splice(rand(a.length),1)[0],f=FACE[x[2]];r.push({n:[x[0],x[1]],e:f[rand(f.length)]})}return r}
 let BOTS=pickBots();
 const pn=p=>p?BOTS[p-1].n[li()]:me().name;
-const avOf=a=>a.img?`<img src="${a.img}" alt="">`:`<span>${a.e}</span>`;
+const avOf=a=>a.img?`<img src="${a.img}" alt="">`:cartoon(a.e);
 const avHTML=p=>avOf(p?{e:BOTS[p-1].e}:me().av);
 let AC,MG;
 const sndOn=()=>AC&&PG.set.sound;
@@ -1001,9 +1151,9 @@ if(window.visualViewport)visualViewport.addEventListener('resize',fit);
   new MutationObserver(f).observe(a,{attributes:true,attributeFilter:['class']});f()})();   // game table poori screen par
 fit();setTimeout(fit,300);setTimeout(fit,1200);setTimeout(fit,3000);   // app khulte waqt size der se milta hai
 let G=null,ui={hold:false,show:null,modal:null};
-const BOT_MIN=1500,BOT_MAX=3000,HUMAN_MS=15000;   // bot ka soch-samay aur aapka samay (ms)
+const BOT_MIN=1800,BOT_MAX=3300,HUMAN_MS=15000;   // bot ka soch-samay aur aapka samay (ms)
 const SC=['#111','#d11f1f','#111','#d11f1f'];   // ♠♣ kaala, ♥♦ laal
-const cardHTML=(c,x='',st='')=>`<div class="card s${c.s} ${x}" style="--c:${SC[c.s]};${st}"><i>${rankName(c.r)}<small>${SUITS[c.s]}</small></i><span>${SUITS[c.s]}</span></div>`;
+const cardHTML=(c,x='',st='')=>`<div class="card s${c.s} ${x}" style="--c:${SC[c.s]};${st}"><i>${rankName(c.r)}<small>${SUITS[c.s]}</small></i>${c.r>10?faceArt(c.r,c.s):`<span>${SUITS[c.s]}</span>`}</div>`;
 const EMOJI=['😎','🦁','🐯','🦊','🐼','🐸','🦉','🐵','🐲','🤖','👑','🥷','🧙','🎩','🐻','🐨','🐰','🐶','🐱','🦄','🐧','🦅','🐺','🦈','🐙','🦋','🐢','🐘','🦒','🦓','😈','🤠','🥳','😏','🤓','🧛','🧞','👽','👻','💀','🔥','⭐','🌟','💎','🎯','⚡','🌈','🍀','🚀','🏆','🍕','🎸','⚽','🏏','🚗','🌹'];
 let pickE=EMOJI[Math.floor(Math.random()*EMOJI.length)],typed='';
 const tog=()=>{PG.set.sound=!PG.set.sound;save();G?render():home()};
@@ -1047,15 +1197,14 @@ let bonusDone=0;
 function bonusCheck(){
   const u=me();let amt=0,msg='';
   if(u.gems==null){amt=100;msg=T2('🎉 स्वागत है! पहले लॉगिन का तोहफ़ा','🎉 Welcome! Your first-login gift');u.bonusDay=today()}
-  else if(u.bonusDay!==today()){amt=20;msg=T2('🎁 आज का डेली बोनस','🎁 Your daily bonus');u.bonusDay=today()}
   if(!amt)return;
   u.gems=gems()+amt;save();
   modal(`<h2 style="text-align:center">${msg}</h2><div class="bigem">+${amt} 💎</div><div class="row"><button class="gb" onclick="closeM()">${T2('लीजिए','Claim')}</button></div>`);
 }
 function gemsBox(){
   const done=me().shareDay===today();
-  modal(`<h2>💎 ${T2('फ्री जेम्स','Free gems')}</h2><p style="font-size:15px;line-height:1.7">🎁 ${T2('हर दिन पहली बार आने पर डेली बोनस +20','Daily bonus +20 on your first visit each day')}<br>🏆 ${T2('मैच के इनाम (5 राउंड): 1st +40 · 2nd +20 · 3rd +8 · 4th +4','Match rewards (5 rounds): 1st +40 · 2nd +20 · 3rd +8 · 4th +4')}<br>📤 ${T2('दोस्तों को शेयर करने पर +20 (दिन में एक बार)','Share with friends: +20 (once a day)')}</p>
-  <div class="row"><button class="gb" onclick="shareApp()" ${done?'disabled':''}>📤 ${done?T2('आज का बोनस मिल चुका','Claimed today'):T2('शेयर करें +20 💎','Share +20 💎')}</button><button class="ghost" onclick="closeM()">${T2('बंद करें','Close')}</button></div>`);
+  modal(`<h2>💎 ${T2('फ्री जेम्स','Free gems')}</h2><p style="font-size:15px;line-height:1.7">🎁 ${T2('डेली जेम्स बटन से हर दिन +20 (रोज़ आने पर और ज़्यादा)','Daily Gems button: +20 every day (more when you come daily)')}<br>🏆 ${T2('मैच के इनाम (5 राउंड): 1st +40 · 2nd +20 · 3rd +8 · 4th +4','Match rewards (5 rounds): 1st +40 · 2nd +20 · 3rd +8 · 4th +4')}<br>📤 ${T2('दोस्तों को शेयर करने पर +20 (दिन में एक बार)','Share with friends: +20 (once a day)')}</p>
+  <div class="row"><button class="yb" onclick="closeM();dailyGems()">🎁 ${T2('डेली जेम्स','Daily Gems')}</button><button class="gb" onclick="shareApp()" ${done?'disabled':''}>📤 ${done?T2('आज का बोनस मिल चुका','Claimed today'):T2('शेयर करें +20 💎','Share +20 💎')}</button><button class="ghost" onclick="closeM()">${T2('बंद करें','Close')}</button></div>`);
 }
 function lbBox(tab){const h=lbHTML('cb',T2('Call Break','Call Break'),tab||'bots','lbBox');const bx=document.querySelector('#pk .box');if(tab&&bx){BOXFN=()=>h;bx.innerHTML=h}else{BOXFN=null;modal(h)}}
 const MODES=[['rounds',1],['rounds',3],['rounds',5],['target',11],['target',21]];
@@ -1077,14 +1226,17 @@ function home(){
   if((ON.active||ON.room)&&!ON.keep)onlineLeave();
   G=null;$.className='';const u=me(),sd=u.shareDay===today(),S=PG.set,LVN={easy:T2('आसान','Easy'),medium:T2('मध्यम','Medium'),hard:T2('कठिन','Hard')};
   const dl=u.daily&&u.daily.date===today()?T2('आज का स्कोर: ','Today: ')+u.daily.score:T2('रोज़ नया हाथ','A new hand daily');
-  $.innerHTML=`<div class="top"><div class="prof" onclick="pick()"><div class="av">${avHTML(0)}</div><div class="pi"><b>${u.name}</b><div class="gm">💎 ${gems()}</div></div><button class="plus" onclick="event.stopPropagation();gemsBox()">+</button></div>
-   <div class="pills"><button class="pl big" onclick="setup()">👥 ${S.players} ${T2('खिलाड़ी','Players')} · ${modeLbl(S)} · ${LVN[S.level]} ▾</button></div>
-   <div class="ibs"><button class="wb iconb" onclick="lbBox()">🏆</button><button class="wb iconb" onclick="badges()">🏅</button><button class="wb iconb" onclick="howto()">❓</button><button class="wb iconb" onclick="settings()">⚙</button></div><button class="gb sharepill" onclick="shareApp()">📤 ${T2('शेयर करो','Share')} <b>${sd?'':'+20 💎'}</b></button><button class="wb" style="position:absolute;left:30px;top:92px;font-size:14px;padding:4px 14px" onclick="hub()">🎮 ${T2('गेम बदलो','Change game')}</button></div>
-  <div class="tl4">
-   <div class="tl" onclick="start()"><div class="ic">🤖</div>${T2('बॉट्स के साथ खेलो','Play vs Bots')}<small>${S.players} ${T2('खिलाड़ी','players')} · ${modeLbl(S)}</small></div>
-   <div class="tl" onclick="start(1)"><div class="ic">🎓</div>${T2('अभ्यास','Practice')}<small>${T2('कोच के साथ सीखो','Learn with the coach')}</small></div>
-   <div class="tl" onclick="start('daily')"><div class="ic">📅</div>${T2('डेली चैलेंज','Daily Challenge')}<small>${dl}</small></div>
-   <div class="tl" onclick="onlineBox()"><div class="ic">🌐</div>${T2('ऑनलाइन खेलो','Play Online')}<small>${T2('दोस्तों के साथ','With friends')}</small></div></div>`;
+  $.innerHTML=`<div class="top"><div class="prof" onclick="pick()"><div class="av">${avHTML(0)}</div><div class="pi"><b>${u.name}</b><div class="gm">${ic('gem')} ${gems()}</div></div><button class="plus" onclick="event.stopPropagation();gemsBox()">+</button></div>
+   <div class="logo3d">${gameLogo('cb')}</div>
+   <button class="gb sharepill" onclick="shareApp()">${ic('share')} ${T2('शेयर करो','Share')} <b>${sd?'':'+20 '+ic('gem')}</b></button></div>
+  <div class="pills" style="top:114px"><button class="pl" onclick="setup()">${ic('users')} ${S.players} ${T2('खिलाड़ी','Players')} · ${modeLbl(S)} · ${LVN[S.level]} ▾</button></div>
+  <button class="playnow" onclick="start()"><span>${T2('अभी खेलो','PLAY NOW')}</span><small>${T2('बॉट्स के साथ तुरंत मैच','Instant match vs bots')}</small></button>
+  <div class="subs" style="left:36px">
+   <div class="sc2" onclick="start(1)">${ic('cap')}<b>${T2('अभ्यास','Practice')}</b><small>${T2('कोच के साथ सीखो','Learn with the coach')}</small></div>
+   <div class="sc2" onclick="onlineRandom()">${ic('globe')}<b>${T2('ऑनलाइन खेलो','Play Online')}</b><small>${T2('रैंडम खिलाड़ी · क्विक मैच','Random players · quick match')}</small></div>
+   <div class="sc2" onclick="onlineFriends()">${ic('users')}<b>${T2('दोस्तों के साथ','Play with Friends')}</b><small>${T2('रूम बनाओ / कोड से जुड़ो','Create / join by room code')}</small></div>
+   <div class="sc2" onclick="start('daily')">${ic('cal')}<b>${T2('डेली चैलेंज','Daily Challenge')}</b><small>${dl}</small></div></div>
+  <div class="nav"><button onclick="lbBox()">${ic('trophy')}</button><button onclick="badges()">${ic('medal')}</button><button onclick="hub()">${ic('game')}</button><button onclick="howto()">${ic('help')}</button><button onclick="settings()">${ic('gear')}</button></div>`;
   if(bonusDone!==today()){bonusDone=today();setTimeout(bonusCheck,350)}
 }
 function start(mode){
@@ -1110,15 +1262,17 @@ function chip(p){
   const bd=G.bids[p],wn=G.won[p],mulx=1,pt=bd!=null&&wn>=bd?`<div class="pt">✓ ${fmt(Math.round((bd+(wn-bd)*.1)*mulx*10)/10)}</div>`:'';
   const fc={l:'bf3',r:'bf1',row:'bf2',rc:'bf2'}[k],fan=p&&n&&fc?`<div class="bf ${fc}">${Array.from({length:n},(_,i)=>`<i style="left:${i*2.6}px;transform:rotate(${(i-(n-1)/2)*5}deg)"></i>`).join('')}</div>`:'';
   const pos=`left:${L}px;top:${T}px;right:auto;bottom:auto${k==='rc'?';transform:translateX(-50%)':''}`;
-  return `<div class="chip ${k==='rc'||k==='row'?'rowc':''} ${on?'on':''} ${ui.show&&ui.show.w===p?'won':''}" id="sx${p}" style="${pos}"><div class="av" ${p?'':'onclick="pick()"'}>${ring}${avHTML(p)}${fan}${pt}${ui.emo&&ui.emo[p]?`<div class="eb">${emoHTML(ui.emo[p])}</div>`:''}</div><div class="nm">${pn(p)}</div><div class="sc">Bid ${G.bids[p]??'-'} · Jeete ${G.won[p]}</div></div>`;
+  return `<div class="chip ${k==='rc'||k==='row'?'rowc':''} ${on?'on':''} ${ui.show&&ui.show.w===p?'won':''}" id="sx${p}" style="${pos};--gd:${Math.max(0,320-(Date.now()-(ui.actAt||0)))}ms"><div class="av" ${p?'':'onclick="pick()"'}>${ring}${avHTML(p)}${fan}${pt}${ui.emo&&ui.emo[p]?`<div class="eb">${emoHTML(ui.emo[p])}</div>`:''}</div><div class="nm">${pn(p)}</div><div class="sc">Bid ${G.bids[p]??'-'} · Jeete ${G.won[p]}</div></div>`;
 }
 function render(){
   $.className=(G.practice?'prac ':'')+'n'+G.n;
+  const sg=[G.round,G.phase,G.turn,G.trick.length,ui.show?1:0].join('|');if(sg!==ui.sg){ui.sg=sg;ui.actAt=Date.now()}   // nayi chaal ka samay: patta udkar aata hai, uske baad agle ki batti jalti hai
+  const age=Date.now()-(ui.actAt||0);
   const tr=ui.show?ui.show.cards:G.trick,mine=G.hands[0],myTurn=G.phase==='play'&&G.turn===0&&!ui.hold;
   const ok=myTurn?validCards(mine,G.trick):[],isOk=c=>ok.some(x=>x.s===c.s&&x.r===c.r),bidding=G.phase==='bid'&&G.turn===0;
   const msg=G.phase==='play'?(ui.show?`${pn(ui.show.w)} ne hath jeeta`:myTurn?(ui.forced?T2('सिर्फ़ यही पत्ता चल सकता है — अपने आप चल रहा है','Only this card is playable — playing it automatically'):ui.hint?'💡 Hint: ye patta khelo':(PG.set.playmode==='tap'?T2('आपकी बारी — पत्ते पर टैप कीजिए','Your turn — tap a card'):PG.set.playmode==='drag'?T2('आपकी बारी — पत्ते को ऊपर खींचिए','Your turn — drag a card up'):T2('आपकी बारी — पत्ते पर टैप कीजिए या ऊपर खींचिए','Your turn — tap a card or drag it up'))):''):'';
-  $.innerHTML=`<div class="bar"><div class="rp"><span>📋</span><div>${G.target?`<span>${T2('राउंड','Round')} ${G.round+1} · 🎯 ${G.target}</span>`:`<span>Round ${G.round+1} / ${G.rounds}</span>`}${G.practice?' <em class="pr">Practice</em>':''}${G.daily?' <em class="pr">📅</em>':''}</div></div><div class="bt2"><span class="gp">💎 ${gems()}</span>${G.practice?`<button class="wb ib" onclick="hint()">🎓</button><button class="wb ib" onclick="undo()">↩</button><button class="wb ib" onclick="toggleLang()">🌐</button>`:''}${ON.active?'<button class="wb ib" onclick="emoBox()">😀</button>':''}<button class="wb ib mutebtn" onclick="muteTog()">${PG.set.music?'🔊':'🔇'}</button><button class="wb ib" onclick="lastTrick()">🕘</button><button class="wb ib" onclick="ui.modal='score';render()">📋</button><button class="wb ib" onclick="settings()">⚙</button><button class="wb ib" onclick="home()">🏠</button></div></div>
-  <div class="trick">${tr.map((t,i)=>`<div class="tc ${!ui.show&&i===tr.length-1?'new':''} ${ui.show&&ui.show.w===t.p?'win':''}" style="${tcPos(t.p)}">${cardHTML(t.c)}</div>`).join('')}</div>
+  $.innerHTML=`${feltHTML('cb')}<div class="bar"><div class="rp"><span>📋</span><div>${G.target?`<span>${T2('राउंड','Round')} ${G.round+1} · 🎯 ${G.target}</span>`:`<span>Round ${G.round+1} / ${G.rounds}</span>`}${G.practice?' <em class="pr">Practice</em>':''}${G.daily?' <em class="pr">📅</em>':''}</div></div><div class="bt2"><span class="gp">💎 ${gems()}</span>${G.practice?`<button class="wb ib" onclick="hint()">🎓</button><button class="wb ib" onclick="undo()">↩</button><button class="wb ib" onclick="toggleLang()">🌐</button>`:''}${ON.active?'<button class="wb ib" onclick="emoBox()">😀</button>':''}<button class="wb ib mutebtn" onclick="muteTog()">${PG.set.music?'🔊':'🔇'}</button><button class="wb ib" onclick="lastTrick()">🕘</button><button class="wb ib" onclick="ui.modal='score';render()">📋</button><button class="wb ib" onclick="settings()">⚙</button><button class="wb ib" onclick="home()">🏠</button></div></div>
+  <div class="trick">${tr.map((t,i)=>`<div class="tc ${i===tr.length-1&&age<300?'new':''} ${ui.show&&ui.show.w===t.p?'win':''}" style="${tcPos(t.p)};animation-delay:-${Math.min(age,300)}ms">${cardHTML(t.c)}</div>`).join('')}</div>
   ${Array.from({length:G.n},(_,p)=>chip(p)).join('')}<div class="msg">${msg}</div>${G.practice&&ui.hint?coachHTML():''}${G.practice&&ui.fb?fbHTML():''}
   ${bidding?`<div class="bidbar"><b>Aapki bid: kitne hath jeetoge?</b> <small>(${G.practice?'':'10 sec me apne aap lag jayegi · '}aapke spade: ${mine.filter(c=>c.s===0).length})</small><div class="bids">${Array.from({length:G.hpp},(_,i)=>`<button class="${ui.hint&&ui.hint.bid===i+1?'hn':''}" onclick="act(0,{t:'bid',n:${i+1}})">${i+1}</button>`).join('')}</div></div>`:''}
   <div class="hand ${G.hpp<=10?'sm':''}">${mine.map((c,i)=>cardHTML(c,(ui.deal?'deal ':'')+(myTurn?(isOk(c)?'ok'+(ui.hint&&ui.hint.s===c.s&&ui.hint.r===c.r?' hint':''):'no'):''),`--i:${i}`)).join('')}</div>`;
@@ -1164,7 +1318,7 @@ function dragStart(e,el,card){   // patte ko ungli se pakadkar upar mez ki taraf
   try{el.setPointerCapture(e.pointerId)}catch(_){}
   el.style.transition='none';el.style.zIndex=60;
   const st=(dx,dy)=>FIT.port?[dy/FIT.k,-dx/FIT.k]:[dx/FIT.k,dy/FIT.k];   // screen -> stage (ghoomi hui screen me bhi)
-  el.onpointermove=ev=>{const [sx,sy]=st(ev.clientX-x0,ev.clientY-y0);if(Math.abs(sx)+Math.abs(sy)>12)moved=true;
+  el.onpointermove=ev=>{const [sx,sy]=st(ev.clientX-x0,ev.clientY-y0);if(Math.abs(sx)+Math.abs(sy)>20)moved=true;
     if(pm!=='tap'){el.style.transform=`translate(${sx}px,${sy-16}px) scale(1.12) rotate(${Math.max(-18,Math.min(18,sx/14))}deg)`;if(tr)tr.classList.toggle('drop',sy<-60)}};
   const end=ev=>{el.onpointermove=el.onpointerup=el.onpointercancel=null;if(tr)tr.classList.remove('drop');
     const [sx,sy]=st(ev.clientX-x0,ev.clientY-y0);
@@ -1302,7 +1456,8 @@ function settingsHTML(){
   <div class="lbl">${T2('पत्ता चलाने का तरीका','How to play a card')}</div><div class="seg">${b(S.playmode==='drag',"setSet('playmode','drag')",T2('खींचकर','Drag'))}${b(S.playmode==='tap',"setSet('playmode','tap')",T2('टैप','Tap'))}${b(S.playmode==='both',"setSet('playmode','both')",T2('दोनों','Both'))}</div>
   <div class="lbl">🃏 ${T2('पत्तों की आवाज़ (दबाकर सुनिए)','Card sound (tap to hear)')}</div><div class="seg">${b((S.cs||'soft')==='soft',"setSet('cs','soft')",T2('नरम','Soft'))}${b(S.cs==='deep',"setSet('cs','deep')",T2('गहरी','Deep'))}${b(S.cs==='bright',"setSet('cs','bright')",T2('तेज़','Bright'))}</div>
   <div class="lbl">${T2('पूरी स्क्रीन','Full screen')}</div><div class="seg">${b(S.fs!==false,"setSet('fs',true)",T2('चालू','On'))}${b(S.fs===false,"setSet('fs',false)",T2('बंद','Off'))}</div>
-  <div class="lbl">${T2('टेबल','Table')}</div><div class="seg">${[['wood','🟫'],['green','🟢'],['blue','🔵'],['dark','⚫']].map(([k,e])=>b(S.theme===k,`setSet('theme','${k}')`,e)).join('')}</div>
+  <div class="lbl">${T2('बैकग्राउंड','Background')}</div><div class="seg">${[['wood','🟫'],['green','🟢'],['blue','🔵'],['dark','⚫']].map(([k,e])=>b(S.theme===k,`setSet('theme','${k}')`,e)).join('')}</div>
+  ${tcolHTML()}
   <div class="lbl">${T2('पत्तों का डिज़ाइन','Card design')}</div><div class="seg">${[['classic','⚪ '+T2('क्लासिक','Classic')],['four','🌈 '+T2('4 रंग','4-colour')],['dark','🌑 '+T2('डार्क','Dark')],['royal','👑 '+T2('रॉयल','Royal')]].map(([k,t])=>b((S.cd||'classic')===k,`setSet('cd','${k}')`,t)).join('')}</div>
   <div class="cdprev">${[[0,14],[1,13],[2,12],[3,11]].map(([s,r])=>cardHTML({s,r},'mini')).join('')}</div>
   <div class="row"><button class="ghost" onclick="closeM();logout()">${T2('खिलाड़ी बदलें','Switch player')}</button><button onclick="closeM()">${T2('बंद करें','Close')}</button></div>`}
@@ -1339,7 +1494,7 @@ function step(){
       ui.timer=setTimeout(()=>{if(G!==g||ui.hold||ui.modal)return;act(0,mv0[0])},G.practice?2600:900);return}}
   if(human&&G.practice){ui.dur=0;ui.fb=null;ui.hint=PG.set.coach?computeHint():null;render();snd.turn();return}   // practice: koi timer nahi
   ui.t0=Date.now();
-  ui.dur=human?(G.phase==='play'?HUMAN_MS:10000):(G.phase==='bid'?1000+rand(600):BOT_MIN+rand(BOT_MAX-BOT_MIN));
+  ui.dur=human?(G.phase==='play'?HUMAN_MS:10000):(G.phase==='bid'?1200+rand(600):BOT_MIN+rand(BOT_MAX-BOT_MIN));
   render();if(human)snd.turn();
   ui.timer=setTimeout(()=>{
     if(G!==g||ui.hold||ui.modal)return;
@@ -1424,25 +1579,31 @@ function onReconnect(){
 function onMsg(m){
   if(m.t==='hi'){clearTimeout(ON.ct);ON.ok=true;ON.tries=0;
     if((ON.active||ON.room)&&!m.resumed){   // server par ab wo room/game nahi raha
-      const was=ON.active;ON.room=null;ON.active=false;ON.q=[];flash(T2('वह गेम ख़त्म हो चुका है','That game is no longer running'));if(was)home();else{BOXFN=PG.set.game==='kot'?kotOnlineHTML:PG.set.game==='rang'?rangOnlineHTML:onlineHTML;refreshBox()}}
+      const was=ON.active;ON.room=null;ON.active=false;ON.q=[];flash(T2('वह गेम ख़त्म हो चुका है','That game is no longer running'));if(was)home();else{BOXFN=PG.set.game==='bhabhi'?bhOnlineHTML:PG.set.game==='seep'?seepOnlineHTML:PG.set.game==='kot'?kotOnlineHTML:PG.set.game==='rang'?rangOnlineHTML:onlineHTML;refreshBox()}}
     try{localStorage.setItem('pg_tok',m.token)}catch(e){}const f=ON.then;ON.then=null;if(f)f();refreshBox();return}
   if(m.t==='room'){
     ON.room=m;ON.seat=m.you;ON.seats=m.seats;
-    const gk=m.game==='kot'?'kot':m.game==='rang'?'rang':'cb';if(PG.set.game!==gk)PG.set.game=gk;   // kisi bhi game ka code dalo, sahi game khulega
+    const gk=m.game==='bhabhi'?'bhabhi':m.game==='seep'?'seep':m.game==='kot'?'kot':m.game==='rang'?'rang':'cb';if(PG.set.game!==gk)PG.set.game=gk;   // kisi bhi game ka code dalo, sahi game khulega
     if(m.phase==='lobby'){if(ON.active){ON.keep=1;ON.active=false;home();ON.keep=0}showRoom()}
-    else if(ON.active&&(G||KG||RG)){setBots()}
+    else if(ON.active&&(G||KG||RG||SG||BG)){setBots()}
     return}
-  if(m.t==='state'){if(ON.room){if(ON.room.game==='kot')kOnState(m);else if(ON.room.game==='rang')rOnState(m);else onState(m)}return}
+  if(m.t==='state'){if(ON.room){if(ON.room.game==='bhabhi')bOnState(m);else if(ON.room.game==='seep')sOnState(m);else if(ON.room.game==='kot')kOnState(m);else if(ON.room.game==='rang')rOnState(m);else onState(m)}return}
   if(m.t==='emo'){onEmo(m);return}
-  if(m.t==='err'){ON.pending=0;if(KU)KU.pend=0;if(RU)RU.pend=0;const e=ERR[m.code];flash(e?T2(e[0],e[1]):m.msg);return}
+  if(m.t==='err'){ON.pending=0;if(KU)KU.pend=0;if(RU)RU.pend=0;if(SU)SU.pend=0;if(typeof BU==='object'&&BU)BU.pend=0;const e=ERR[m.code];flash(e?T2(e[0],e[1]):m.msg);return}
 }
 function refreshBox(){const b=document.querySelector('#pk .box');if(b&&BOXFN){const j=document.getElementById('jc'),v=j?j.value:'';b.innerHTML=BOXFN();const n=document.getElementById('jc');if(n&&v)n.value=v}}
 function onPv(v){ON.pv=v;refreshBox();if(v){const n=document.getElementById('jc');if(n)setTimeout(()=>n.focus(),50)}}
-function onSlots(q,c){   // do slot: random online (quick) aur private room (code bharo / naya room banao)
-  return `<div class="slots"><div class="slot q" onclick="${q}()"><div class="si">⚡</div><b>${T2('क्विक मैच','Quick match')}</b><small>${T2('रैंडम ऑनलाइन खिलाड़ी','Random online players')}</small></div>
-  <div class="slot p ${ON.pv?'on':''}" onclick="onPv(!ON.pv)"><div class="si">🔒</div><b>${T2('प्राइवेट रूम','Private room')}</b><small>${T2('दोस्तों के साथ · कोड से','With friends · by code')}</small></div></div>
-  ${ON.pv?`<div class="pvp"><div class="lbl">🔑 ${T2('रूम कोड डालिए','Enter the room code')}</div><div class="row"><input id="jc" maxlength="5" placeholder="ABCDE" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')onJoin(this.value)"><button onclick="onJoin(document.getElementById('jc').value)">${T2('जुड़ें','Join')}</button></div>
-  <div class="row"><button class="yb" onclick="${c}()">➕ ${T2('नया रूम बनाइए (कोड दोस्तों को भेजिए)','Create a new room (send the code to friends)')}</button></div></div>`:''}`}
+ON.mode='quick';
+function onlineOpen(mode){ON.mode=mode;ON.pv=false;({kot:kotOnline,rang:rangOnline,seep:seepOnline,bhabhi:bhOnline}[PG.set.game]||onlineBox)()}
+const onlineRandom=()=>onlineOpen('quick'),onlineFriends=()=>onlineOpen('friends');
+function onSlots(q,c){   // Random online (sirf Quick match) aur Friends (Create room + Join room) ab alag-alag hain
+  if(ON.mode==='friends')return `<div class="lbl keep" style="font-size:16px">👥 ${T2('दोस्तों के साथ खेलिए','Play with friends')}</div>
+  <div class="slots"><div class="slot p" onclick="${c}()"><div class="si">➕</div><b>${T2('रूम बनाइए','Create room')}</b><small>${T2('कोड दोस्तों को भेजिए','Send the code to friends')}</small></div>
+  <div class="slot q ${ON.pv?'on':''}" onclick="onPv(!ON.pv)"><div class="si">🔑</div><b>${T2('रूम में जुड़िए','Join room')}</b><small>${T2('दोस्त का कोड डालिए','Enter your friend\'s code')}</small></div></div>
+  ${ON.pv?`<div class="pvp"><div class="lbl">🔑 ${T2('रूम कोड डालिए','Enter the room code')}</div><div class="row"><input id="jc" maxlength="5" placeholder="ABCDE" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')onJoin(this.value)"><button class="gb" onclick="onJoin(document.getElementById('jc').value)">${T2('जुड़ें','Join')}</button></div></div>`:''}`;
+  return `<div class="lbl" style="font-size:16px">🌐 ${T2('रैंडम ऑनलाइन खिलाड़ियों के साथ','Play with random online players')}</div>
+  <div class="row"><button class="gb bigb" style="font-size:24px;padding:12px 40px" onclick="${q}()">⚡ ${T2('क्विक मैच शुरू करें','Start quick match')}</button></div>
+  <div class="lbl" style="font-size:13px;text-align:center">${T2('जो भी खिलाड़ी अभी ऑनलाइन है उसके साथ जोड़ी बनेगी। खाली सीटों पर बॉट बैठेंगे।','You will be matched with whoever is online now. Empty seats get bots.')}</div>`}
 function showRoom(){BOXFN=roomHTML;if(document.getElementById('pk'))refreshBox();else modal(roomHTML())}
 const onOpts=()=>{const S=PG.set;return{n:S.players,mode:S.gmode,rounds:S.rounds,target:S.target,level:S.level}};
 const onQuick=()=>onConnect(()=>onSend({t:'quick',...onOpts()}));
@@ -1454,8 +1615,7 @@ function onlineBox(){ON.pv=false;BOXFN=onlineHTML;modal(onlineHTML());if(serverU
 function onlineHTML(){
   const rows=setupHTML().replace(/^<h2>.*?<\/h2>/s,'').replace(/<div class="row"><button class="gb" onclick="closeM\(\)">.*$/s,'');
   return `<h2>🌐 ${T2('ऑनलाइन खेलो','Play Online')}</h2>
-  <div class="lbl">${T2('सर्वर का पता','Server address')} ${ON.ok?'🟢':'⚪'}</div><input id="srv" value="${serverUrl()}" placeholder="wss://your-server.com/ws" onchange="setServer(this.value)">
-  ${rows}
+    ${rows}
   ${onSlots('onQuick','onCreate')}
   <div class="row"><button class="ghost" onclick="closeM()">${T2('बंद करें','Close')}</button></div>`;
 }
@@ -1463,10 +1623,10 @@ function roomHTML(){
   const r=ON.room;if(!r)return onlineHTML();
   const LVN={easy:T2('आसान','Easy'),medium:T2('मध्यम','Medium'),hard:T2('कठिन','Hard')},hum=r.seats.filter(s=>s.k==='human').length;
   const seat1=(s,i)=>`<div class="rs ${s.k}"><div class="mini">${s.k==='empty'?'＋':(s.e||'🙂')}</div><b>${s.k==='empty'?T2('खाली','Empty'):s.name[li()]}</b><small>${i===r.host?'👑 ':''}${i===r.you?T2('आप','You'):''}</small></div>`;
-  const seats=r.game==='kot'?(()=>{const t=r.you%2,g=a=>a.map(i=>seat1(r.seats[i],i)).join('');
+  const seats=(r.game==='kot'||(r.game==='seep'&&r.n===4))?(()=>{const t=r.you%2,g=a=>a.map(i=>seat1(r.seats[i],i)).join('');
     return `<div class="lbl">👥 ${T2('आपकी टीम (सामने वाला साथी)','Your team (opposite = partner)')}</div><div class="rseats">${g([t,t+2])}</div><div class="lbl">⚔️ ${T2('विरोधी टीम','Opponents')}</div><div class="rseats">${g([1-t,3-t])}</div>`})():`<div class="rseats">${r.seats.map(seat1).join('')}</div>`;
   return `<h2>🌐 ${r.pub?T2('क्विक मैच','Quick match'):T2('प्राइवेट रूम','Private room')} ${r.pub?'':`<span class="code">${r.code}</span>`}</h2>
-  <div class="lbl">${r.game==='kot'?'♠ Kot Piece · 2 '+T2('बनाम','vs')+' 2 · 🎯 '+r.ktarget+' '+T2('अंक','pts'):(r.game==='rang'?'🎨 Rang Bid · ':'')+r.n+' '+T2('खिलाड़ी','Players')+' · '+(r.mode==='target'?'🎯 '+r.target:r.rounds+' '+T2('राउंड','Round'))} · ${LVN[r.level]}</div>
+  <div class="lbl">${r.game==='bhabhi'?('👰 Bhabhi – Devar · '+r.n+' '+T2('खिलाड़ी','Players')+' · '+(r.fr?'①':'—')+' '+(r.ask?'②':'—')+' '+(r.so?'③':'—')):r.game==='seep'?('🧹 Seep '+(r.sv==='p30'?'30':'100')+' · '+r.n+' '+T2('खिलाड़ी','Players')):r.game==='kot'?'♠ Kot Piece · 2 '+T2('बनाम','vs')+' 2 · 🎯 '+r.ktarget+' '+T2('अंक','pts'):(r.game==='rang'?'🎨 Rang Bol · ':'')+r.n+' '+T2('खिलाड़ी','Players')+' · '+(r.mode==='target'?'🎯 '+r.target:r.rounds+' '+T2('राउंड','Round'))} · ${LVN[r.level]}</div>
   ${seats}
   <div class="lbl">${r.pub?T2('खिलाड़ी ढूँढ रहे हैं… खाली सीटों पर बॉट बैठेंगे','Looking for players… empty seats will be filled by bots'):T2('कोड दोस्तों को भेजिए। खाली सीटों पर बॉट बैठेंगे।','Send the code to your friends. Empty seats will be filled by bots.')}</div>
   <div class="row">${r.you===r.host?`<button class="gb" onclick="onStart()">▶ ${T2('शुरू करें','Start')} (${hum}/${r.n})</button>`:`<div class="cdn">${T2('होस्ट के शुरू करने का इंतज़ार…','Waiting for the host…')}</div>`}${r.pub?'':'<button class="wb" onclick="shareCode()">📤</button>'}<button class="wb" onclick="pick('room')">🙂 ${T2('अवतार','Avatar')}</button><button class="ghost" onclick="closeM()">${T2('बाहर निकलें','Leave')}</button></div>`;
@@ -1521,7 +1681,7 @@ function onlineSend(m){
   if(m.t==='play'){snd.play();vib(10)}else snd.bid();
   ui.hint=null;onSend({t:'move',m:m.t==='bid'?{t:'bid',n:m.n}:{t:'play',c:{s:m.c.s,r:m.c.r}}});
 }
-function onlineLeave(){onSend({t:'leave'});ON.active=false;ON.room=null;ON.q=[];ON.pending=0;ON.then=null;if(ui)clearInterval(ui.cd);clearTimeout(KU.t);if(typeof RU==='object'&&RU){clearTimeout(RU.t);clearInterval(RU.cd)}}
+function onlineLeave(){onSend({t:'leave'});ON.active=false;ON.room=null;ON.q=[];ON.pending=0;ON.then=null;if(ui)clearInterval(ui.cd);clearTimeout(KU.t);if(typeof RU==='object'&&RU){clearTimeout(RU.t);clearInterval(RU.cd)}if(typeof SU==='object'&&SU){clearTimeout(SU.t);clearInterval(SU.cd)}if(typeof BU==='object'&&BU){clearTimeout(BU.t);clearInterval(BU.cd)}}
 function onlineAgain(){ON.keep=1;ON.active=false;onSend({t:'again'});home();ON.keep=0}
 /* ---- emoji aur taiyaar sandesh (sabhi online table par) ---- */
 const QMSG=[['जल्दी खेलो! ⚡','Fast! ⚡'],['नमस्ते 👋','Hello 👋'],['Hi 🙂','Hi 🙂'],['बहुत बढ़िया! 👏','Well played! 👏'],['अच्छी चाल 👌','Nice move 👌'],['धन्यवाद 🙏','Thanks 🙏'],['वाह! 🔥','Wow! 🔥'],['अरे यार 😅','Oh no 😅'],['थोड़ा रुको ⏳','Wait a moment ⏳'],['फिर खेलें? 🔁','Play again? 🔁'],['गुड लक 🍀','Good luck 🍀'],['बाय 👋','Bye 👋'],['मज़ा आ गया 😄','Great game 😄'],['क़िस्मत अच्छी है 😎','Lucky you 😎']];
@@ -1529,11 +1689,11 @@ const EMO7=['👍','😂','😮','🔥','👏','😡','🙏'];
 const emoHTML=e=>(/^q\d+$/.test(e)&&QMSG[+e.slice(1)])?`<span class="qtxt">${QMSG[+e.slice(1)][li()]}</span>`:e;
 function onEmo(m){
   if(!ON.active||!ON.room)return;
-  const gm=ON.room.game||'cb',n=(gm==='cb'&&G)?G.n:4;
-  if((gm==='cb'&&!G)||(gm==='kot'&&!KG)||(gm==='rang'&&!RG))return;
-  const st=gm==='kot'?KU:gm==='rang'?RU:ui,p=(m.seat-ON.seat+n)%n;
+  const gm=ON.room.game||'cb',n=(gm==='cb'&&G)?G.n:(gm==='seep'&&SG)?SG.n:(gm==='bhabhi'&&BG)?BG.n:4;
+  if((gm==='cb'&&!G)||(gm==='kot'&&!KG)||(gm==='rang'&&!RG)||(gm==='seep'&&!SG)||(gm==='bhabhi'&&!BG))return;
+  const st=gm==='bhabhi'?BU:gm==='seep'?SU:gm==='kot'?KU:gm==='rang'?RU:ui,p=(m.seat-ON.seat+n)%n;
   st.emo=st.emo||{};st.emo[p]=m.e;
-  const rr=()=>{if(gm==='kot')kotRender();else if(gm==='rang')rangRender();else R2()};rr();
+  const rr=()=>{if(gm==='bhabhi')bhRender();else if(gm==='seep')seepRender();else if(gm==='kot')kotRender();else if(gm==='rang')rangRender();else R2()};rr();
   setTimeout(()=>{if(st.emo&&st.emo[p]===m.e){delete st.emo[p];if(ON.active)rr()}},m.e[0]==='q'?3400:2600);
 }
 function emoBox(){
@@ -1592,7 +1752,7 @@ function kotRender(){
   else msg=KU.show?KU.note:who?T2('आपकी चाल — उठा हुआ पत्ता चलिए','Your turn — tap a raised card'):`${nm} ${T2('की चाल','to play')}`;
   const co=kCoach(g),cb=kCoachBox(co);
   const ch=p=>`<div class="kchip ${p===0?'kme':''} ${g.turn===p&&g.phase!=='roundEnd'?'on':''}" style="left:${CP[p][0]}px;top:${CP[p][1]}px"><div class="a">${avHTML(p)}</div><b>${pn(p)}</b><small>${p%2?T2('विरोधी','Opp'):p?T2('साथी','Partner'):T2('आप','You')} · 🃏${g.hands[p].length}</small><b style="color:#ffd54a;font-size:16px">${T2('सर','Sar')}: ${g.tw[p]}</b>${KU.emo&&KU.emo[p]?`<div class="eb">${emoHTML(KU.emo[p])}</div>`:''}</div>`;
-  $.innerHTML=`<div style="position:absolute;inset:0"></div>
+  $.innerHTML=`${feltHTML('kot')}
   <div class="kbar"><button class="ghost sm" onclick="kotHome()">🏠</button>${KU.practice?'<span>🎓 '+T2('अभ्यास','Practice')+'</span>':''}${KU.daily?'<span>📅 '+T2('डेली','Daily')+'</span>':''}${KU.practice&&KU.hist&&KU.hist.length?`<button class="ghost sm" onclick="kotUndo()">↩ ${T2('पीछे','Undo')}</button>`:''}${KU.online?'<span>🌐</span><span id="ktm"></span>':'<span>💎 '+gems()+'</span>'}<span>${T2('हम','Us')} ${g.score[0]} – ${g.score[1]} ${T2('वे','Them')} · 🎯${g.target}</span><span class="sp"></span>${KU.online?`<button class="ghost sm" onclick="emoBox()">💬</button>`:''}<span>📦 ${T2('जमा','Pile')} ${g.pile}</span><span style="font-size:13px">${T2('उठी सर','Collected')}</span><span style="background:#1b8a4a;border:2px solid #ffd54a;border-radius:12px;padding:0 14px;font-size:22px">${T2('हम','Us')} <b>${g.won[0]}</b></span><span style="background:#a33;border:2px solid #ffd54a;border-radius:12px;padding:0 14px;font-size:22px">${T2('वे','Them')} <b>${g.won[1]}</b></span><button class="ghost sm mutebtn" onclick="muteTog()">${PG.set.music?'🔊':'🔇'}</button><button class="ghost sm" onclick="kotRules()">❓</button></div>
   ${g.trump!=null&&g.phase!=='call'?`<div class="ktr"><div class="ts" style="color:${g.trump%2?'#d11f1f':'#111'}">${SUITS[g.trump]}</div>${T2('कट','TRUMP')}<small>${kHow(g)}</small></div>`:''}${kPile(g)}${cb}<div class="kmsg">${msg}${g.phase==='play'&&!KU.show&&(g.pile>0)?`<small>📦 ${g.pile} ${T2('सर जमा हैं','tricks pending')} — ${pn(g.last)} ${T2('ने आख़िरी सर जीती। अगली भी वही जीते तो सब उठा लेगा','won the last one. If he wins the next too, he takes them all')}</small>`:''}${g.phase==='change'&&g.trump!=null?`<small>${kHow(g)} · ${T2('कट','trump')} ${kSp(g.trump)}</small>`:''}</div>${[0,1,2,3].map(ch).join('')}
   ${tr.map(t=>`<div class="kt ${KU.show&&KU.show.w===t.p?'win':''}" style="left:${TP[t.p][0]}px;top:${TP[t.p][1]}px">${cardHTML(t.c)}</div>`).join('')}${pan?`<div class="kpan">${pan}</div>`:''}
@@ -1628,7 +1788,7 @@ function kotStep(){
     if(KU.practice||!['call','change','newtrump','play'].includes(g.phase))return;
     const d=g.phase==='play'?15000:20000;KU.t0=Date.now();KU.dl=d;
     KU.t=setTimeout(()=>{if(KG!==g||KG.turn!==0||KU.busy)return;const mv=KotPiece.getValidMoves(g,0);flash(T2('समय खत्म — अपने आप चल दिया','Time up — auto move'));kotAct(0,KotBots.medium(g,0,mv))},d);return}
-  KU.t=setTimeout(()=>{const mv=KotPiece.getValidMoves(g,g.turn);kotAct(g.turn,(KotBots[KU.daily?'medium':PG.set.level]||KotBots.medium)(g,g.turn,mv))},g.phase==='play'?900:1300);
+  KU.t=setTimeout(()=>{const mv=KotPiece.getValidMoves(g,g.turn);kotAct(g.turn,(KotBots[KU.daily?'medium':PG.set.level]||KotBots.medium)(g,g.turn,mv))},g.phase==='play'?BOT_MIN+rand(BOT_MAX-BOT_MIN):1200+rand(600));
 }
 function kotEnd(){
   const g=KG,r=g.roundInfo,over=g.phase==='over',win=g.score[0]>g.score[1];
@@ -1819,7 +1979,7 @@ function kCoach(g){   // practice: kya chalna hai aur kyon (bot wali soch se)
 
 /* ---- avatar chunna (profile dabane par / room ke andar) ---- */
 let PICKBACK=null;
-function pickHTML(){const u=me();return `<h2>🙂 ${T2('अपना अवतार चुनिए','Choose your avatar')}</h2><div class="emo" style="max-height:300px;overflow:auto">${EMOJI.map(e=>`<button class="${u.av&&u.av.e===e?'sel':''}" onclick="setAv('${e}')">${e}</button>`).join('')}</div><div class="row"><button class="gb" onclick="pickDone()">✔ ${T2('ठीक है','Done')}</button></div>`}
+function pickHTML(){const u=me();return `<h2>🙂 ${T2('अपना अवतार चुनिए','Choose your avatar')}</h2><div class="emo" style="max-height:300px;overflow:auto">${EMOJI.map(e=>`<button class="${u.av&&u.av.e===e?'sel':''}" onclick="setAv('${e}')">${cartoon(e)}</button>`).join('')}</div><div class="row"><button class="gb" onclick="pickDone()">✔ ${T2('ठीक है','Done')}</button></div>`}
 function showPick(){BOXFN=pickHTML;if(document.getElementById('pk'))refreshBox();else modal(pickHTML())}
 function pick(back){PICKBACK=back||null;showPick()}
 function setAv(e){me().av={e};save();try{if(ON.room)onSend({t:'av',e})}catch(_){}showPick()}
@@ -1831,30 +1991,30 @@ document.head.insertAdjacentHTML('beforeend',`<style>.kpan.rb{top:164px;left:200
 .kchip .nm2{font-weight:800;font-size:14px}.kchip small{font-size:12px}
 .rbub{position:absolute;top:2px;background:#fff;color:#222;border-radius:14px;padding:3px 10px;font-weight:800;font-size:21px;white-space:nowrap;box-shadow:0 3px 8px #0008;z-index:7;line-height:1.25}
 .rbub.L{left:104%}.rbub.R{right:104%}.rbub.pass{background:#cfd8dc;color:#455a64;font-size:16px}.rbub.new{animation:bp .5s ease}@keyframes bp{40%{transform:scale(1.25)}}
-.ktr.rv{animation:bp .9s ease}.rbub.rbd{background:#2e7d32;color:#fff;font-size:17px}.rbub.rmt{background:#ffd54a;color:#222}
+.ktr.rv{animation:bp .9s ease}.rbub.rbd{background:#2e7d32;color:#fff;font-size:23px;padding:4px 13px}.rbub.rmt{background:#2e7d32;color:#fff;border:2px solid #fff;font-size:23px;padding:4px 13px}
 .rbig{display:block;font-size:19px;color:#fff;font-weight:800;margin-top:2px}
 </style>`);
 PG.set.rmode=PG.set.rmode||'rounds';PG.set.rrounds=PG.set.rrounds||5;PG.set.rtarget=PG.set.rtarget||11;
 let RG=null,RU={},RB={n:0,s:null};
 const RANG_FEE=10,RANG_WIN=25,RANG_DAILY=25;
 const RANG_HOW=[
-['🎯 Rang Bid: 4 खिलाड़ी, सब अलग-अलग (Call Break जैसा)। 13-13 पत्ते, 13 चालें।','🎯 Rang Bid: 4 players, everyone for themselves (like Call Break). 13 cards each, 13 tricks.'],
+['🎯 Rang Bol: 4 खिलाड़ी, सब अलग-अलग (Call Break जैसा)। 13-13 पत्ते, 13 चालें।','🎯 Rang Bol: 4 players, everyone for themselves (like Call Break). 13 cards each, 13 tricks.'],
 ['🃏 पहले सबको 5 पत्ते मिलते हैं। इन्हें देखकर रंग चुनकर बोली लगाई जाती है, जैसे "♥ पर 5": मैं इस रंग को कट (trump) बनाकर कम से कम 5 चालें बनाऊँगा। 🔒 बोली के समय रंग किसी को नहीं दिखता, सिर्फ़ संख्या (5, 6...) दिखती है। अपना रंग सिर्फ़ आपको दिखता है।','🃏 First everyone gets 5 cards. You bid on a suit, e.g. "♥ on 5": I will make it trump and win at least 5 tricks. 🔒 While the calling goes on nobody sees the suit, only the number (5, 6...). Only you see your own suit.'],
 ['⬆️ कोई और रंग बदलना चाहे तो उसे ज़्यादा बोलना होगा, जैसे 6 (उसका रंग जाने बिना)। कोई और न बोले तो पहले वाले का रंग कट माना जाता है। किसी ने रंग नहीं बोला तो हुकुम ♠ कट।','⬆️ To take the suit away you must bid higher, e.g. 6 (without knowing his suit). If nobody raises, that suit is trump. If nobody names a suit, Spades is trump.'],
 ['🂠 फिर बाकी पत्ते बँटते हैं, सबके 13 पत्ते हो जाते हैं, और तब सबको दिखता है कि किसने कौन सा रंग बोला था (वही कट है)।','🂠 Then the rest are dealt: 13 each, and now everyone sees which suit was named (that is the trump).'],
-['📢 असली बिड: सब 13 पत्ते देखकर Call Break की तरह बिड बोलते हैं। रंग बोलने वाले को कम से कम अपनी बोली जितनी (5, 6...) बिड लगानी ही होगी, चाहे तो ज़्यादा। बाकी की बिड कम से कम 2। पहले वाली 5/6 की बोली सिर्फ़ रंग के लिए थी, वह रद्द हो जाती है।','📢 Real bid: after seeing 13 cards everyone bids like Call Break. The suit caller must bid at least his called number (5, 6...) and may bid more. Others bid at least 2. The earlier 5/6 call only decided the suit.'],
-['🔟 10 या ज़्यादा बिड बोलने वाला (जब तक किसी ने रंग न बदला हो) कट का रंग बदल सकता है।','🔟 A bid of 10 or more lets that player change the trump (only once per round).'],
+['📢 असली बिड: सब 13 पत्ते देखकर Call Break की तरह बिड बोलते हैं। रंग बोलने वाले को कम से कम अपनी बोली जितनी (5, 6...) बिड लगानी ही होगी, चाहे तो ज़्यादा। बाकी की बिड 1 से 13 तक, कम से कम 1। पहले वाली 5/6 की बोली सिर्फ़ रंग के लिए थी, वह रद्द हो जाती है।','📢 Real bid: after seeing 13 cards everyone bids like Call Break. The suit caller must bid at least his called number (5, 6...) and may bid more. Others bid anywhere from 1 to 13 (minimum 1). The earlier 5/6 call only decided the suit.'],
+['🔟 कभी-कभी किसी खिलाड़ी को बहुत ताक़तवर हाथ (लंबा रंग + इक्के) मिलता है। 10 या ज़्यादा बिड बोलने वाला (जब तक किसी ने रंग न बदला हो) कट का रंग बदल सकता है।','🔟 A bid of 10 or more lets that player change the trump (only once per round).'],
 ['▶️ चाल: जो रंग चला गया वही चलिए, और जीत सकते हैं तो उससे बड़ा पत्ता ही चलना होगा। उस रंग का पत्ता न हो तो कट (तुरुप) मारना ज़रूरी है (कट पहले चल चुका हो तो उससे बड़ा कट; बड़ा कट न हो तो कोई भी पत्ता)। कट भी न हो तो अपनी मर्ज़ी का पत्ता।','▶️ Play: follow the suit led, and you must play a higher card if you can. If you have none of that suit you must trump (over-trump if a trump is already played; if you cannot over-trump, play any card). If you have no trump either, play any card.'],
 ['🏆 अंक: बिड पूरी तो बिड + हर एक्स्ट्रा चाल का 0.1, वरना बिड जितने माइनस।','🏆 Score: bid met = bid + 0.1 per extra trick, otherwise minus the bid.'],
 ['🪙 जेम्स नकली हैं, असली कीमत नहीं।','🪙 Gems are virtual and have no real value.']];
 function rangOv(h,w,raw){rangCloseOv();$.insertAdjacentHTML('beforeend',`<div class="ov" id="rov">${raw?h:`<div class="box" ${w?`style="width:${w}px"`:''}>${h}</div>`}</div>`)}
 function rangCloseOv(){const o=document.getElementById('rov');if(o)o.remove()}
 function rangHome(){clearTimeout(RU.t);clearInterval(RU.cd);RG=null;rangCloseOv();home()}
-function rangRules(){rangOv(`<h2>❓ Rang Bid — ${T2('नियम','Rules')}</h2><div class="how">${RANG_HOW.map(x=>`<p style="font-size:${PG.set.rfs||16}px">${x[li()]}</p>`).join('')}</div><div class="row"><button onclick="rangCloseOv()">${T2('ठीक है','OK')}</button></div>`)}
+function rangRules(){rangOv(`<h2>❓ Rang Bol — ${T2('नियम','Rules')}</h2><div class="how">${RANG_HOW.map(x=>`<p style="font-size:${PG.set.rfs||16}px">${x[li()]}</p>`).join('')}</div><div class="row"><button onclick="rangCloseOv()">${T2('ठीक है','OK')}</button></div>`)}
 const rModeLbl=S=>S.rmode==='target'?`🎯 ${S.rtarget} ${T2('अंक','pts')}`:`${S.rrounds} ${T2('राउंड','Round')}`;
 function rangSetupHTML(){
   const S=PG.set,b=(on,f,t)=>`<button class="${on?'':'ghost'}" onclick="${f}">${t}</button>`;
-  return `<h2>🎛 ${T2('Rang Bid सेटिंग','Rang Bid settings')}</h2>
+  return `<h2>🎛 ${T2('Rang Bol सेटिंग','Rang Bol settings')}</h2>
   <div class="lbl">🔁 ${T2('राउंड वाला खेल','Rounds game')}</div><div class="seg">${[3,5].map(n=>b(S.rmode==='rounds'&&S.rrounds===n,`rangPref('rrounds',${n})`,n+' '+T2('राउंड','Round'))).join('')}</div>
   <div class="lbl">🎯 ${T2('टारगेट वाला खेल (जो पहले पहुँचे वह जीते)','Target game (first to reach wins)')}</div><div class="seg">${[11,21,31].map(n=>b(S.rmode==='target'&&S.rtarget===n,`rangPref('rtarget',${n})`,n+' '+T2('अंक','points'))).join('')}</div>
   <div class="lbl">🤖 ${T2('बॉट का स्तर','Bot level')}</div><div class="seg">${[['easy',T2('आसान','Easy')],['medium',T2('मध्यम','Medium')],['hard',T2('कठिन','Hard')]].map(([k,t])=>b(S.level===k,`rangPref('level','${k}')`,t)).join('')}</div>
@@ -1875,16 +2035,16 @@ function lbHTML(key,title,tab,fn,extra){   // tab: 'bots' (is phone par bots ke 
   return `<h2>🏆 ${title} ${T2('लीडरबोर्ड','Leaderboard')}</h2>
   <div class="row">${B(tab==='bots','🤖 '+T2('बॉट्स','Bots'),fn+"('bots')")}${B(tab==='pr','🔒 '+T2('प्राइवेट रूम','Private room'),fn+"('pr')")}${B(tab==='on','🌐 '+T2('ऑनलाइन','Online'),fn+"('on')")}</div>
   <small style="display:block;opacity:.8;margin:2px 0 6px">${tab==='bots'?T2('बॉट्स के साथ खेले गए खेल (इस फ़ोन पर)','Games vs bots (this phone)'):tab==='pr'?T2('दोस्तों के साथ, रूम कोड से खेले गए खेल','Games with friends via room code'):T2('क्विक मैच — अनजान खिलाड़ियों के साथ','Quick match — with other players')}</small>
-  ${us.length?us.map((o,i)=>`<div class="lb"><span style="width:26px">${['🥇','🥈','🥉'][i]||i+1}</span><div class="mini">${avOf(o.x.av)}</div><b>${o.x.name}</b><span>${o.st.won}/${o.st.played} ${T2('जीत','wins')}${extra&&o.st.kots!=null?' · 🔥'+o.st.kots+' KOT':''}</span></div>`).join(''):`<p>${T2('अभी कोई खेल नहीं खेला गया','No games played yet')}</p>`}
+  ${lbBody(us,extra)}
   <div class="row"><button onclick="closeM()">${T2('बंद करें','Close')}</button></div>`}
-function rangLb(tab){const h=lbHTML('rang','Rang Bid',tab||'bots','rangLb');const bx=document.querySelector('#pk .box');if(tab&&bx){BOXFN=()=>h;bx.innerHTML=h}else{BOXFN=null;modal(h)}}
+function rangLb(tab){const h=lbHTML('rang','Rang Bol',tab||'bots','rangLb');const bx=document.querySelector('#pk .box');if(tab&&bx){BOXFN=()=>h;bx.innerHTML=h}else{BOXFN=null;modal(h)}}
 function rangDash(){
   if((ON.active||ON.room)&&!ON.keep)onlineLeave();
   G=null;KG=null;RG=null;clearTimeout(KU.t);clearTimeout(RU.t);KU={};RU={};$.className='';
   const u=me(),S=PG.set,r=u.rang||{won:0,played:0},LVN={easy:T2('आसान','Easy'),medium:T2('मध्यम','Medium'),hard:T2('कठिन','Hard')};
   const dl=u.rangDaily&&u.rangDaily.date===today()?T2('आज का बेस्ट: ','Today best: ')+u.rangDaily.score:T2('रोज़ नया हाथ','A new hand daily');
   $.innerHTML=`<div class="top"><div class="prof" onclick="pick()"><div class="av">${avHTML(0)}</div><div class="pi"><b>${u.name}</b><div class="gm">💎 ${gems()}</div></div><button class="plus" onclick="event.stopPropagation();gemsBox()">+</button></div>
-   <div class="pills"><button class="pl big" onclick="rangSetup()">🎨 Rang Bid · 4 ${T2('खिलाड़ी','players')} · ${rModeLbl(S)} · ${LVN[S.level]} ▾</button></div>
+   <div class="pills"><button class="pl big" onclick="rangSetup()">🎨 Rang Bol · 4 ${T2('खिलाड़ी','players')} · ${rModeLbl(S)} · ${LVN[S.level]} ▾</button></div>
    <div class="ibs"><button class="wb iconb" onclick="rangLb()">🏆</button><button class="wb iconb" onclick="hub()">🎮</button><button class="wb iconb" onclick="rangRules()">❓</button><button class="wb iconb" onclick="settings()">⚙</button></div></div>
   <div class="tl4">
    <div class="tl" onclick="rangStart(false)"><div class="ic">🤖</div>${T2('बॉट्स के साथ खेलो','Play vs Bots')}<small>${rModeLbl(S)} · 🎟 ${RANG_FEE} 💎</small><small>🏆 ${r.won||0}/${r.played||0}</small></div>
@@ -1926,7 +2086,7 @@ function rangBidPanel(g){
 function rangClock(g){
   if(RU.online)return;
   const key=[g.phase,g.turn,g.trick.length,g.played.length,g.log.length,g.bids.filter(x=>x!=null).length,g.round].join('|');
-  if(RU.key!==key){RU.key=key;RU.t0=Date.now();RU.dur=g.turn===0?(RU.practice?0:(g.phase==='play'?15000:20000)):(g.phase==='play'?1000:g.phase==='bid'?1400:1700)}
+  if(RU.key!==key){RU.key=key;RU.t0=Date.now();RU.dur=g.turn===0?(RU.practice?0:(g.phase==='play'?15000:20000)):(g.phase==='play'?BOT_MIN+rand(BOT_MAX-BOT_MIN):1200+rand(600))}
 }
 function rangOk(hand,trick){return rangValid(hand,trick,RG.trump)}   // insaan par bhi wahi niyam
 function rangRender(){
@@ -1950,7 +2110,7 @@ function rangRender(){
       if(l.pass){t=T2('पास','Pass');c='pass'}else{t=(rKnown(p,g)&&l.s!=null)?`<span style="color:${l.s%2?'#d11f1f':'#111'}">${SUITS[l.s]}</span> ${l.n}`:`🔒 ${l.n}`;c=(l===last?'new':'')}}
     else{const b=g.bids[p];if(b==null)return '';
       if(g.phase==='bid'){t='✔ '+b;c='rbd new'}
-      else{const m=g.won[p]>=b;t=`${m?'✔ ':'🎯 '}${b} · ✋ ${g.won[p]}`;c=m?'rmt':'rbd'}}
+      else{const m=g.won[p]>=b;t=m?`✓ ${Math.round((b+(g.won[p]-b)*.1)*10)/10} · ✋ ${g.won[p]}`:`🎯 ${b} · ✋ ${g.won[p]}`;c=m?'rmt':'rbd'}}
     return `<div class="rbub ${SD[p]} ${c}">${t}</div>`};
   const ring=p=>{const on=live&&g.turn===p&&RU.dur;return on?`<svg class="ring" viewBox="0 0 60 60"><circle class="bg" cx="30" cy="30" r="27"/><circle class="fg" cx="30" cy="30" r="27" style="animation-duration:${RU.dur}ms;animation-delay:-${Math.min(Date.now()-RU.t0,RU.dur)}ms"/></svg>`:''};
   const pt=p=>{const b=g.bids[p];return(g.phase==='play'&&b!=null&&g.won[p]>=b)?`<div class="pt">✓ ${Math.round((b+(g.won[p]-b)*.1)*10)/10}</div>`:''};
@@ -1959,7 +2119,7 @@ function rangRender(){
     :`<div class="ts" style="color:${g.trump%2?'#d11f1f':'#111'}">${SUITS[g.trump]}</div>${T2('कट','TRUMP')}<small>${g.changedBy!=null?'🔄 '+pn(g.changedBy):g.caller!=null?'📢 '+pn(g.caller)+' '+SUITS[g.trump]+g.callN:T2('डिफ़ॉल्ट','default')}</small>`;
   if(g.phase==='bid')RU.rvRound=g.round;
   const cb=rCoachBox(rCoach(g));
-  $.innerHTML=`<div style="position:absolute;inset:0"></div>
+  $.innerHTML=`${feltHTML('rang')}
   <div class="kbar"><button class="ghost sm" onclick="rangHome()">🏠</button>${RU.practice?'<span>🎓 '+T2('अभ्यास','Practice')+'</span>':''}${RU.daily?'<span>📅 '+T2('डेली','Daily')+'</span>':''}${RU.practice&&RU.hist&&RU.hist.length?`<button class="ghost sm" onclick="rangUndo()">↩ ${T2('पीछे','Undo')}</button>`:''}<span>${g.target?`${T2('राउंड','Round')} ${g.round+1} · 🎯 ${g.target}`:`${T2('राउंड','Round')} ${g.round+1}/${g.rounds}`}</span><span class="sp"></span>${RU.online?`<button class="ghost sm" onclick="emoBox()">💬</button>`:''}<button class="ghost sm mutebtn" onclick="muteTog()">${PG.set.music?'🔊':'🔇'}</button><button class="ghost sm" onclick="rangScoreBox()">📋</button><button class="ghost sm" onclick="rangRules()">❓</button></div>
   ${[0,1,2,3].map(ch).join('')}<div class="ktr ${(g.phase==='bid'&&RU.rvRound!==g.round)?'rv':''}">${box}</div>${cb}<div class="kmsg">${msg}</div>
   ${tr.map(t=>`<div class="kt ${RU.show&&RU.show.w===t.p?'win':''}" style="left:${TP[t.p][0]}px;top:${TP[t.p][1]}px">${cardHTML(t.c)}</div>`).join('')}${pan?`<div class="kpan rb">${pan}</div>`:''}
@@ -1996,7 +2156,7 @@ function rCoach(g){
   }
   return {m,a,b,c};
 }
-function kcMin(){PG.set.kcmin=!PG.set.kcmin;save();if(PG.set.game==='rang'&&RG)rangRender();else kotRender()}
+function kcMin(){PG.set.kcmin=!PG.set.kcmin;save();if(PG.set.game==='bhabhi'&&BG)bhRender();else if(PG.set.game==='seep'&&SG)seepRender();else if(PG.set.game==='rang'&&RG)rangRender();else kotRender()}
 function rCfs(d){PG.set.kcfs=Math.max(10,Math.min(22,(PG.set.kcfs||13)+d));save();rangRender()}
 function rCoachBox(co){
   if(!RU.practice)return'';
@@ -2076,7 +2236,7 @@ function rangRecord(win){
   if(first){add();if(u.rangPaid!==t){u.rangPaid=t;u.gems=(u.gems||0)+RANG_DAILY;RU.dres.bonus=RANG_DAILY}}save();
 }
 
-/* ---- Rang Bid ONLINE (server rooms: quick match + room code) ---- */
+/* ---- Rang Bol ONLINE (server rooms: quick match + room code) ---- */
 const rOnOpts=()=>{const S=PG.set;return{game:'rang',mode:S.rmode,rounds:S.rrounds,target:S.rtarget,level:S.level||'medium'}};
 const rOnQuick=()=>onConnect(()=>onSend({t:'quick',...rOnOpts()}));
 const rOnCreate=()=>onConnect(()=>onSend({t:'create',...rOnOpts()}));
@@ -2084,7 +2244,7 @@ function rangOnline(){ON.pv=false;BOXFN=rangOnlineHTML;modal(rangOnlineHTML());i
 function rangOnPref(k,v){const S=PG.set;if(k==='rrounds'){S.rmode='rounds';S.rrounds=v}else if(k==='rtarget'){S.rmode='target';S.rtarget=v}else S[k]=v;save();refreshBox()}
 function rangOnlineHTML(){
   const S=PG.set,b=(on,f,t)=>`<button class="${on?'':'ghost'}" onclick="${f}">${t}</button>`;
-  return `<h2>🌐 Rang Bid ${T2('ऑनलाइन','Online')} ${ON.ok?'🟢':'⚪'}</h2>
+  return `<h2>🌐 Rang Bol ${T2('ऑनलाइन','Online')} ${ON.ok?'🟢':'⚪'}</h2>
   <div class="lbl">🔁 ${T2('राउंड वाला खेल','Rounds game')}</div><div class="seg">${[3,5].map(n=>b(S.rmode==='rounds'&&S.rrounds===n,`rangOnPref('rrounds',${n})`,n+' '+T2('राउंड','Round'))).join('')}</div>
   <div class="lbl">🎯 ${T2('टारगेट वाला खेल','Target game')}</div><div class="seg">${[11,21,31].map(n=>b(S.rmode==='target'&&S.rtarget===n,`rangOnPref('rtarget',${n})`,n+' '+T2('अंक','pts'))).join('')}</div>
   <div class="lbl">🤖 ${T2('खाली सीट पर बॉट का स्तर','Bot level for empty seats')}</div><div class="seg">${[['easy',T2('आसान','Easy')],['medium',T2('मध्यम','Medium')],['hard',T2('कठिन','Hard')]].map(([k,t])=>b(S.level===k,`rangOnPref('level','${k}')`,t)).join('')}</div>
@@ -2137,7 +2297,7 @@ const hubBase=hub;
 hub=function(){clearTimeout(RU.t);RG=null;RU={};hubBase();
   const t=document.querySelector('.tl4');if(!t)return;
   t.style.cssText='left:60px;width:840px;top:150px;grid-template-columns:1fr 1fr 1fr';
-  t.insertAdjacentHTML('beforeend',`<div class="tl" style="background:linear-gradient(#6a3fb0,#4a2a85);border-color:#a47be0;box-shadow:0 6px 0 #2a1650" onclick="pickGame('rang')"><div class="ic">🎨</div>Rang Bid<small>${T2('4 खिलाड़ी · रंग बोलो · बॉट्स · ऑनलाइन','4 players · name the trump · bots · online')}</small><small>🏆 ${(me().rang||{}).won||0} ${T2('जीत','wins')}</small></div>`);
+  t.insertAdjacentHTML('beforeend',`<div class="tl" style="background:linear-gradient(#6a3fb0,#4a2a85);border-color:#a47be0;box-shadow:0 6px 0 #2a1650" onclick="pickGame('rang')"><div class="ic">🎨</div>Rang Bol<small>${T2('4 खिलाड़ी · रंग बोलो · बॉट्स · ऑनलाइन','4 players · name the trump · bots · online')}</small><small>🏆 ${(me().rang||{}).won||0} ${T2('जीत','wins')}</small></div>`);
   t.querySelectorAll('.tl').forEach(e=>e.style.height='270px');
 };
 const homeBase=home;
@@ -2171,6 +2331,8 @@ function turnLeft(){   // aapki chaal me kitne ms bache (null = aapki chaal nahi
     if($.className==='kot'){
       const gm=PG.set.game;
       if(gm==='rang'&&RG&&['call','bid','play'].includes(RG.phase)&&RG.turn===0&&!RU.busy&&!RU.practice&&RU.dur&&RU.t0)return{k:'r'+RU.t0,left:RU.t0+RU.dur-Date.now()};
+      if(gm==='bhabhi'&&BG&&BG.phase!=='over'&&BG.turn===0&&!BU.busy&&!BU.practice&&BU.dur&&BU.t0)return{k:'b'+BU.t0,left:BU.t0+BU.dur-Date.now()};
+      if(gm==='seep'&&SG&&['bid','play'].includes(SG.phase)&&(SG.phase==='bid'?SG.bidder:SG.turn)===0&&!SU.busy&&!SU.practice&&SU.dur&&SU.t0)return{k:'s'+SU.t0,left:SU.t0+SU.dur-Date.now()};
       if(gm==='kot'&&KG&&KG.turn===0&&!KU.busy&&!KU.practice&&KU.dl&&KU.t0&&['call','change','newtrump','play'].includes(KG.phase))return{k:'k'+KU.t0,left:KU.t0+KU.dl-Date.now()};
       return null}
     if(G&&!ui.hold&&!ui.modal&&['bid','play'].includes(G.phase)&&G.turn===0&&ui.dur&&ui.t0&&!ui.forced)return{k:'c'+ui.t0,left:ui.t0+ui.dur-Date.now()};
@@ -2192,6 +2354,995 @@ new MutationObserver(applyChrome).observe(document.body,{attributes:true,attribu
 function goFull(){if(PG.set.fs===false)return;const e=document.documentElement;if(document.fullscreenElement||!e.requestFullscreen)return;try{const p=e.requestFullscreen({navigationUI:'hide'});if(p&&p.catch)p.catch(()=>{})}catch(_){}}
 document.addEventListener('pointerdown',goFull,{passive:true});
 document.addEventListener('fullscreenchange',()=>{setTimeout(()=>{try{fit()}catch(e){}},150)});
+/* ============ SEEP engine (100 ank + Punjabi 30 ank, 2 ya 4 khiladi) ============ */
+const SeepEng=(()=>{
+  const V=c=>c.r===14?1:c.r, same=(a,b)=>a.s===b.s&&a.r===b.r, tm=(g,p)=>g.n===4?p%2:p;
+  const pts=(c,v)=>{
+    if(v==='p30'){if(c.s===3&&c.r===10)return 12;if(c.s===0&&c.r===9)return 9;if(c.s===0&&c.r===2)return 1;return c.r===14?1:0}
+    if(c.s===0)return V(c);if(c.r===14)return 1;if(c.s===3&&c.r===10)return 6;return 0};
+  const loose=(c,id)=>({id,house:false,val:V(c),cards:[c]});
+  function deal(g){
+    const bidder=(g.dealer+1)%g.n;
+    for(;;){const d=shuffle(newDeck()),bh=d.splice(0,4),tb=d.splice(0,4);
+      if(bh.some(c=>V(c)>=9)){g.deck=d;g.hands=Array.from({length:g.n},()=>[]);g.hands[bidder]=bh;
+        g.table=tb.map(c=>loose(c,++g.seq));g.hidden=true;break}}
+    Object.assign(g,{bidder,phase:'bid',turn:bidder,bid:null,first:false,moves:0,caps:[[],[]],bonus:[0,0],seeps:[0,0],lastCap:null,ev:null,lastP:null});
+  }
+  function create(o){o=o||{};const n=o.n===2?2:4,g={variant:o.variant==='p30'?'p30':'s100',minSeep:o.minSeep===2?2:1,n,target:o.target||100,dealer:rand(n),round:0,lead:0,score:[0,0],history:[],seq:0,over:false,win:null};deal(g);return g}
+  const bidOptions=g=>[...new Set(g.hands[g.bidder].map(V).filter(v=>v>=9))].sort((a,b)=>a-b);
+  function nextDeal(g0){const g=structuredClone(g0);g.dealer=(g.dealer+1)%g.n;g.round++;g.over=false;deal(g);return g}
+  function subsets(items,target){const res=[];
+    const rec=(i,sum,cur)=>{if(sum===target){res.push(cur.slice());return}if(sum>target)return;
+      for(let j=i;j<items.length;j++){cur.push(items[j]);rec(j+1,sum+items[j].val,cur);cur.pop()}};
+    rec(0,0,[]);return res}
+  /* patta v ki keemat ka ho to kya-kya uth sakta hai: sab vaidh groups ko uthana zaroori (maximal selection) */
+  function capOpts(g,v){
+    const lo=g.table.filter(i=>!i.house),groups=[...subsets(lo,v).map(s=>s.map(i=>i.id)),...g.table.filter(i=>i.house&&i.val===v).map(h=>[h.id])];
+    const out=[],seen=new Set();
+    const rec=(start,used,sel)=>{
+      const free=k=>groups[k].every(id=>!used.has(id));
+      let any=false;for(let k=0;k<groups.length;k++)if(free(k)){any=true;break}
+      if(!any){if(sel.length){const ids=[...used].sort((a,b)=>a-b),key=ids.join(',');if(!seen.has(key)){seen.add(key);out.push(ids)}}return}
+      if(out.length>=40)return;
+      for(let k=start;k<groups.length;k++)if(free(k)){groups[k].forEach(id=>used.add(id));rec(k+1,used,sel.concat(k));groups[k].forEach(id=>used.delete(id))}};
+    if(groups.length)rec(0,new Set(),[]);return out}
+  function looseSubsetsUpTo(items,maxSum){const res=[];
+    const rec=(i,sum,cur)=>{if(cur.length)res.push({ids:cur.map(x=>x.id),sum});for(let j=i;j<items.length;j++){if(sum+items[j].val<=maxSum){cur.push(items[j]);rec(j+1,sum+items[j].val,cur);cur.pop()}}};
+    rec(0,0,[]);return res}
+  function houseOpts(g,p,c){
+    const v=V(c),rest=g.hands[p].filter(x=>!same(x,c)),opts=[];
+    if(v<=12){looseSubsetsUpTo(g.table.filter(i=>!i.house),13-v).forEach(s=>{const h=v+s.sum;if(h>=9&&h<=13&&rest.some(x=>V(x)===h))opts.push({a:'house',use:s.ids,h})})}
+    g.table.filter(i=>i.house&&!i.pukka).forEach(H=>{const h=H.val+v;if(h<=13&&rest.some(x=>V(x)===h))opts.push({a:'raise',hid:H.id,h})});
+    if(rest.some(x=>V(x)===v))g.table.filter(i=>i.house&&i.val===v).forEach(H=>opts.push({a:'merge',hid:H.id,h:v}));
+    return opts}
+  function addHouse(table,h,nid){
+    const ex=table.find(i=>i.house&&i.val===h.val);
+    if(ex)return table.filter(i=>i!==ex).concat([{id:ex.id,house:true,val:h.val,cards:[...ex.cards,...h.cards],pukka:true,owners:[...new Set([...ex.owners,...h.owners])]}]);
+    return table.concat([{id:nid,house:true,val:h.val,cards:h.cards,pukka:false,owners:h.owners}])}
+  function sim(g,p,c,m,nid){
+    let table=g.table.slice(),taken=[];
+    if(m.a==='cap'){const ids=new Set(m.take);taken=[c];table=table.filter(i=>{if(ids.has(i.id)){taken.push(...i.cards);return false}return true})}
+    else if(m.a==='house'){const ids=new Set(m.use),cards=[c];table=table.filter(i=>{if(ids.has(i.id)){cards.push(...i.cards);return false}return true});table=addHouse(table,{val:m.h,cards,owners:[p]},nid)}
+    else if(m.a==='merge'){table=addHouse(table,{val:m.h,cards:[c],owners:[p]},nid)}
+    else if(m.a==='raise'){const H=table.find(i=>i.id===m.hid);table=table.filter(i=>i!==H);table=addHouse(table,{val:m.h,cards:[...H.cards,c],owners:[p]},nid)}
+    else table=table.concat([loose(c,nid)]);
+    return{table,taken}}
+  const keeps=(g,p,c,m)=>{const r=sim(g,p,c,m,-1),rest=g.hands[p].filter(x=>!same(x,c));return r.table.every(i=>!(i.house&&i.owners.includes(p))||rest.some(x=>V(x)===i.val))};
+  function getMoves(g,p){
+    const res=[],raw=[];
+    for(const c of g.hands[p]){
+      if(g.first&&V(c)!==g.bid)continue;
+      const caps=capOpts(g,V(c)).map(take=>({t:'play',c,a:'cap',take})),hs=houseOpts(g,p,c).map(o=>({t:'play',c,...o})),list=[...caps,...hs];
+      if(!caps.length)list.push({t:'play',c,a:'throw'});
+      for(const m of list){raw.push(m);if(keeps(g,p,c,m))res.push(m)}}
+    return res.length?res:raw}
+  function endDeal(g,p){
+    if(g.table.length){const t=g.lastCap!=null?g.lastCap:tm(g,p);g.table.forEach(i=>g.caps[t].push(...i.cards));g.table=[]}
+    const tp=g.caps.map(a=>a.reduce((s,c)=>s+pts(c,g.variant),0)),cn=g.caps.map(a=>a.length);
+    const mc=g.variant==='p30'?[cn[0]>cn[1]?4:0,cn[1]>cn[0]?4:0]:[0,0];
+    const tot=[tp[0]+mc[0]+g.bonus[0],tp[1]+mc[1]+g.bonus[1]];
+    g.history.push({tp,mc,bonus:g.bonus.slice(),tot,cn});
+    if(g.variant==='s100'){const low=tp.map(x=>x<9);
+      if(low[0]!==low[1]){g.over=true;g.win=low[0]?1:0;g.lowLoss=true;g.score=[g.win===0?g.target:0,g.win===1?g.target:0]}
+      else{g.lead+=tot[0]-tot[1];g.score=[Math.max(g.lead,0),Math.max(-g.lead,0)];if(Math.abs(g.lead)>=g.target){g.over=true;g.win=g.lead>0?0:1}}}
+    else{g.score=[g.score[0]+tot[0],g.score[1]+tot[1]];if(Math.max(...g.score)>=g.target&&g.score[0]!==g.score[1]){g.over=true;g.win=g.score[0]>g.score[1]?0:1}}
+    g.phase=g.over?'over':'dealEnd'}
+  function applyMove(g0,p,m){
+    const g=structuredClone(g0);g.ev=null;
+    if(m.t==='bid'){g.bid=m.v;g.hidden=false;
+      for(let q=0;q<g.n;q++){const need=12-g.hands[q].length;if(need>0)g.hands[q].push(...g.deck.splice(0,need))}
+      g.phase='play';g.turn=g.bidder;g.first=true;g.ev={type:'bid',p,v:m.v};return g}
+    const c=m.c,h=g.hands[p],i=h.findIndex(x=>same(x,c));if(i<0)return g0;h.splice(i,1);
+    const before=g.table.length,r=sim(g,p,c,m,++g.seq),t=tm(g,p);g.table=r.table;
+    const ev={type:m.a,p,c,h:m.h,took:r.taken};
+    if(m.a==='cap'){g.caps[t].push(...r.taken);g.lastCap=t;
+      if(!g.table.length&&before>=(g.minSeep||1)){const b=g.variant==='p30'?V(c):50;g.bonus[t]+=b;g.seeps[t]++;ev.seep=b}}
+    g.moves++;g.first=false;g.ev=ev;g.lastP=p;
+    if(g.hands.every(x=>!x.length)){
+      if(g.deck.length){for(let q=0;q<g.n;q++)g.hands[q].push(...g.deck.splice(0,12));ev.dealt=true;g.turn=(p+1)%g.n}
+      else endDeal(g,p)
+    }else g.turn=(p+1)%g.n;
+    return g}
+  /* ---- bots ---- */
+  function evalMove(g,p,m,lvl){
+    const c=m.c,r=sim(g,p,c,m,-1),pc=pts(c,g.variant),easy=lvl==='easy';let sc=0;
+    const tsum=r.table.reduce((a,i)=>a+i.val,0),lo=r.table.filter(i=>!i.house).length;
+    if(m.a==='cap'){sc+=r.taken.reduce((a,x)=>a+pts(x,g.variant),0)*3+r.taken.length*.8;
+      if(!r.table.length&&g.table.length>=(g.minSeep||1))sc+=(g.variant==='p30'?V(c)*2:40)
+      else if(!easy&&r.table.length<=1)sc-=5}
+    else if(m.a==='house'||m.a==='raise'||m.a==='merge'){sc+=9+(m.h>=11?1:0)-pc*.6;if(g.table.some(i=>i.house&&i.val===m.h))sc+=3}
+    else{sc-=pc*4+(V(c)>=9?1.5:0);
+      if(!easy){if(r.table.length<=1)sc-=8;else if(lo===r.table.length&&tsum<=13)sc-=6;else if(tsum<=13)sc-=2}}
+    return sc+Math.random()*(easy?12:lvl==='hard'?.2:.9)}
+  const bots={
+    bid:g=>{const o=bidOptions(g);return o[rand(o.length)]},
+    move:(g,p,lvl)=>{const mv=getMoves(g,p);let best=mv[0],bs=-1e9;for(const m of mv){const s=evalMove(g,p,m,lvl||'medium');if(s>bs){bs=s;best=m}}return best}};
+  return{V,same,tm,pts,create,nextDeal,bidOptions,getMoves,applyMove,bots,sim};
+})();
+/* ============ SEEP: SCREEN + DASHBOARD ============ */
+document.head.insertAdjacentHTML('beforeend',`<style>
+.stb{position:absolute;left:150px;top:198px;width:660px;height:168px;display:flex;flex-wrap:wrap;gap:16px 7px;justify-content:center;align-content:flex-start;z-index:2}
+.stb .card{width:54px;height:78px;margin-left:0;border-radius:8px}.stb .card i{font-size:21px;left:5px;top:4px}.stb .card span{font-size:34px;right:4px;bottom:3px}
+.stb .card.sbk{background:repeating-linear-gradient(45deg,#2a4a9a,#2a4a9a 6px,#1c3478 6px,#1c3478 12px)!important;border:2px solid #fff!important}
+.sh{position:relative;display:flex;padding:4px;border:2px solid #ffd54a;border-radius:11px;background:#0003}.sh.pk{border-color:#ff7043;background:#5a1a0a55}
+.sh .card{margin-left:-30px}.sh .card:first-of-type{margin-left:0}
+.sh b{position:absolute;left:4px;top:-12px;background:#ffd54a;color:#222;font-size:12px;border-radius:8px;padding:0 7px;z-index:3;white-space:nowrap}.sh.pk b{background:#ff7043;color:#fff}
+.sopts{position:absolute;left:50%;transform:translateX(-50%);max-width:700px;top:48px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;z-index:8;background:#0009;border-radius:12px;padding:4px 8px}
+.slast{position:absolute;left:10px;top:54px;width:136px;background:#000a;border-radius:12px;padding:6px 7px;color:#fff;font-size:13px;line-height:1.3;z-index:3}.slast small{display:block;color:#cfe;font-size:12px}.slc{display:flex;flex-wrap:wrap;gap:3px;align-items:center;margin:3px 0}.slc span{font-size:16px}.slast .card{width:34px;height:48px;border-radius:5px;margin:0}.slast .card i{font-size:14px;left:3px;top:2px}.slast .card span{font-size:21px;right:2px;bottom:1px}.sopts.lo{top:326px}.sopts button{font-size:16px;padding:4px 11px;min-width:0;white-space:nowrap}.sopts .rec{outline:3px solid #4dd0ff}
+.sopts small{align-self:center;color:#ffd54a;font-weight:700;font-size:14px}
+.sdt{position:absolute;right:12px;top:52px;background:#fff;border:3px solid #ffd54a;border-radius:16px;color:#222;font-weight:800;padding:6px 16px;text-align:center;z-index:4;box-shadow:0 4px 10px #0008;font-size:18px;line-height:1.2}.sdt b{font-size:44px;display:block}
+</style>`);
+PG.set.sv=PG.set.sv||'s100';PG.set.sn=PG.set.sn||4;
+let SG=null,SU={};const SEEP_FEE=10,SEEP_WIN=25;
+const SEEP_HOW=[
+['🧹 Seep: पत्ते मिलाकर टेबल से उठाने का खेल। न बिड-चाल है, न कट। 52 पत्ते, बिना जोकर। 4 खिलाड़ी (2 बनाम 2, साथी आमने-सामने) या 2 खिलाड़ी।','🧹 Seep: a capturing game — match cards to lift them from the table. No tricks, no trump. 52 cards, no jokers. 4 players (2 vs 2, partners opposite) or 2 players.'],
+['🔢 कीमत: A=1, 2–10 अपनी संख्या, J=11, Q=12, K=13। हाथ का पत्ता टेबल के उसी कीमत वाले पत्ते, या जिन पत्तों का जोड़ उसके बराबर हो, उन्हें उठा सकता है (जैसे 9 से 5+4)। कई वैध समूह हों तो सब उठाने पड़ते हैं।','🔢 Values: A=1, 2–10 face value, J=11, Q=12, K=13. A card captures table cards of equal value or cards that add up to it (9 takes 5+4). If several groups are possible you must take all of them.'],
+['🎲 शुरुआत: डीलर के दाएँ वाले को 4 पत्ते मिलते हैं और टेबल पर 4 पत्ते उल्टे रखे जाते हैं। उसे अपने पत्तों में से 9 से 13 की बिड लगानी है। अगर उसके 4 पत्तों में 9 या उससे बड़ा पत्ता नहीं है तो ताश दोबारा बँटती है। फिर टेबल खुलता है, बाकी पत्ते बँटते हैं और पहली चाल बिड वाली कीमत के पत्ते से चली जाती है।','🎲 Start: the player right of the dealer gets 4 cards and 4 cards are put face-down on the table. He bids 9–13 from his own cards. If none of his 4 cards is 9 or higher, the cards are re-dealt. Then the table is opened, the rest is dealt, and the first move uses a card of the bid value.'],
+['🏠 घर: टेबल के पत्तों में अपना पत्ता जोड़कर 9 से 13 का घर बनाइए — पर हाथ में उसी कीमत का दूसरा पत्ता रखना ज़रूरी है। घर तभी उठता है जब उसी कीमत का पत्ता चला जाए। जब तक आपका घर टेबल पर है, उस कीमत का पत्ता आपको अपने पास रखना है।','🏠 House: add your card to table cards to make a 9–13 house — but you must hold another card of that value. It is lifted by a card of that value. While your house is on the table you must keep a card of its value.'],
+['🤝 कच्चा घर (पीला): आप, आपका साथी या विरोधी — कोई भी अपना पत्ता जोड़कर उसकी कीमत बढ़ा सकता है (13 तक, और हाथ में नई कीमत का पत्ता होना चाहिए)। 🔒 पक्का घर (लाल): उसी कीमत के दो घर मिलकर पक्के हो जाते हैं, फिर कीमत नहीं बदलती, सिर्फ़ उसी कीमत के पत्ते से उठता है। ⬇ ऊपर डालना: उस कीमत के आपके पास 2 या ज़्यादा पत्ते हों तो घर उठाना ज़रूरी नहीं — एक पत्ता घर के ऊपर डालकर उसे पक्का कर सकते हैं।','🤝 Kachcha house (yellow): you, your partner or an opponent can add a card to raise its value (up to 13, and you must hold a card of the new value). 🔒 Pukka house (red): two houses of the same value merge and can no longer change — only lifted by a card of that value. ⬇ Put on top: if you hold 2 or more cards of that value you need not lift the house — you can put one on top of it to make it pukka.'],
+['⤵ फेंकना: अगर आपका पत्ता कुछ उठा नहीं सकता, तो उसे टेबल पर खुला रख सकते हैं। उठा सकते हों तो उठाना ज़रूरी है।','⤵ Throw: if your card cannot capture anything you may leave it face-up on the table. If it can capture, you must capture.'],
+['🧹 Seep: कोई भी खिलाड़ी एक चाल में टेबल के सारे पत्ते उठा ले तो उसकी टीम को 50 अंक — इसे Seep कहते हैं (पंजाबी खेल में उस पत्ते की कीमत के बराबर)। सेटिंग में चुन सकते हैं कि Seep तभी गिना जाए जब टेबल पर कम से कम 2 चीज़ें हों।','🧹 Seep: if a player lifts every card on the table in one move his team gets 50 points — that is a Seep (in the Punjabi game the value of the card). In settings you can choose to count a Seep only when the table had at least 2 items.'],
+['💯 100-अंक वाला: पत्तों के अंक — हुकुम (♠) के पत्ते 1 से 13 तक अपनी कीमत के (A=1 … J=11, Q=12, K=13), बाकी तीन इक्के 1-1, ♦10 = 6; कुल 100। राउंड कितने भी हों, हर राउंड का अंतर + या − में जुड़ता जाता है; जिस टीम की बढ़त 100 हो जाए, बाज़ी वहीं खत्म। किसी राउंड में 9 से कम अंक आए तो वह टीम तुरंत हार जाती है।','💯 100-point game: ♠ cards count 1 to 13 (A=1 … J=11, Q=12, K=13), other three aces 1 each, ♦10 = 6; total 100. Over any number of rounds each round’s difference is added as + or −; the moment a team leads by 100 the game ends. A team with fewer than 9 card points in a round loses at once.'],
+['🎯 पंजाबी 30-अंक वाला: ♦10 = 12, ♠9 = 9, ♠2 = 1, चारों इक्के 1-1, और सबसे ज़्यादा पत्ते वाली टीम को 4 — कुल 30, साथ में Seep बोनस। अंक हर डील के जुड़ते हैं; जो टीम पहले 100 पर पहुँचे वह जीतती है।','🎯 Punjabi 30-point game: ♦10 = 12, ♠9 = 9, ♠2 = 1, the four aces 1 each, and 4 for the team with most cards — 30 in all, plus Seep bonuses. Deal scores are added up; first team to 100 wins.'],
+['⏱ अपनी चाल के लिए 15 सेकंड मिलते हैं (अभ्यास में नहीं)। 🪙 जेम्स नकली हैं, असली कीमत नहीं।','⏱ You get 15 seconds per move (not in Practice). 🪙 Gems are virtual and have no real value.']];
+function seepOv(h,w,raw){seepCloseOv();$.insertAdjacentHTML('beforeend',`<div class="ov" id="sov">${raw?h:`<div class="box" ${w?`style="width:${w}px"`:''}>${h}</div>`}</div>`)}
+function seepCloseOv(){const o=document.getElementById('sov');if(o)o.remove()}
+function seepHome(){clearTimeout(SU.t);clearInterval(SU.cd);SG=null;seepCloseOv();home()}
+function seepRules(){seepOv(`<h2>❓ Seep — ${T2('नियम','Rules')}</h2><div class="how">${SEEP_HOW.map(x=>`<p style="font-size:${PG.set.rfs||16}px">${x[li()]}</p>`).join('')}</div><div class="row"><button onclick="seepCloseOv()">${T2('बंद करें','Close')}</button></div>`,720)}
+const seepVarLbl=()=>PG.set.sv==='p30'?T2('पंजाबी 30','Punjabi 30'):T2('100 अंक','100 pts');
+function seepLastBox(){
+  const L=SU.last;if(!L||!SG||SG.phase==='bid')return '';
+  const head=L.type==='cap'?T2('ने उठाया','took'):L.type==='throw'?T2('ने फेंका','threw'):L.type==='house'?T2('ने घर '+L.h+' बनाया','made house '+L.h):L.type==='merge'?T2('ने घर '+L.h+' पर डाला','put on house '+L.h):T2('ने घर '+L.h+' किया','raised to '+L.h);
+  const body=L.type==='cap'?`<div class="slc">${cardHTML(L.c)}<span>➜</span>${L.took.length?L.took.map(c=>cardHTML(c)).join(''):'<small>—</small>'}</div>`:`<div class="slc">${cardHTML(L.c)}</div>`;
+  const pc=L.type==='cap'?L.took.concat([L.c]).reduce((a,x)=>a+SeepEng.pts(x,SG.variant),0):0;
+  return `<div class="slast"><b>${pn(L.p)}</b> ${head}${body}${L.type==='cap'?`<small>🃏 ${L.took.length+1} · ⭐ ${pc} ${T2('अंक','pts')}</small>`:''}${L.seep?`<small style="color:#ffd54a">🧹 SEEP +${L.seep}</small>`:''}</div>`}
+function seepSetupHTML(){
+  const S=PG.set,b=(on,f,t)=>`<button class="${on?'':'ghost'}" onclick="${f}">${t}</button>`;
+  return `<h2>🎛 ${T2('Seep सेटिंग','Seep settings')}</h2>
+  <div class="lbl">🧹 ${T2('कौन सा Seep','Which Seep')}</div><div class="seg">${b(S.sv==='s100',"seepPref('sv','s100')",T2('100 अंक (सामान्य)','100 points (classic)'))}${b(S.sv==='p30',"seepPref('sv','p30')",T2('पंजाबी 30 अंक','Punjabi 30'))}</div>
+  <div class="lbl">👥 ${T2('खिलाड़ी','Players')}</div><div class="seg">${b(S.sn===4,"seepPref('sn',4)",T2('4 (2 बनाम 2)','4 (2 vs 2)'))}${b(S.sn===2,"seepPref('sn',2)",T2('2 खिलाड़ी','2 players'))}</div>
+  <div class="lbl">🧹 ${T2('Seep कब गिना जाए','When a Seep counts')}</div><div class="seg">${b(S.sm!==2,"seepPref('sm',1)",T2('टेबल साफ़ = Seep','Cleared table = Seep'))}${b(S.sm===2,"seepPref('sm',2)",T2('टेबल पर 2+ चीज़ें हों','Table had 2+ items'))}</div>
+  <div class="lbl">🤖 ${T2('बॉट का स्तर','Bot level')}</div><div class="seg">${[['easy',T2('आसान','Easy')],['medium',T2('मध्यम','Medium')],['hard',T2('कठिन','Hard')]].map(([k,t])=>b(S.level===k,`seepPref('level','${k}')`,t)).join('')}</div>
+  <div class="row"><button class="gb" onclick="closeM();seepDash()">✔ ${T2('ठीक है','Done')}</button></div>`}
+function seepSetup(){BOXFN=seepSetupHTML;modal(seepSetupHTML())}
+function seepPref(k,v){PG.set[k]=v;save();document.querySelector('#pk .box').innerHTML=seepSetupHTML()}
+function seepLb(tab){const h=lbHTML('seep','Seep',tab||'bots','seepLb');const bx=document.querySelector('#pk .box');if(tab&&bx){BOXFN=()=>h;bx.innerHTML=h}else{BOXFN=null;modal(h)}}
+function seepDash(){
+  if((ON.active||ON.room)&&!ON.keep)onlineLeave();
+  G=null;KG=null;RG=null;SG=null;clearTimeout(KU.t);clearTimeout(RU.t);clearTimeout(SU.t);KU={};RU={};SU={};$.className='';
+  const u=me(),S=PG.set,r=u.seep||{won:0,played:0},LVN={easy:T2('आसान','Easy'),medium:T2('मध्यम','Medium'),hard:T2('कठिन','Hard')};
+  $.innerHTML=`<div class="top"><div class="prof" onclick="pick()"><div class="av">${avHTML(0)}</div><div class="pi"><b>${u.name}</b><div class="gm">💎 ${gems()}</div></div><button class="plus" onclick="event.stopPropagation();gemsBox()">+</button></div>
+   <div class="pills"><button class="pl big" onclick="seepSetup()">🧹 Seep · ${S.sn} ${T2('खिलाड़ी','players')} · ${seepVarLbl()} · ${LVN[S.level]||LVN.medium} ▾</button></div>
+   <div class="ibs"><button class="wb iconb" onclick="seepLb()">🏆</button><button class="wb iconb" onclick="hub()">🎮</button><button class="wb iconb" onclick="seepRules()">❓</button><button class="wb iconb" onclick="settings()">⚙</button></div></div>
+  <div class="tl4" style="left:60px;top:150px;width:840px;grid-template-columns:1fr 1fr 1fr">
+   <div class="tl" style="height:250px" onclick="seepStart(false)"><div class="ic">🤖</div>${T2('बॉट्स के साथ खेलो','Play vs Bots')}<small>${seepVarLbl()} · 🎟 ${SEEP_FEE} 💎</small><small>🏆 ${r.won||0}/${r.played||0}</small></div>
+   <div class="tl" style="height:250px" onclick="seepStart(true)"><div class="ic">🎓</div>${T2('अभ्यास','Practice')}<small>${T2('बिना टाइमर · 💡 सुझाव','No timer · 💡 hints')}</small></div>
+   <div class="tl" style="height:250px" onclick="seepOnline()"><div class="ic">🌐</div>${T2('ऑनलाइन खेलो','Play Online')}<small>${T2('दोस्तों के साथ · रूम कोड','With friends · room code')}</small></div></div>`;
+}
+function seepStart(prac){
+  if(prac===undefined)prac=!!SU.practice;
+  const S=PG.set,fee=prac?0:SEEP_FEE;
+  if(fee&&gems()<fee){flash(T2('इस खेल के लिए '+SEEP_FEE+' 💎 चाहिए। अभ्यास फ्री है।','This game needs '+SEEP_FEE+' 💎. Practice is free.'));return}
+  clearTimeout(SU.t);seepCloseOv();BOTS=pickBots(3);if(fee){me().gems=gems()-fee;save()}
+  SG=SeepEng.create({variant:S.sv,n:S.sn,target:100,minSeep:S.sm===2?2:1});
+  SU={practice:prac,busy:false,rec:false,fee,reward:0,sel:null,note:'',key:null};
+  $.className='kot';snd.deal();seepRender();seepStep();
+}
+const seepTeam=t=>SG.n===4?(t===0?T2('हम','Us'):T2('वे','Them')):(t===0?T2('आप','You'):pn(1));
+const seepCs=c=>`<span style="color:${c.s%2?'#d11f1f':'#111'};background:#fff;border-radius:4px;padding:0 3px;font-weight:800">${rankName(c.r)}${SUITS[c.s]}</span>`;
+function seepDesc(g,m){
+  const it=id=>g.table.find(i=>i.id===id),cl=i=>i.house?`<b>${T2('घर','House')} ${i.val}</b>`:seepCs(i.cards[0]);
+  if(m.a==='cap')return '✋ '+T2('उठाओ','Take')+' '+m.take.map(id=>cl(it(id))).join(' ');
+  if(m.a==='house')return '🏠 '+T2('घर','House')+' '+m.h+' ('+m.use.map(id=>cl(it(id))).join('+')+')';
+  if(m.a==='merge')return '🔒 '+T2('घर','House')+' '+m.h+' '+T2('पर डालो (पक्का)','— put on top (pukka)');
+  if(m.a==='raise')return '⬆ '+T2('घर','House')+' '+it(m.hid).val+'→'+m.h;
+  return '⤵ '+T2('फेंको','Throw')}
+function seepEvText(g){
+  const e=g.ev;if(!e)return '';
+  if(e.type==='bid')return `🎯 ${pn(e.p)} ${T2('ने बिड लगाई','bid')} ${e.v}`;
+  const who=pn(e.p),cs=seepCs(e.c);
+  let s=e.type==='cap'?`${who}: ${cs} ${T2('से','took')} ${e.took.slice(1).map(seepCs).join(' ')||''}`:e.type==='throw'?`${who} ${T2('ने फेंका','threw')} ${cs}`:e.type==='house'?`🏠 ${who} ${T2('ने घर बनाया','made house')} ${e.h}`:e.type==='merge'?`🔒 ${who} ${T2('ने घर '+e.h+' पर डालकर पक्का किया','put on house '+e.h+' (pukka)')}`:`⬆ ${who} ${T2('ने घर बढ़ाकर किया','raised house to')} ${e.h}`;
+  if(e.seep)s+=` · 🧹 SEEP! +${e.seep}`;return s}
+function seepClock(g){if(SU.online)return;
+  const p=g.phase==='bid'?g.bidder:g.turn,key=[g.round,g.phase,p,g.moves].join('|');
+  if(SU.key!==key){SU.key=key;SU.t0=Date.now();SU.dur=p===0?(SU.practice?0:15000):(g.phase==='bid'?2500:BOT_MIN+rand(BOT_MAX-BOT_MIN))}}
+function seepRender(){
+  const keep=document.getElementById('sov'),g=SG,n=g.n;
+  const live=(g.phase==='bid'||g.phase==='play')&&!SU.busy;if(live)seepClock(g);
+  const CP4=[[14,338],[828,200],[420,92],[14,234]],pos=n===4?CP4:[CP4[0],CP4[2]];
+  const cur=g.phase==='bid'?g.bidder:g.turn,my=live&&cur===0&&g.phase==='play',bidMy=live&&g.phase==='bid'&&g.bidder===0;
+  const mv=my?SeepEng.getMoves(g,0):[];SU.mv=mv;
+  const co=(my||bidMy)&&SU.practice?seepCoach(g):null;SU.co=co;
+  const playable=c=>mv.some(m=>SeepEng.same(m.c,c));
+  const ring=p=>{const on=live&&cur===p&&SU.dur;return on?`<svg class="ring" viewBox="0 0 60 60"><circle class="bg" cx="30" cy="30" r="27"/><circle class="fg" cx="30" cy="30" r="27" style="animation-duration:${SU.dur}ms;animation-delay:-${Math.min(Date.now()-SU.t0,SU.dur)}ms"/></svg>`:''};
+  const ch=p=>`<div class="kchip ${p===0?'kme':''} ${live&&cur===p?'on':''}" style="left:${pos[p][0]}px;top:${pos[p][1]}px"><div class="a" ${p?'':'onclick="pick()"'}>${ring(p)}${avHTML(p)}</div><b class="nm2">${pn(p)}${g.bidder===p&&g.bid!=null?' 🎯'+g.bid:''}</b><small>${n===4?seepTeam(p%2)+' · ':''}🃏${g.hands[p].length} · 📥${g.caps[SeepEng.tm(g,p)].length}</small>${SU.emo&&SU.emo[p]?`<div class="eb">${emoHTML(SU.emo[p])}</div>`:''}</div>`;
+  const chips=(n===4?[0,1,2,3]:[0,1]).map(ch).join('');
+  const tbl=g.hidden?[0,1,2,3].map(()=>'<div class="card sbk"></div>').join(''):g.table.map(i=>i.house?`<div class="sh ${i.pukka?'pk':''}"><b>${i.pukka?'🔒 ':''}${T2('घर','House')} ${i.val} · ${i.owners.map(o=>pn(o).slice(0,7)+(n===4?(o%2?' ('+seepTeam(1)+')':' ('+seepTeam(0)+')'):'')).join(' + ')}</b>${i.cards.map(c=>cardHTML(c)).join('')}</div>`:cardHTML(i.cards[0])).join('');
+  const sel=SU.sel,hand=sortHand(g.hands[0]);
+  let top='';
+  if(bidMy)top=`<div class="sopts"><small>${T2('बिड चुनिए','Choose bid')}:</small>${SeepEng.bidOptions(g).map(v=>`<button class="${co&&co.m.t==='bid'&&co.m.v===v?'gb rec':'gb'}" onclick="seepAct(0,{t:'bid',v:${v}})">🎯 ${v}</button>`).join('')}</div>`;
+  else if(my&&sel){const rec=SU.hint;top=`<div class="sopts lo">${mv.map((m,i)=>SeepEng.same(m.c,sel)?`<button class="${rec&&seepSameMv(rec,m)?'rec':''}" onclick="seepAct(0,SU.mv[${i}])">${seepDesc(g,m)}</button>`:'').join('')}<button class="ghost" onclick="SU.sel=null;seepRender()">✖</button></div>`}
+  let msg;
+  if(g.phase==='bid')msg=bidMy?T2('आपके 4 पत्ते — 9 से 13 की बिड चुनिए','Your 4 cards — choose a bid from 9 to 13'):`⏳ ${pn(g.bidder)} ${T2('बिड लगा रहा है…','is bidding…')}`;
+  else msg=(SU.note||'')+(my?`${SU.note?' · ':''}${g.first?T2('पहली चाल: '+g.bid+' कीमत का पत्ता चलिए','First move: play a card of value '+g.bid):T2('आपकी चाल — पत्ता चुनिए','Your turn — pick a card')}`:`${SU.note?' · ':''}<small style="display:inline">⏳ ${pn(g.turn)} ${T2('की चाल','to play')}</small>`);
+  const sg=x=>(x>0?'+':x<0?'−':'')+Math.abs(x),sc=g.variant==='s100'?`${seepTeam(0)} ${sg(g.score[0]-g.score[1])} · ${sg(g.score[1]-g.score[0])} ${seepTeam(1)}`:`${seepTeam(0)} ${g.score[0]} – ${g.score[1]} ${seepTeam(1)}`;
+  $.innerHTML=`${feltHTML('seep')}
+  <div class="kbar"><button class="ghost sm" onclick="seepHome()">🏠</button>${SU.practice?'<span>🎓</span>':''}<span>🧹 ${g.variant==='p30'?'30':'100'} · ${T2('डील','Deal')} ${g.round+1}</span><span>${sc}</span><span class="sp"></span>${!SU.online&&live&&cur!==0&&(g.phase==='bid'||g.phase==='play')?`<button class="ghost sm" onclick="seepSkip()">⏩ ${T2('अभी चलाओ','Skip wait')}</button>`:''}${SU.practice&&my?`<button class="ghost sm" onclick="seepHint()">💡</button>`:''}${SU.online?`<button class="ghost sm" onclick="emoBox()">💬</button>`:''}<button class="ghost sm mutebtn" onclick="muteTog()">${PG.set.music?'🔊':'🔇'}</button><button class="ghost sm" onclick="seepScoreBox()">📋</button><button class="ghost sm" onclick="seepRules()">❓</button></div>
+  ${chips}${seepLastBox()}${SU.practice?seepCoachBox(co):''}${g.bid!=null?`<div class="sdt">${T2('बिड','BID')}<b>${g.bid}</b><small>🃏 ${g.deck.length?T2('बाकी ','left ')+g.deck.length:''}</small></div>`:''}
+  ${top||`<div class="kmsg">${msg}</div>`}
+  <div class="stb">${tbl}</div>
+  <div class="hand">${hand.map(c=>cardHTML(c,my?(playable(c)?'ok':'no'):'')).join('')}</div>`;
+  [...$.querySelectorAll('.hand .card')].forEach((el,i)=>{const c=hand[i];
+    if(co&&co.m.t==='play'&&SeepEng.same(co.m.c,c))el.style.outline='4px solid #4dd0ff';
+    if(sel&&SeepEng.same(c,sel)){el.style.transform='translateY(-30px)';el.style.outline='4px solid #4dd0ff'}
+    if(my)el.onclick=()=>{if(!playable(c))return badCard(g.first?T2('पहली चाल में बिड वाली कीमत का पत्ता चलना है','The first move must use a card of the bid value'):T2('यह पत्ता अभी नहीं चल सकता','This card cannot be played now'));
+      const opts=mv.filter(m=>SeepEng.same(m.c,c));if(opts.length===1){seepAct(0,opts[0]);return}
+      SU.sel=sel&&SeepEng.same(c,sel)?null:c;SU.hint=null;seepRender()}});
+  if(keep)$.appendChild(keep);
+}
+
+/* ---- Seep: practice me coach (kaun sa patta chalna hai aur kyon) ---- */
+function seepCoach(g){
+  const V=SeepEng.V;
+  if(g.phase==='bid'&&g.bidder===0){
+    const o=SeepEng.bidOptions(g),cnt=v=>g.hands[0].filter(c=>V(c)===v).length,v=o.slice().sort((a,b)=>cnt(b)-cnt(a)||a-b)[0];
+    return{m:{t:'bid',v},a:T2('बिड '+v+' लगाइए','Bid '+v),
+      b:cnt(v)>1?T2(`आपके पास ${v} कीमत के ${cnt(v)} पत्ते हैं — एक से घर बनाकर दूसरा बचाकर रख सकते हैं।`,`You hold ${cnt(v)} cards of value ${v} — you can make a house with one and keep the other.`):T2(`${v} कीमत का पत्ता आपके पास है, पहली चाल में वही चलना होगा।`,`You hold a ${v}; it must be your first move.`),
+      c:T2('बिड 9 से 13 के बीच, अपने 4 पत्तों में से ही चुनी जाती है।','The bid is 9–13 and must come from your own 4 cards.')}}
+  if(g.phase!=='play'||g.turn!==0)return null;
+  const mv=SeepEng.getMoves(g,0);if(!mv.length)return null;
+  const m=SeepEng.bots.move(g,0,'hard'),r=SeepEng.sim(g,0,m.c,m,-1),pc=r.taken.reduce((a,x)=>a+SeepEng.pts(x,g.variant),0),cs=seepCs(m.c);
+  const myHouse=g.table.find(i=>i.house&&i.owners.includes(0));
+  const a=T2('यह पत्ता चलिए: ','Play this card: ')+cs+' — '+seepDesc(g,m);
+  let b;
+  if(m.a==='cap')b=(!r.table.length&&g.table.length>=2?T2('पूरी टेबल साफ़ हो रही है — Seep का बोनस मिलेगा! ','The whole table is cleared — Seep bonus! '):'')+(pc>0?T2(`इससे ${pc} अंक के पत्ते मिलते हैं।`,`This wins ${pc} card points.`):T2('अंक वाले पत्ते नहीं हैं, पर टेबल के पत्ते आपकी टीम के हो जाएँगे और विरोधी को कम मौके मिलेंगे।','No point cards, but the table cards become yours and give the opponent fewer chances.'));
+  else if(m.a==='merge')b=T2(`${m.h} कीमत का दूसरा पत्ता भी हाथ में है, इसलिए घर उठाने के बजाय उस पर डालकर उसे पक्का कर दीजिए — घर बचा रहेगा और विरोधी उसे बदल नहीं पाएँगे।`,`You hold another ${m.h}, so instead of lifting the house put this card on top to make it pukka — opponents can no longer change it.`);
+  else if(m.a==='house'||m.a==='raise')b=T2(`घर ${m.h} बनाने से टेबल के पत्ते सुरक्षित रहते हैं। ध्यान रहे: ${m.h} कीमत का दूसरा पत्ता हाथ में रखना है — उसी से घर उठेगा।`,`Making a ${m.h} house protects the table cards. Remember to keep another ${m.h} in hand — that is what lifts the house.`);
+  else b=T2('यह पत्ता कुछ उठा नहीं सकता, इसलिए सबसे कम अंक/कीमत वाला पत्ता फेंका जा रहा है ताकि विरोधी को फ़ायदा न मिले।','This card cannot capture, so the lowest-value card is thrown to give the opponent little.');
+  let c='';
+  if(g.first)c=T2(`पहली चाल में ${g.bid} कीमत का (बिड वाला) पत्ता ही चलना होता है।`,`The first move must use a card of value ${g.bid} (the bid card).`);
+  else if(myHouse)c=T2(`आपका घर ${myHouse.val} टेबल पर है — ${myHouse.val} कीमत का पत्ता हाथ में बचाकर रखिए।`,`Your ${myHouse.val} house is on the table — keep a card of value ${myHouse.val} in hand.`);
+  else c=T2('जिस पत्ते से कुछ उठ सकता हो, उसे उठाना ज़रूरी है; फेंकना तभी जब वह कुछ न उठाए।','If a card can capture, it must; you may throw only a card that cannot capture.');
+  return{m,a,b,c}}
+function seepCfs(d){PG.set.kcfs=Math.max(10,Math.min(22,(PG.set.kcfs||13)+d));save();seepRender()}
+function seepCoachBox(co){
+  if(PG.set.kcmin)return `<div class="kcoach mini" onclick="kcMin()">🎓 ${T2('कोच','Coach')} ▴</div>`;
+  const f=SU.fb,fb=f?`<div class="fbx ${f.ok?'ok':''}"><b>${f.ok?'✅ '+T2('सही चाल!','Good move!'):'💡 '+T2('कोच की सलाह थी','Coach suggested')}</b>${f.ok?'':' '+f.a}</div>`:'';
+  const body=co?`<div class="a">${co.a}</div><div>${co.b}</div><small>${co.c}</small>`:`<small>${T2('अपनी चाल का इंतज़ार…','Waiting for your turn…')}</small>`;
+  return `<div class="kcoach" style="font-size:${PG.set.kcfs||13}px"><div class="ch"><b>🎓 ${T2('कोच','Coach')}</b><span><button onclick="seepCfs(-1)">A−</button><button onclick="seepCfs(1)">A+</button><button onclick="kcMin()">▾</button></span></div>${fb}${body}</div>`}
+const seepSameMv=(a,b)=>a.a===b.a&&SeepEng.same(a.c,b.c)&&JSON.stringify([a.take,a.use,a.hid,a.h])===JSON.stringify([b.take,b.use,b.hid,b.h]);
+function seepHint(){if(!SG||SG.phase!=='play'||SG.turn!==0||SU.busy)return;const m=SeepEng.bots.move(SG,0,'hard');SU.sel=m.c;SU.hint=m;seepRender()}
+function seepAct(p,m){
+  if(!SG||SU.busy)return;const g0=SG;if(SU.online){if(p===0)sOnSend(m);return}if((g0.phase==='bid'?g0.bidder:g0.turn)!==p||g0.phase==='dealEnd'||g0.phase==='over')return;clearTimeout(SU.t);
+  if(p===0&&SU.practice&&SU.co){const k=SU.co.m;SU.fb={ok:m.t==='bid'?(k.t==='bid'&&k.v===m.v):(k.t==='play'&&seepSameMv(k,m)),a:SU.co.a}}
+  if(m.t==='play')snd.play();else snd.bid();
+  const n=SeepEng.applyMove(g0,p,m);SG=n;SU.sel=null;SU.hint=null;SU.mv=null;SU.note=seepEvText(n);
+  if(n.ev&&n.ev.type!=='bid')SU.last={p:n.ev.p,type:n.ev.type,c:n.ev.c,took:(n.ev.took||[]).slice(1),h:n.ev.h,seep:n.ev.seep};
+  if(n.ev&&n.ev.type==='cap')setTimeout(snd.win,260);
+  if(n.ev&&n.ev.seep){setTimeout(()=>boom(.7),380);flash('🧹 SEEP! +'+n.ev.seep)}
+  if(m.t==='bid')setTimeout(snd.deal,250);else if(n.ev&&n.ev.dealt)setTimeout(snd.deal,500);
+  seepRender();seepStep();
+}
+function seepBot(g,q){if(SG!==g||SU.busy)return;const lvl=PG.set.level||'medium';seepAct(q,g.phase==='bid'?{t:'bid',v:SeepEng.bots.bid(g)}:SeepEng.bots.move(g,q,q===0?'medium':lvl))}
+function seepSkip(){const g=SG;if(!g||SU.busy||(g.phase!=='bid'&&g.phase!=='play'))return;const p=g.phase==='bid'?g.bidder:g.turn;if(p===0)return;clearTimeout(SU.t);seepBot(g,p)}
+function seepStep(){
+  const g=SG;clearTimeout(SU.t);if(!g||SU.busy||SU.online)return;
+  if(g.phase==='dealEnd'||g.phase==='over')return seepEnd();
+  seepClock(g);const p=g.phase==='bid'?g.bidder:g.turn,lvl=PG.set.level||'medium';
+  const botDo=q=>seepBot(g,q);
+  if(p===0){if(SU.practice||!SU.dur)return;SU.t=setTimeout(()=>{if(SG!==g)return;flash(T2('समय खत्म — अपने आप चल दिया','Time up — auto move'));botDo(0)},SU.dur);return}
+  SU.t=setTimeout(()=>botDo(p),SU.dur);
+}
+function seepScoreHTML(g,mode){
+  const sgn=x=>(x>0?'+':x<0?'−':'')+Math.abs(x),s1=g.variant==='s100',off=Math.max(0,g.history.length-6),rows=g.history.slice(off).map((r,j)=>{const i=j+off;return `<tr><td>${T2('डील','Deal')} ${i+1}</td>${[0,1].map(t=>`<td><b>${r.tot[t]}</b><small>${r.tp[t]}${r.mc[t]?' +'+r.mc[t]+'📦':''}${r.bonus[t]?' +🧹'+r.bonus[t]:''}</small></td>`).join('')}${s1?`<td><b style="color:${r.tot[0]-r.tot[1]<0?'#ff8a80':'#a5d6a7'}">${r.tot[0]-r.tot[1]>0?'+':''}${r.tot[0]-r.tot[1]}</b></td>`:''}</tr>`}).join('');
+  return `<div class="box sbx" style="width:660px"><h2>${mode==='over'?'🏁 '+T2('खेल खत्म','Game over'):mode==='round'?T2('डील '+g.history.length+' खत्म','Deal '+g.history.length+' complete'):T2('स्कोरबोर्ड','Scoreboard')} · 🧹 ${s1?'100':'30'}</h2>
+  <table class="sbt"><tr><th></th><th>${seepTeam(0)}</th><th>${seepTeam(1)}</th>${s1?`<th>${T2('फ़र्क','Diff')}</th>`:''}</tr>${rows}
+  <tr class="tot"><th>${s1?T2('बढ़त','Lead'):T2('कुल','Total')}</th><th class="${g.score[0]>g.score[1]?'lead':''}">${s1?sgn(g.score[0]-g.score[1]):g.score[0]}</th><th class="${g.score[1]>g.score[0]?'lead':''}">${s1?sgn(g.score[1]-g.score[0]):g.score[1]}</th>${s1?'<th></th>':''}</tr></table>
+  <small>${off?T2('(आखिरी 6 डील) ','(last 6 deals) '):''}${T2('हर खाने में: कुल अंक, नीचे पत्तों के अंक + बोनस','Each box: total, below card points + bonus')}${s1?'':' · 📦 = '+T2('ज़्यादा पत्ते','most cards')}</small>${g.lowLoss&&mode==='over'?`<small style="display:block;color:#ff8a80">⚠ ${T2('9 से कम अंक आने पर वह टीम हार गई','A team with fewer than 9 card points lost')}</small>`:''}`}
+function seepScoreBox(){if(!SG||!SG.history.length){flash(T2('अभी कोई डील पूरी नहीं हुई','No deal finished yet'));return}seepOv(seepScoreHTML(SG,'view')+`<div class="row"><button onclick="seepCloseOv()">${T2('बंद करें','Close')}</button></div></div>`,0,true)}
+function seepEnd(){
+  const g=SG,over=g.phase==='over',win=over&&g.win===0;
+  if(over)seepRecord(win);
+  if(over)celebrate(()=>SG&&SG.phase==='over',()=>!!document.getElementById('sov'));
+  if(!over){
+    const n0=SU.online?Math.max(1,Math.ceil((SU.dl-(Date.now()-SU.t0))/1000)):10;
+    seepOv(seepScoreHTML(g,'round')+`<div class="row"><div class="cdn">${T2('अगली डील','Next deal in')} <b id="cdn">${n0}</b> ${T2('सेकंड में','sec')}</div>${SU.online?'':`<button class="gb" onclick="seepNext()">▶ ${T2('अभी शुरू करें','Start now')}</button>`}</div></div>`,0,true);
+    clearInterval(SU.cd);let k=n0;const gg=g;
+    SU.cd=setInterval(()=>{if(SG!==gg||SG.phase!=='dealEnd'){clearInterval(SU.cd);return}if(!document.getElementById('sov'))return;k--;const e=document.getElementById('cdn');if(e)e.textContent=Math.max(0,k);if(k<=0){clearInterval(SU.cd);if(!SU.online)seepNext()}},1000);
+    return}
+  seepOv(`<div style="text-align:center;font-size:26px;font-weight:800;margin:-6px 0 4px">${win?'🏆 '+T2(g.n===4?'आपकी टीम जीत गई!':'आप जीत गए!',g.n===4?'Your team won!':'You won!'):T2('इस बार आप नहीं जीते','You did not win this time')}</div>`+seepScoreHTML(g,'over').replace('<div class="box sbx" style="width:660px">','<div>')+
+   `${(SU.practice||SU.online)?'':`<p style="text-align:center;margin:4px">💎 ${T2('एंट्री','Entry')} −${SU.fee} · ${win?T2('इनाम','Prize')+' <b style="color:#ffd54a">+'+SU.reward+'</b>':T2('इस बार इनाम नहीं','no prize this time')}</p>`}
+   <div class="row"><button onclick="${SU.online?'onlineAgain()':'seepStart()'}">${T2('फिर खेलें','Play again')}</button><button class="ghost" onclick="seepHome()">🏠</button></div></div>`,0,true);
+}
+function seepNext(){clearInterval(SU.cd);seepCloseOv();SG=SeepEng.nextDeal(SG);SU.note='';SU.key=null;SU.sel=null;snd.deal();seepRender();seepStep()}
+function seepRecord(win){
+  if(SU.rec||SU.practice||SU.online)return;SU.rec=true;const u=me();u.seep=u.seep||{played:0,won:0,pts:0};u.seep.played++;
+  if(win){u.seep.won++;SU.reward=SEEP_WIN;u.gems=(u.gems||0)+SEEP_WIN}save();
+}
+
+/* ============ SEEP: ONLINE ============ */
+function seepOnline(){ON.pv=false;BOXFN=seepOnlineHTML;modal(seepOnlineHTML());if(serverUrl())onConnect()}
+function seepOnPref(k,v){PG.set[k]=v;save();refreshBox()}
+function seepOnlineHTML(){
+  const S=PG.set,b=(on,f,t)=>`<button class="${on?'':'ghost'}" onclick="${f}">${t}</button>`;
+  return `<h2>🌐 Seep ${T2('ऑनलाइन','Online')} ${ON.ok?'🟢':'⚪'}</h2>
+  <div class="lbl">🧹 ${T2('कौन सा Seep','Which Seep')}</div><div class="seg">${b(S.sv!=='p30',"seepOnPref('sv','s100')",T2('100 अंक','100 points'))}${b(S.sv==='p30',"seepOnPref('sv','p30')",T2('पंजाबी 30 अंक','Punjabi 30'))}</div>
+  <div class="lbl">👥 ${T2('खिलाड़ी','Players')}</div><div class="seg">${b(S.sn!==2,"seepOnPref('sn',4)",T2('4 (2 बनाम 2)','4 (2 vs 2)'))}${b(S.sn===2,"seepOnPref('sn',2)",T2('2 खिलाड़ी','2 players'))}</div>
+  <div class="lbl">🧹 ${T2('Seep कब गिना जाए','When a Seep counts')}</div><div class="seg">${b(S.sm!==2,"seepOnPref('sm',1)",T2('टेबल साफ़ = Seep','Cleared table = Seep'))}${b(S.sm===2,"seepOnPref('sm',2)",T2('टेबल पर 2+ चीज़ें हों','Table had 2+ items'))}</div>
+  <div class="lbl">🤖 ${T2('खाली सीट पर बॉट का स्तर','Bot level for empty seats')}</div><div class="seg">${[['easy',T2('आसान','Easy')],['medium',T2('मध्यम','Medium')],['hard',T2('कठिन','Hard')]].map(([k,t])=>b((S.level||'medium')===k,`seepOnPref('level','${k}')`,t)).join('')}</div>
+  ${onSlots('sOnQuick','sOnCreate')}
+  <div class="lbl" style="font-size:13px">${T2('4 खिलाड़ी में सामने बैठा खिलाड़ी आपका साथी है। खाली सीटों पर बॉट बैठेंगे। ऑनलाइन में 💎 का लेन-देन नहीं।','With 4 players the one opposite is your partner. Empty seats get bots. No 💎 are won or lost online.')}</div>
+  <div class="row"><button class="ghost" onclick="closeM()">${T2('बंद करें','Close')}</button></div>`}
+const sOnOpts=()=>{const S=PG.set;return{game:'seep',n:S.sn===2?2:4,sv:S.sv==='p30'?'p30':'s100',sm:S.sm===2?2:1,level:S.level||'medium'}};
+const sOnQuick=()=>onConnect(()=>onSend({t:'quick',...sOnOpts()}));
+const sOnCreate=()=>onConnect(()=>onSend({t:'create',...sOnOpts()}));
+/* server ka state apni seat ke hisaab se ghumana (aap hamesha neeche, saathi saamne) */
+function sRot(m){
+  const g=m.G,n=g.n,s=m.seat,R=a=>a.map((_,i)=>a[(i+s)%n]),L=p=>p==null?p:(p-s+n)%n,sw=((n===4?s%2:s)===1),T=a=>sw?[a[1],a[0]]:a;
+  return {...g,hands:R(g.hands),turn:L(g.turn),dealer:L(g.dealer),bidder:L(g.bidder),lastP:L(g.lastP),
+    caps:T(g.caps),bonus:T(g.bonus),seeps:T(g.seeps),score:T(g.score),lead:sw?-g.lead:g.lead,
+    win:g.win==null?g.win:(sw?1-g.win:g.win),lastCap:g.lastCap==null?g.lastCap:(sw?1-g.lastCap:g.lastCap),
+    table:g.table.map(i=>i.owners?{...i,owners:i.owners.map(L)}:i),
+    history:g.history.map(h=>({...h,tp:T(h.tp),mc:T(h.mc),bonus:T(h.bonus),tot:T(h.tot),cn:T(h.cn)})),
+    ev:g.ev?{...g.ev,p:L(g.ev.p)}:g.ev};
+}
+function sOnEnter(m){
+  const o=document.getElementById('pk');if(o)o.remove();if(typeof ui==='object'&&ui)ui.modal=null;
+  ON.active=true;clearTimeout(SU.t);clearInterval(SU.cd);seepCloseOv();
+  SU={online:true,q:[],tn:m.tn,pend:0,dl:m.ms,t0:Date.now(),dur:Math.max(300,m.ms),busy:false,practice:false,rec:false,fee:0,reward:0,sel:null,note:'',key:null,emo:{},endKey:'',evKey:''};
+  SG=sRot(m);setBots();$.className='kot';snd.deal();seepRender();sOnPost();
+}
+function sOnState(m){if(!ON.active||!SU.online){sOnEnter(m);return}SU.q.push(m);sDrain()}
+function sDrain(){while(SU.q.length&&!SU.busy)sApply(SU.q.shift())}
+function sApply(m){
+  const prev=SG,ng=sRot(m);SU.pend=0;SU.dl=m.ms;SU.t0=Date.now();SU.dur=Math.max(300,m.ms);SG=ng;setBots();SU.sel=null;SU.hint=null;
+  if(prev&&(ng.round>prev.round||(prev.phase==='dealEnd'&&ng.phase==='bid')))snd.deal();
+  const e=ng.ev,key=ng.round+':'+ng.moves+':'+ng.phase+':'+(ng.bid||0);
+  if(key!==SU.evKey){SU.evKey=key;
+    if(e&&e.type==='bid'){SU.note=seepEvText(ng);if(e.p!==0)snd.bid();setTimeout(snd.deal,250)}
+    else if(e){SU.note=seepEvText(ng);SU.last={p:e.p,type:e.type,c:e.c,took:(e.took||[]).slice(1),h:e.h,seep:e.seep};
+      if(e.p!==0)snd.play();if(e.type==='cap')setTimeout(snd.win,260);
+      if(e.seep){setTimeout(()=>boom(.7),380);flash('🧹 SEEP! +'+e.seep)}if(e.dealt)setTimeout(snd.deal,500)}}
+  seepRender();sOnPost();
+}
+function sOnPost(){
+  const g=SG;if(!g||SU.busy)return;
+  if(g.phase==='dealEnd'||g.phase==='over'){const key=g.round+':'+g.phase;if(SU.endKey!==key){SU.endKey=key;seepEnd()}return}
+  if(SU.endKey){SU.endKey='';clearInterval(SU.cd);seepCloseOv()}
+  if((g.phase==='bid'?g.bidder:g.turn)===0){snd.turn&&snd.turn();vib(20)}
+}
+function sOnSend(m){
+  const g=SG;if(!g||SU.pend||SU.busy)return;if((g.phase==='bid'?g.bidder:g.turn)!==0)return;
+  SU.pend=1;setTimeout(()=>{if(SU)SU.pend=0},2500);
+  if(m.t==='play')snd.play();else snd.bid();
+  onSend({t:'move',m:m.t==='bid'?{t:'bid',v:m.v}:{t:'play',c:{s:m.c.s,r:m.c.r},a:m.a,take:m.take,use:m.use,hid:m.hid,h:m.h}});
+}
+/* ---- game chunne wale screen me Seep jodna ---- */
+const hubBase3=hub;
+hub=function(){clearTimeout(SU.t);SG=null;SU={};hubBase3();
+  const t=document.querySelector('.tl4');if(!t)return;
+  t.style.cssText='left:20px;width:920px;top:150px;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px';
+  t.insertAdjacentHTML('beforeend',`<div class="tl" style="background:linear-gradient(#d0592f,#9a3a18);border-color:#f0966c;box-shadow:0 6px 0 #5a2008;height:270px" onclick="pickGame('seep')"><div class="ic">🧹</div>Seep<small>${T2('2/4 खिलाड़ी · 100 व 30 अंक','2/4 players · 100 & 30 pts')}</small><small>🏆 ${(me().seep||{}).won||0} ${T2('जीत','wins')}</small></div>`);
+  t.querySelectorAll('.tl').forEach(e=>{e.style.height='270px';const s=e.querySelectorAll('small');s.forEach(x=>x.style.fontSize='13px')});
+};
+const homeBase3=home;
+home=function(){if(PG.set.game==='seep')seepDash();else homeBase3()};
+/* ============ BHABHI (Thulla) engine: 3 se 8 khiladi ============ */
+const BhEng=(()=>{
+  const nxt=(g,p)=>{for(let k=1;k<=g.n;k++){const q=(p+k)%g.n;if(!g.isOut[q])return q}return -1};
+  const active=g=>g.isOut.map((o,i)=>o?-1:i).filter(i=>i>=0);
+  function startTrick(g,leader,keepRef){
+    g.leader=leader;g.trick=[];g.led=null;g.turn=leader;g.parts=[];g.pi=0;if(!keepRef)g.refused=[];
+    let p=leader;do{g.parts.push(p);p=nxt(g,p)}while(p!==leader&&p>=0&&g.parts.length<g.n)}
+  function create(o){
+    o=o||{};const n=Math.max(3,Math.min(8,(o.n|0)||4)),d=shuffle(newDeck()),hands=Array.from({length:n},()=>[]);
+    d.forEach((c,i)=>hands[i%n].push(c));
+    const st=hands.findIndex(h=>h.some(c=>c.s===0&&c.r===14));
+    const g={n,opts:{fr:o.fr!==false,ask:!!o.ask,so:!!o.so},hands,isOut:Array(n).fill(false),order:[],first:true,firstLead:true,
+      refused:[],ask:null,voids:Array.from({length:n},()=>[]),pile:0,phase:'play',bhabhi:null,draw:false,ev:null,shoot:null,moves:0};
+    startTrick(g,st);return g}
+  function getMoves(g,p){
+    if(g.phase==='ask')return p===g.ask.to?[{t:'give'},{t:'refuse'}]:[];
+    if(g.phase!=='play'||p!==g.turn||g.isOut[p])return [];
+    const h=g.hands[p];let cs;
+    if(!g.trick.length){
+      cs=g.firstLead?h.filter(c=>c.s===0&&c.r===14):h;
+      const mv=cs.map(c=>({t:'play',c}));
+      if(g.opts.ask&&!g.firstLead)active(g).forEach(q=>{if(q!==p&&g.hands[q].length&&!g.refused.includes(q))mv.push({t:'ask',to:q})});
+      return mv}
+    const f=h.filter(c=>c.s===g.led);cs=f.length?f:h;
+    return cs.map(c=>({t:'play',c}))}
+  function checkEnd(g,leader){
+    const a=active(g);
+    if(a.length<=1){g.phase='over';g.bhabhi=a.length===1?a[0]:null;g.draw=a.length===0;return}
+    startTrick(g,g.isOut[leader]?nxt(g,leader):leader)}
+  function markOuts(g,order){order.forEach(p=>{if(!g.isOut[p]&&!g.hands[p].length){g.isOut[p]=true;g.order.push(p)}})}
+  function shootOut(g,w,y){
+    const steps=[];let loser=null;
+    while(g.hands[y].length){
+      const i=rand(g.hands[y].length),d=g.hands[y].splice(i,1)[0],cand=g.hands[y].filter(c=>c.s===d.s&&c.r<d.r).sort((a,b)=>b.r-a.r);
+      if(!cand.length){steps.push({d,play:null});loser=y;break}
+      const pl=cand[0];g.hands[y].splice(g.hands[y].findIndex(c=>c.s===pl.s&&c.r===pl.r),1);steps.push({d,play:pl});g.pile+=2}
+    g.shoot={w,y,steps,loser};
+    if(loser===null){[w,y].forEach(p=>{g.isOut[p]=true;g.order.push(p)});g.phase='over';g.bhabhi=null;g.draw=true}
+    else{g.isOut[w]=true;g.order.push(w);g.phase='over';g.bhabhi=y}}
+  function resolve(g,kind,by){
+    const t=g.trick,led=g.led,hi=t.filter(x=>x.c.s===led).sort((a,b)=>b.c.r-a.c.r)[0],w=hi.p,cards=t.map(x=>x.c);
+    if(kind==='pick'){g.hands[w].push(...cards);g.voids[w]=g.voids[w].filter(sv=>!cards.some(c=>c.s===sv));g.ev={type:'pick',p:w,by,cards,trick:t.map(x=>({p:x.p,c:x.c}))}}
+    else{g.pile+=cards.length;g.ev={type:'discard',p:w,cards,trick:t.map(x=>({p:x.p,c:x.c}))}}
+    g.first=false;const parts=g.parts.slice();
+    const act=active(g);
+    if(kind==='discard'&&g.opts.so&&act.length===2&&!g.hands[w].length){
+      const y=act.find(q=>q!==w);if(g.hands[y].length){shootOut(g,w,y);g.ev.shoot=true;return}}
+    markOuts(g,parts);checkEnd(g,w)}
+  function applyMove(g0,p,m){
+    const g=structuredClone(g0);g.ev=null;g.moves++;
+    if(m.t==='ask'){g.ask={from:p,to:m.to};g.phase='ask';g.turn=m.to;g.ev={type:'ask',p,to:m.to};return g}
+    if(m.t==='refuse'){const a=g.ask;g.refused.push(a.to);g.phase='play';g.turn=a.from;g.ask=null;g.ev={type:'refuse',p:a.to,to:a.from};return g}
+    if(m.t==='give'){const a=g.ask;g.hands[a.from].push(...g.hands[a.to]);g.voids[a.from]=g.voids[a.from].filter(sv=>!g.hands[a.to].some(c=>c.s===sv));g.hands[a.to]=[];g.isOut[a.to]=true;g.order.push(a.to);
+      g.phase='play';g.ask=null;g.ev={type:'give',p:a.to,to:a.from};
+      const rest=active(g);if(rest.length<=1){g.phase='over';g.bhabhi=rest.length?rest[0]:null;g.draw=!rest.length}else startTrick(g,a.from,true);return g}
+    const c=m.c,h=g.hands[p],i=h.findIndex(x=>x.s===c.s&&x.r===c.r);if(i<0)return g0;h.splice(i,1);
+    if(!g.trick.length){g.led=c.s;g.firstLead=false}
+    g.trick.push({p,c});g.refused=[];
+    const off=c.s!==g.led;if(off&&!g.voids[p].includes(g.led))g.voids[p].push(g.led);
+    g.ev={type:'play',p,c,off:off&&!(g.first&&g.opts.fr)};
+    if(off&&!(g.first&&g.opts.fr)){resolve(g,'pick',p);return g}
+    if(g.trick.length===g.parts.length){resolve(g,'discard');return g}
+    g.pi++;g.turn=g.parts[g.pi];return g}
+  /* ---- bots ---- */
+  function best(g,p,lvl,mv){
+    const h=g.hands[p];
+    if(g.phase==='ask'){const give=h.length>2&&Math.random()<.7;return mv.find(m=>m.t===(give?'give':'refuse'))}
+    const plays=mv.filter(m=>m.t==='play');
+    if(lvl==='easy')return plays[rand(plays.length)];
+    const cnt=s=>h.filter(c=>c.s===s).length;
+    if(!g.trick.length){
+      const others=active(g).filter(q=>q!==p);
+      const got=(g.ev&&g.ev.type==='pick'&&g.ev.p===p)?g.ev.cards:[];                       // abhi thulla/mod me jo patte uthaye
+      const lastSuit=g.ev&&g.ev.trick&&g.ev.trick[0]?g.ev.trick[0].c.s:null;                // jis rang par abhi thulla pada
+      let pool=plays;
+      if(got.length){
+        const fresh=pool.filter(m=>!got.some(c=>c.s===m.c.s&&c.r===m.c.r));if(fresh.length)pool=fresh;   // wahi patta wapas na chalo
+        const diff=pool.filter(m=>m.c.s!==lastSuit);if(diff.length)pool=diff}                           // wahi rang bhi na chalo
+      if(lvl==='hard'||Math.random()<.75){const safe=pool.filter(m=>!others.some(q=>g.voids[q].includes(m.c.s)));if(safe.length)pool=safe}
+      const multi=pool.filter(m=>cnt(m.c.s)>=2);const base=multi.length?multi:pool;
+      return base.slice().sort((a,b)=>a.c.r-b.c.r)[0]}
+    const same=plays.filter(m=>m.c.s===g.led);
+    if(same.length){
+      const top=Math.max(...g.trick.filter(x=>x.c.s===g.led).map(x=>x.c.r));
+      const lower=same.filter(m=>m.c.r<top).sort((a,b)=>b.c.r-a.c.r);
+      if(lower.length)return lower[0];
+      return same.slice().sort((a,b)=>a.c.r-b.c.r)[0]}
+    return plays.slice().sort((a,b)=>b.c.r-a.c.r||cnt(a.c.s)-cnt(b.c.s))[0]}
+  return{create,getMoves,applyMove,best,active,nxt};
+})();
+
+/* ============ BHABHI: SCREEN + DASHBOARD ============ */
+document.head.insertAdjacentHTML('beforeend',`<style>
+.bbg{position:absolute;inset:-300px -1400px;z-index:0;background:radial-gradient(ellipse at 50% 42%,#24855d 0%,#145a3d 46%,#0a2c20 100%)}
+.bbg::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,#ffffff07 0 16px,#0000000d 16px 32px)}
+.bfelt{position:absolute;left:120px;top:176px;width:720px;height:236px;border-radius:50%;z-index:1;border:5px solid #d4af37;box-shadow:0 0 0 5px #6b4e0e,0 0 0 7px #f3d36b55,inset 0 0 70px #00000088,0 14px 34px #000c;background:radial-gradient(ellipse at 50% 40%,#2fa073,#176f4c 70%)}
+.bfelt::after{content:'भाभी – देवर';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:50px;font-weight:900;letter-spacing:5px;color:#ffffff14}
+.bdir{position:absolute;left:184px;top:348px;z-index:2;color:#ffe9a3;font-weight:800;font-size:13px;background:#00000066;border:1px solid #d4af3788;border-radius:12px;padding:1px 12px}
+.btr{position:absolute;left:150px;top:200px;width:500px;height:160px;display:flex;justify-content:center;align-items:flex-start;z-index:3}
+.bt{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;margin-left:-40px}
+.bt .nm{position:absolute;top:-13px;left:-2px;z-index:3;font-size:11px;padding:1px 8px;border:1px solid #ffffff66;box-shadow:0 2px 4px #000a}.bt.mine .nm{background:#0a9e2a;border-color:#fff}.bt:first-child{margin-left:0}
+.bt .nm{font-size:12px;font-weight:700;color:#fff;background:#000a;border-radius:8px;padding:0 7px;max-width:84px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.bt.hi .card{outline:4px solid #ffd54a;box-shadow:0 0 16px #ffd54a}.bt.off .card{outline:4px solid #ff5252;box-shadow:0 0 14px #ff5252}
+.bmsg{position:absolute;left:50%;transform:translateX(-50%);top:150px;max-width:640px;background:linear-gradient(#f9e08a,#d4a017);color:#3a2500;border:2px solid #fff8;border-radius:16px;padding:4px 18px;font-weight:800;font-size:17px;text-align:center;z-index:6;box-shadow:0 4px 12px #0009}
+.bmsg.bad{background:linear-gradient(#ff7a7a,#b3261e);color:#fff}.bmsg.good{background:linear-gradient(#7be08f,#1f8a3b);color:#fff}
+.bpile{position:absolute;right:10px;top:52px;z-index:4;width:84px;padding:6px 4px;text-align:center;color:#fff;font-weight:800;font-size:12px;line-height:1.2;border:3px solid #fff;border-radius:12px;background:repeating-linear-gradient(45deg,#8e1b3a,#8e1b3a 6px,#6a1230 6px,#6a1230 12px);box-shadow:0 5px 0 #4a0a20,0 8px 14px #000a}.bpile b{font-size:28px;display:block}
+.kot.bh .kchip{background:linear-gradient(160deg,#41314fee,#1b1325ee)!important;border:2px solid #d4af37!important;border-radius:16px;box-shadow:0 5px 14px #000a}
+.kot.bh .kchip.on{box-shadow:0 0 0 3px #ffd54a,0 0 20px #ffd54a}.kchip.out{opacity:.55}
+.kot.bh .kbar{background:linear-gradient(#34203f,#170f20)!important;border-bottom:3px solid #d4af37}
+.bsh{background:#0004;border-radius:10px;padding:6px 10px;margin:6px 0;font-size:14px}
+</style>`);
+PG.set.bn=PG.set.bn||4;
+let BG=null,BU={};const BH_FEE=10;
+const BH_POS={3:[[240,56],[600,56]],4:[[14,200],[420,56],[826,200]],5:[[14,215],[260,56],[580,56],[826,215]],6:[[14,215],[160,56],[420,56],[680,56],[826,215]],
+ 7:[[14,215],[14,115],[260,56],[580,56],[826,115],[826,215]],8:[[14,215],[14,115],[200,56],[420,56],[640,56],[826,115],[826,215]]};
+const BH_HOW=[
+['😅 Bhabhi (Thulla): 3 से 8 खिलाड़ी, हर कोई अकेला। 52 पत्ते, बिना जोकर, सारे बँट जाते हैं। लक्ष्य — अपने सारे पत्ते सबसे पहले खत्म करना। जिसके पत्ते सबसे अंत तक बचें, वही हारता है — उसे Bhabhi कहते हैं।','😅 Bhabhi (Thulla): 3 to 8 players, everyone for himself. 52 cards, no jokers, all dealt. Goal — get rid of all your cards. The last player left holding cards loses and is called the Bhabhi.'],
+['🔢 पत्तों की ताकत: A > K > Q > J > 10 > … > 2। कोई रंग किसी रंग से बड़ा नहीं; सिर्फ़ चाल के रंग (शुरुआती रंग) के पत्ते गिने जाते हैं।','🔢 Card strength: A > K > Q > J > 10 > … > 2. No suit beats another; only cards of the led suit count.'],
+['▶ शुरुआत: जिसके पास ♠A है वह पहली चाल में ♠A चलता है। फिर खेल घड़ी की दिशा में चलता है। जिसके पास चाल के रंग का पत्ता है उसे वही रंग चलना ज़रूरी है (बड़ा या छोटा, अपनी मर्ज़ी से)।','▶ Start: whoever holds ♠A leads it. Play goes clockwise. If you hold the led suit you must follow it (high or low, your choice).'],
+['🔥 थुल्ला: जिसके पास चाल का रंग नहीं है वह कोई भी दूसरा पत्ता चल सकता है — चाल तुरंत रुक जाती है और उस चाल में चाल के रंग का सबसे बड़ा पत्ता चलने वाला खिलाड़ी बीच के सारे पत्ते उठा लेता है और अगली चाल वही शुरू करता है।','🔥 Thulla: a player without the led suit may throw any card — the trick stops at once and the player who played the highest card of the led suit must pick up every card in the middle and leads next.'],
+['✅ सब ने रंग चलाया तो सारे पत्ते डिस्कार्ड हो जाते हैं और सबसे बड़ा पत्ता चलने वाला अगली चाल शुरू करता है। जिसके सारे पत्ते खत्म हो जाएँ वह सुरक्षित बाहर हो जाता है; अगर चाल शुरू करने वाला बाहर हो गया तो अगला सक्रिय खिलाड़ी शुरू करता है।','✅ If everybody follows suit all the cards are discarded and the highest card leads next. A player with no cards left is safe and out; if the leader is out the next active player leads.'],
+['⚙ चालू/बंद होने वाले नियम (सेटिंग में): 1) पहला राउंड कभी नहीं रुकेगा — पहले राउंड में रंग न होने पर भी चाल नहीं रुकती, सब एक-एक पत्ता चलते हैं और सबसे बड़ा ♠ अगली चाल शुरू करता है। 2) पत्ते माँगना — चाल शुरू करने वाला किसी एक खिलाड़ी से उसके सारे पत्ते माँग सकता है; वह दे दे तो वह सुरक्षित बाहर, मना करे तो उसे इस चाल में दोबारा नहीं पूछ सकते। 3) शूट-आउट — सिर्फ़ दो खिलाड़ी बचें और चाल जीतने वाले के पत्ते खत्म हों, तो वह दूसरे के हाथ से बिना देखे एक पत्ता निकालता है; दूसरा उसी रंग का छोटा पत्ता चल सके तो दोनों डिस्कार्ड और फिर दोबारा; न चल सके तो वह हार जाता है। सब पत्ते खत्म हों तो बराबरी।','⚙ Optional rules (in settings): 1) First round never stops — in the first round a card of another suit does not stop the trick; everyone plays one card and the highest ♠ leads. 2) Ask for cards — the leader may ask one player for all his cards; if he gives them he is safe and out, if he refuses he cannot be asked again this trick. 3) Shoot-out — with two players left, if the trick winner has no cards he blindly takes a card from the other; if the other can play a lower card of that suit both are discarded and it repeats; if not he loses. If all cards go it is a draw.'],
+['⏱ अपनी चाल के लिए 15 सेकंड मिलते हैं (अभ्यास में नहीं)। 🪙 जेम्स नकली हैं, असली कीमत नहीं।','⏱ You get 15 seconds per move (not in Practice). 🪙 Gems are virtual and have no real value.']];
+function bhOv(h,w,raw){bhCloseOv();$.insertAdjacentHTML('beforeend',`<div class="ov" id="bov">${raw?h:`<div class="box" ${w?`style="width:${w}px"`:''}>${h}</div>`}</div>`)}
+function bhCloseOv(){const o=document.getElementById('bov');if(o)o.remove()}
+function bhHome(){clearTimeout(BU.t);clearInterval(BU.cd);BG=null;bhCloseOv();home()}
+function bhRules(){bhOv(`<h2>❓ ${BH_NAME()} — ${T2('नियम','Rules')}</h2><div class="how">${BH_HOW.map(x=>`<p style="font-size:${PG.set.rfs||16}px">${x[li()]}</p>`).join('')}</div><div class="row"><button onclick="bhCloseOv()">${T2('बंद करें','Close')}</button></div>`,720)}
+function bhSetupHTML(){
+  const S=PG.set,b=(on,f,t)=>`<button class="${on?'':'ghost'}" onclick="${f}">${t}</button>`,on=(v,d)=>v===undefined?d:!!v;
+  return `<h2>🎛 ${BH_NAME()}</h2>
+  <div class="lbl">👥 ${T2('खिलाड़ी (आप + बॉट)','Players (you + bots)')}</div><div class="seg">${[3,4,5,6,7,8].map(k=>b(S.bn===k,`bhPref('bn',${k})`,k)).join('')}</div>
+  <div class="lbl">🧭 ${T2('चाल की दिशा','Direction of play')}</div><div class="seg">${b(S.bdir==='cw',"bhPref('bdir','cw')",'↻ '+T2('घड़ी की दिशा (आप → बाएँ → ऊपर → दाएँ)','Clockwise (you → left → top → right)'))}${b(S.bdir!=='cw',"bhPref('bdir','cb')",'↺ '+T2('Call Break जैसी (आप → दाएँ)','Like Call Break (you → right)'))}</div>
+  <div class="lbl">1️⃣ ${T2('पहला राउंड कभी नहीं रुकेगा','First round never stops')}</div><div class="seg">${b(on(S.bfr,true),"bhPref('bfr',true)",T2('हाँ, पूरा चलेगा','Yes'))}${b(!on(S.bfr,true),"bhPref('bfr',false)",T2('नहीं, थुल्ला चलेगा','No, Thulla applies'))}</div>
+  <div class="lbl">2️⃣ ${T2('सारे पत्ते माँगना','Ask for all cards')}</div><div class="seg">${b(on(S.bask,false),"bhPref('bask',true)",T2('हाँ','Yes'))}${b(!on(S.bask,false),"bhPref('bask',false)",T2('नहीं','No'))}</div>
+  <div class="lbl">3️⃣ ${T2('आखिरी दो में शूट-आउट','Shoot-out for last two')}</div><div class="seg">${b(on(S.bso,false),"bhPref('bso',true)",T2('हाँ','Yes'))}${b(!on(S.bso,false),"bhPref('bso',false)",T2('नहीं','No'))}</div>
+  <div class="lbl">🤖 ${T2('बॉट का स्तर','Bot level')}</div><div class="seg">${[['easy',T2('आसान','Easy')],['medium',T2('मध्यम','Medium')],['hard',T2('कठिन','Hard')]].map(([k,t])=>b(S.level===k,`bhPref('level','${k}')`,t)).join('')}</div>
+  <div class="row"><button class="gb" onclick="closeM();bhDash()">✔ ${T2('ठीक है','Done')}</button></div>`}
+function bhSetup(){BOXFN=bhSetupHTML;modal(bhSetupHTML())}
+function bhPref(k,v){PG.set[k]=v;save();document.querySelector('#pk .box').innerHTML=bhSetupHTML()}
+function bhLb(tab){const h=lbHTML('bhabhi','Bhabhi - Devar',tab||'bots','bhLb');const bx=document.querySelector('#pk .box');if(tab&&bx){BOXFN=()=>h;bx.innerHTML=h}else{BOXFN=null;modal(h)}}
+const bhOpt=()=>({fr:PG.set.bfr!==false,ask:!!PG.set.bask,so:!!PG.set.bso});
+function bhDash(){
+  if((ON.active||ON.room)&&!ON.keep)onlineLeave();
+  G=null;KG=null;RG=null;SG=null;BG=null;clearTimeout(KU.t);clearTimeout(RU.t);clearTimeout(SU.t);clearTimeout(BU.t);KU={};RU={};SU={};BU={};$.className='';
+  const u=me(),S=PG.set,r=u.bhabhi||{played:0,safe:0,bhabhi:0},LVN={easy:T2('आसान','Easy'),medium:T2('मध्यम','Medium'),hard:T2('कठिन','Hard')},o=bhOpt();
+  $.innerHTML=`<div class="top"><div class="prof" onclick="pick()"><div class="av">${avHTML(0)}</div><div class="pi"><b>${u.name}</b><div class="gm">💎 ${gems()}</div></div><button class="plus" onclick="event.stopPropagation();gemsBox()">+</button></div>
+   <div class="pills"><button class="pl big" onclick="bhSetup()">👰 ${BH_NAME()} · ${S.bn} · ${LVN[S.level]||LVN.medium} ▾</button></div>
+   <div class="ibs"><button class="wb iconb" onclick="bhLb()">🏆</button><button class="wb iconb" onclick="hub()">🎮</button><button class="wb iconb" onclick="bhRules()">❓</button><button class="wb iconb" onclick="settings()">⚙</button></div></div>
+  <div class="tl4" style="left:205px;top:150px;width:550px">
+   <div class="tl" style="height:250px" onclick="bhStart(false)"><div class="ic">🤖</div>${T2('बॉट्स के साथ खेलो','Play vs Bots')}<small>${S.bn} ${T2('खिलाड़ी','players')} · 🎟 ${BH_FEE} 💎</small><small>😅 ${r.bhabhi||0} · ✅ ${r.safe||0}/${r.played||0}</small></div>
+   <div class="tl" style="height:250px" onclick="bhStart(true)"><div class="ic">🎓</div>${T2('अभ्यास','Practice')}<small>${T2('बिना टाइमर · 💡 सुझाव','No timer · 💡 hints')}</small></div></div>
+   <div style="position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#fff;font-size:14px;text-shadow:0 1px 3px #000">${T2('नियम (सेटिंग): ','Rules: ')}${o.fr?'①':'—'} ${o.ask?'②':'—'} ${o.so?'③':'—'}</div>`;
+}
+function bhStart(prac){
+  if(prac===undefined)prac=!!BU.practice;
+  const S=PG.set,fee=prac?0:BH_FEE;
+  if(fee&&gems()<fee){flash(T2('इस खेल के लिए '+BH_FEE+' 💎 चाहिए। अभ्यास फ्री है।','This game needs '+BH_FEE+' 💎. Practice is free.'));return}
+  clearTimeout(BU.t);bhCloseOv();BOTS=pickBots(S.bn-1);if(fee){me().gems=gems()-fee;save()}
+  BG=BhEng.create({n:S.bn,...bhOpt()});
+  BU={practice:prac,busy:false,rec:false,fee,reward:0,note:'',key:null,show:null,hint:null};
+  $.className='kot bh';snd.deal();bhRender();bhStep();
+}
+const bhCs=c=>`<span style="color:${c.s%2?'#d11f1f':'#111'};background:#fff;border-radius:4px;padding:0 3px;font-weight:800">${rankName(c.r)}${SUITS[c.s]}</span>`;
+function bhEvText(g){
+  const e=g.ev;if(!e)return '';const who=pn(e.p);
+  if(e.type==='play')return e.off?`🔥 ${who}: ${bhCs(e.c)} — ${T2('रंग नहीं था, थुल्ला!','no suit — Thulla!')}`:`${who}: ${bhCs(e.c)}`;
+  if(e.type==='pick')return `📥 ${who} ${T2('ने सारे '+e.cards.length+' पत्ते उठाए','picked up all '+e.cards.length+' cards')}`;
+  if(e.type==='discard')return `✅ ${T2('सारे पत्ते डिस्कार्ड','All cards discarded')} · ${who} ${T2('अगली चाल शुरू करेगा','leads next')}`;
+  if(e.type==='ask')return `🙏 ${who} ${T2('ने '+pn(e.to)+' से सारे पत्ते माँगे','asked '+pn(e.to)+' for all cards')}`;
+  if(e.type==='give')return `🤝 ${who} ${T2('ने सारे पत्ते दे दिए — सुरक्षित बाहर!','gave all cards — safe and out!')}`;
+  return `❌ ${who} ${T2('ने मना कर दिया','refused')}`}
+function bhClock(g){if(BU.online)return;
+  const p=g.turn,key=[g.moves,g.phase,p].join('|');
+  if(BU.key!==key){BU.key=key;BU.t0=Date.now();BU.dur=p===0?(BU.practice?0:15000):(g.phase==='ask'?1500:BOT_MIN+rand(BOT_MAX-BOT_MIN))}}
+function bhRender(){
+  const keep=document.getElementById('bov'),g=BG,n=g.n;
+  const live=g.phase!=='over'&&!BU.busy;if(live)bhClock(g);
+  const my=live&&g.turn===0,mv=my?BhEng.getMoves(g,0):[];BU.mv=mv;
+  const playable=c=>mv.some(m=>m.t==='play'&&m.c.s===c.s&&m.c.r===c.r);
+  const co=BU.practice&&live&&((my&&g.phase==='play')||(g.phase==='ask'&&g.ask.to===0))?bhCoach(g):null;BU.co=co;
+  const mir=PG.set.bdir!=='cw',pos=p=>{if(p===0)return [14,338];const q=BH_POS[n][p-1];return [mir?840-q[0]:q[0],q[1]]};
+  const ring=p=>{const on=live&&g.turn===p&&BU.dur;return on?`<svg class="ring" viewBox="0 0 60 60"><circle class="bg" cx="30" cy="30" r="27"/><circle class="fg" cx="30" cy="30" r="27" style="animation-duration:${BU.dur}ms;animation-delay:-${Math.min(Date.now()-BU.t0,BU.dur)}ms"/></svg>`:''};
+  const rk=p=>g.isOut[p]?(g.order.indexOf(p)+1):0;
+  const ch=p=>{const [x,y]=pos(p);return `<div class="kchip ${p===0?'kme':''} ${live&&g.turn===p?'on':''} ${g.isOut[p]?'out':''}" style="left:${x}px;top:${y}px"><div class="a" ${p?'':'onclick="pick()"'}>${ring(p)}${avHTML(p)}</div><b class="nm2">${pn(p)}${g.phase==='over'&&g.bhabhi===p?' 😅':''}</b><small>${g.isOut[p]?'✅ #'+rk(p):'🃏'+g.hands[p].length}</small>${BU.emo&&BU.emo[p]?`<div class="eb">${emoHTML(BU.emo[p])}</div>`:''}</div>`};
+  const chips=[...Array(n).keys()].map(ch).join('');
+  const T=BU.show?BU.show.trick:g.trick,led=T.length?T[0].c.s:null;
+  const hi=T.length?T.filter(x=>x.c.s===led).sort((a,b)=>b.c.r-a.c.r)[0]:null;
+  const trickH=T.map(x=>`<div class="bt ${hi&&x===hi?'hi':''} ${x.c.s!==led?'off':''} ${x.p===0?'mine':''}">${cardHTML(x.c)}<span class="nm">${pn(x.p)}</span></div>`).join('');
+  let msg='',cls='';
+  if(BU.show){msg=BU.show.text;cls=BU.show.kind==='pick'?'bad':'good'}
+  else if(g.phase==='ask'){msg=g.ask.to===0?`🙏 ${pn(g.ask.from)} ${T2('आपसे सारे पत्ते माँग रहा है','asks you for all your cards')}`:`⏳ ${pn(g.ask.to)} ${T2('सोच रहा है…','is deciding…')}`}
+  else if(my){msg=!g.trick.length?(g.firstLead?T2('आपके पास ♠A है — पहली चाल ♠A से','You hold ♠A — lead it'):T2('आपकी चाल — कोई भी पत्ता चलिए','Your turn — lead any card')):(g.hands[0].some(c=>c.s===g.led)?T2('चाल का रंग '+SUITS[g.led]+' — वही रंग चलिए','Follow the suit '+SUITS[g.led]):T2('आपके पास '+SUITS[g.led]+' नहीं है — कोई भी पत्ता (थुल्ला!)','No '+SUITS[g.led]+' — throw any card (Thulla!)'))}
+  else msg=`⏳ ${pn(g.turn)} ${T2('की चाल','to play')}`;
+  if(!BU.show&&BU.note&&!my&&g.phase!=='ask')msg=BU.note+' · '+msg;
+  let opts='';
+  if(my&&g.phase==='play'&&!g.trick.length&&g.opts.ask)opts=`<div class="sopts lo"><small>🙏 ${T2('सारे पत्ते माँगो','Ask for all cards')}:</small>${mv.filter(m=>m.t==='ask').map(m=>`<button onclick="bhAct(0,{t:'ask',to:${m.to}})">${pn(m.to)} (🃏${g.hands[m.to].length})</button>`).join('')}</div>`;
+  if(live&&g.phase==='ask'&&g.ask.to===0)opts=`<div class="sopts lo"><button class="${co&&co.m.t==='give'?'gb rec':'gb'}" onclick="bhAct(0,{t:'give'})">✅ ${T2('दे दो — सुरक्षित बाहर','Give — safe and out')}</button><button onclick="bhAct(0,{t:'refuse'})">❌ ${T2('मना करो','Refuse')}</button></div>`;
+  const hand=sortHand(g.hands[0]);
+  $.innerHTML=`${feltHTML('bh')}
+  <div class="kbar"><button class="ghost sm" onclick="bhHome()">🏠</button>${BU.practice?'<span>🎓</span>':''}<span>👰 ${BH_NAME()} · ${n}${BU.online?' · 🌐':''}</span><span class="sp"></span>${BU.online?`<button class="ghost sm" onclick="emoBox()">💬</button>`:''}<button class="ghost sm mutebtn" onclick="muteTog()">${PG.set.music?'🔊':'🔇'}</button><button class="ghost sm" onclick="bhRules()">❓</button></div>
+  ${chips}${BU.practice?bhCoachBox(co):''}<div class="bdir">${mir?'↺':'↻'} ${mir?T2('Call Break जैसी दिशा','Call Break direction'):T2('घड़ी की दिशा','Clockwise')}</div><div class="bpile">🗑 ${T2('डिस्कार्ड','Discard')}<b>${g.pile}</b></div>
+  <div class="bmsg ${cls}">${msg}</div>
+  <div class="btr">${trickH}</div>${opts}
+  <div class="hand">${hand.map(c=>cardHTML(c,my&&g.phase==='play'?(playable(c)?'ok':'no'):'')).join('')}</div>`;
+  [...$.querySelectorAll('.hand .card')].forEach((el,i)=>{const c=hand[i];
+    if(co&&co.m.t==='play'&&co.m.c.s===c.s&&co.m.c.r===c.r)el.style.outline='4px solid #4dd0ff';
+    if(my&&g.phase==='play')el.onclick=()=>{if(!playable(c))return badCard(g.firstLead?T2('पहली चाल ♠A से होगी','The first move must be ♠A'):T2('चाल के रंग का पत्ता ही चलना है','You must follow the led suit'));bhAct(0,{t:'play',c})}});
+  if(keep)$.appendChild(keep);
+}
+
+/* ---- Bhabhi: practice me coach ---- */
+const BH_NAME=()=>T2('भाभी – देवर (Gateway)','Bhabhi – Devar (Gateway)');
+function bhCoach(g){
+  const mv=BhEng.getMoves(g,0);if(!mv.length)return null;
+  if(g.phase==='ask')return{m:{t:'give'},a:T2('दे दीजिए','Give your cards'),b:T2('सारे पत्ते देने पर आप तुरंत सुरक्षित बाहर हो जाते हैं — हारने का खतरा खत्म।','If you give all your cards you are safe and out at once — no risk of being the Bhabhi.'),c:T2('मना करने पर उसी चाल में आपसे दोबारा नहीं पूछा जाएगा।','If you refuse you cannot be asked again this trick.')};
+  const m=BhEng.best(g,0,'hard',mv);if(!m||m.t!=='play')return null;
+  const h=g.hands[0],a=T2('यह पत्ता चलिए: ','Play this card: ')+bhCs(m.c);let b,c='';
+  if(!g.trick.length){
+    if(g.firstLead)b=T2('पहली चाल ♠A से ही होती है।','The first move must be ♠A.');
+    else{const risky=BhEng.active(g).some(q=>q!==0&&g.voids[q].includes(m.c.s));
+      b=T2('चाल शुरू करते समय छोटा पत्ता चलाइए — कोई थुल्ला करे तो चाल के रंग का सबसे बड़ा पत्ता चलने वाला सारे पत्ते उठाता है, वह आप न हों।','Lead low — if someone throws a Thulla, the highest card of the led suit picks everything up; you do not want that to be you.');
+      c=risky?T2('ध्यान: किसी के पास यह रंग खत्म दिख रहा है, वह थुल्ला कर सकता है।','Careful: someone looks void in this suit and can throw a Thulla.'):h.filter(x=>x.s===m.c.s).length>1?T2('जिस रंग में आपके ज़्यादा पत्ते हैं, पहले वही निकालिए।','Shed first the suit where you hold most cards.'):''}}
+  else if(h.some(x=>x.s===g.led)){
+    const top=Math.max(...g.trick.filter(x=>x.c.s===g.led).map(x=>x.c.r));
+    b=m.c.r<top?T2(`अभी चाल में सबसे बड़ा ${rankName(top)} है। उससे छोटा सबसे बड़ा पत्ता चलाइए — आप सुरक्षित रहेंगे और बड़ा पत्ता निकल जाएगा।`,`The highest card so far is ${rankName(top)}. Play your highest card below it — you stay safe and shed a high card.`)
+      :T2('आपके सारे पत्ते चाल के सबसे बड़े पत्ते से बड़े हैं, इसलिए सबसे छोटा चलाइए — कोई थुल्ला करे तो पत्ते आपको उठाने पड़ेंगे।','All your cards beat the current highest, so play your lowest — if someone throws a Thulla you will have to pick up.');
+    c=T2('रंग का पत्ता हो तो वही चलना ज़रूरी है।','If you hold the led suit you must follow it.')}
+  else{
+    b=g.first&&g.opts.fr?T2('पहले राउंड में चाल नहीं रुकती — अपना सबसे बड़ा बेकार पत्ता निकाल दीजिए।','The first round never stops — get rid of your highest unwanted card.')
+      :T2(`आपके पास ${SUITS[g.led]} नहीं है — थुल्ला! चाल रुक जाएगी और सबसे बड़े ${SUITS[g.led]} वाले को सारे पत्ते उठाने पड़ेंगे। अपना सबसे बड़ा पत्ता यहाँ निकाल दीजिए।`,`You have no ${SUITS[g.led]} — Thulla! The trick stops and the highest ${SUITS[g.led]} picks up everything. Dump your highest card.`);
+    c=T2('जिस रंग में कम पत्ते हैं उसे खाली करना आगे थुल्ला का मौका देता है।','Emptying a short suit gives you Thulla chances later.')}
+  return{m,a,b,c}}
+function bhCfs(d){PG.set.kcfs=Math.max(10,Math.min(22,(PG.set.kcfs||13)+d));save();bhRender()}
+function bhCoachBox(co){
+  if(PG.set.kcmin)return `<div class="kcoach mini" onclick="kcMin()">🎓 ${T2('कोच','Coach')} ▴</div>`;
+  const f=BU.fb,fb=f?`<div class="fbx ${f.ok?'ok':''}"><b>${f.ok?'✅ '+T2('सही चाल!','Good move!'):'💡 '+T2('कोच की सलाह थी','Coach suggested')}</b>${f.ok?'':' '+f.a}</div>`:'';
+  const body=co?`<div class="a">${co.a}</div><div>${co.b}</div><small>${co.c}</small>`:`<small>${T2('अपनी चाल का इंतज़ार…','Waiting for your turn…')}</small>`;
+  return `<div class="kcoach" style="font-size:${PG.set.kcfs||13}px"><div class="ch"><b>🎓 ${T2('कोच','Coach')}</b><span><button onclick="bhCfs(-1)">A−</button><button onclick="bhCfs(1)">A+</button><button onclick="kcMin()">▾</button></span></div>${fb}${body}</div>`}
+function bhAct(p,m){
+  const g0=BG;if(!g0||BU.busy||g0.phase==='over'||g0.turn!==p)return;
+  if(!BhEng.getMoves(g0,p).some(x=>x.t===m.t&&(m.t==='play'?x.c.s===m.c.s&&x.c.r===m.c.r:m.t==='ask'?x.to===m.to:true)))return;
+  if(BU.online){if(p===0)bOnSend(m);return}
+  clearTimeout(BU.t);
+  if(p===0&&BU.practice&&BU.co){const k=BU.co.m;BU.fb={ok:k.t===m.t&&(m.t!=='play'||(k.c.s===m.c.s&&k.c.r===m.c.r)),a:BU.co.a}}
+  if(m.t==='play')snd.play();else snd.bid();
+  const n=BhEng.applyMove(g0,p,m);BG=n;const e=n.ev;BU.note=bhEvText(n);
+  if(e&&(e.type==='pick'||e.type==='discard')){
+    const gone=n.isOut.map((o,i)=>o&&!g0.isOut[i]?pn(i):null).filter(Boolean);
+    BU.show={trick:e.trick,kind:e.type,text:bhEvText(n)+(gone.length?' · ✅ '+gone.join(', ')+' '+T2('सुरक्षित बाहर','safe and out'):'')};
+    BU.busy=true;if(e.type==='pick')setTimeout(()=>snd.err&&snd.err(),150);else setTimeout(snd.win,200);
+    if(gone.length)setTimeout(snd.win,500);
+    bhRender();
+    setTimeout(()=>{BU.busy=false;BU.show=null;if(BG===n){bhRender();bhStep()}},n.phase==='over'?1700:1800);
+    return}
+  if(e&&e.type==='give')setTimeout(snd.win,200);
+  bhRender();bhStep();
+}
+function bhStep(){
+  const g=BG;clearTimeout(BU.t);if(!g||BU.busy)return;
+  if(g.phase==='over')return bhEnd();
+  bhClock(g);const p=g.turn;
+  const bot=q=>{if(BG!==g||BU.busy)return;const mv=BhEng.getMoves(g,q),m=BhEng.best(g,q,q===0?'medium':(PG.set.level||'medium'),mv);if(m)bhAct(q,m)};
+  if(p===0){if(BU.practice||!BU.dur)return;BU.t=setTimeout(()=>{if(BG!==g)return;flash(T2('समय खत्म — अपने आप चल दिया','Time up — auto move'));
+    const mv=BhEng.getMoves(g,0);const m=g.phase==='ask'?{t:'refuse'}:BhEng.best(g,0,'medium',mv);if(m)bhAct(0,m)},BU.dur);return}
+  BU.t=setTimeout(()=>bot(p),BU.dur);
+}
+function bhEnd(){
+  const g=BG;if(!g||document.getElementById('bov'))return;
+  const meRank=g.isOut[0]?g.order.indexOf(0)+1:0,bh=g.bhabhi===0,safe=!bh;
+  bhRecord(meRank,bh,g.draw);
+  if(safe)celebrate(()=>BG&&BG.phase==='over',()=>!!document.getElementById('bov'));
+  const medals=['🥇','🥈','🥉'];
+  const list=g.order.map((p,i)=>`<tr><td>${medals[i]||(i+1)+'.'}</td><td>${pn(p)}${p===0?' ('+T2('आप','you')+')':''}</td><td>✅ ${T2('सुरक्षित','safe')}</td></tr>`).join('')+(g.bhabhi!=null?`<tr class="tot"><td>😅</td><td><b>${pn(g.bhabhi)}${g.bhabhi===0?' ('+T2('आप','you')+')':''}</b></td><td><b>Bhabhi</b></td></tr>`:'');
+  let sh='';
+  if(g.shoot){const s=g.shoot;sh=`<div class="bsh">🎯 ${T2('शूट-आउट','Shoot-out')}: ${pn(s.w)} → ${pn(s.y)}<br>${s.steps.map(x=>`${bhCs(x.d)} ${x.play?'➜ '+bhCs(x.play):'➜ ❌'}`).join(' · ')}</div>`}
+  const title=g.draw?T2('🤝 बराबरी — कोई Bhabhi नहीं','🤝 Draw — no Bhabhi'):bh?T2('😅 आप Bhabhi बन गए!','😅 You are the Bhabhi!'):(meRank===1?T2('🏆 आप सबसे पहले सुरक्षित!','🏆 You got out first!'):T2('✅ आप सुरक्षित — '+meRank+' नंबर पर','✅ You are safe — place '+meRank));
+  bhOv(`<div class="box" style="width:520px"><h2>${title}</h2><table class="sbt">${list}</table>${sh}
+   ${(BU.practice||BU.online)?'':`<p style="text-align:center;margin:4px">💎 ${T2('एंट्री','Entry')} −${BU.fee} · ${BU.reward?T2('इनाम','Prize')+' <b style="color:#ffd54a">+'+BU.reward+'</b>':T2('इस बार इनाम नहीं','no prize this time')}</p>`}
+   <div class="row"><button onclick="${BU.online?'onlineAgain()':'bhStart()'}">${T2('फिर खेलें','Play again')}</button><button class="ghost" onclick="bhHome()">🏠</button></div></div>`,0,true);
+}
+function bhRecord(rank,bh,draw){
+  if(BU.rec||BU.practice||BU.online)return;BU.rec=true;const u=me();u.bhabhi=u.bhabhi||{played:0,safe:0,bhabhi:0,first:0};u.bhabhi.played++;
+  if(bh)u.bhabhi.bhabhi++;else{u.bhabhi.safe++;if(rank===1)u.bhabhi.first++}
+  BU.reward=draw?BH_FEE:bh?0:(rank===1?30:12);if(BU.reward)u.gems=(u.gems||0)+BU.reward;save();
+}
+/* ---- game chunne wale screen me Bhabhi jodna ---- */
+const hubBase4=hub;
+hub=function(){clearTimeout(BU.t);BG=null;BU={};hubBase4();
+  const t=document.querySelector('.tl4');if(!t)return;
+  t.style.cssText='left:10px;width:940px;top:150px;grid-template-columns:repeat(5,1fr);gap:10px';
+  t.insertAdjacentHTML('beforeend',`<div class="tl" style="background:linear-gradient(#c2185b,#7b0f3a);border-color:#f48fb1;box-shadow:0 6px 0 #4a0620;height:270px" onclick="pickGame('bhabhi')"><div class="ic">👰</div>Bhabhi - Devar<small>(Gateway) · ${T2('3–8 खिलाड़ी','3–8 players')}</small><small>😅 ${(me().bhabhi||{}).bhabhi||0}</small></div>`);
+  t.querySelectorAll('.tl').forEach(e=>{e.style.height='270px';e.querySelectorAll('small').forEach(x=>x.style.fontSize='12px');const h=e.firstElementChild;});
+};
+const homeBase4=home;
+home=function(){if(PG.set.game==='bhabhi')bhDash();else homeBase4()};
+/* ============ BHABHI: ONLINE (asli khiladiyon ke saath, 3 se 8) ============ */
+function bhOnline(){ON.pv=false;BOXFN=bhOnlineHTML;modal(bhOnlineHTML());if(serverUrl())onConnect()}
+function bhOnPref(k,v){PG.set[k]=v;save();refreshBox()}
+function bhOnlineHTML(){
+  const S=PG.set,b=(on,f,t)=>`<button class="${on?'':'ghost'}" onclick="${f}">${t}</button>`,on=(v,d)=>v===undefined?d:!!v;
+  return `<h2>🌐 Bhabhi – Devar ${T2('ऑनलाइन','Online')} ${ON.ok?'🟢':'⚪'}</h2>
+  <div class="lbl">👥 ${T2('कुल खिलाड़ी (खाली सीट पर बॉट)','Total players (empty seats get bots)')}</div><div class="seg">${[3,4,5,6,7,8].map(k=>b((S.bn||4)===k,`bhOnPref('bn',${k})`,k)).join('')}</div>
+  <div class="lbl">1️⃣ ${T2('पहला राउंड कभी नहीं रुकेगा','First round never stops')}</div><div class="seg">${b(on(S.bfr,true),"bhOnPref('bfr',true)",T2('हाँ','Yes'))}${b(!on(S.bfr,true),"bhOnPref('bfr',false)",T2('नहीं','No'))}</div>
+  <div class="lbl">2️⃣ ${T2('सारे पत्ते माँगना','Ask for all cards')}</div><div class="seg">${b(on(S.bask,false),"bhOnPref('bask',true)",T2('हाँ','Yes'))}${b(!on(S.bask,false),"bhOnPref('bask',false)",T2('नहीं','No'))}</div>
+  <div class="lbl">3️⃣ ${T2('आखिरी दो में शूट-आउट','Shoot-out for last two')}</div><div class="seg">${b(on(S.bso,false),"bhOnPref('bso',true)",T2('हाँ','Yes'))}${b(!on(S.bso,false),"bhOnPref('bso',false)",T2('नहीं','No'))}</div>
+  <div class="lbl">🤖 ${T2('खाली सीट पर बॉट का स्तर','Bot level for empty seats')}</div><div class="seg">${[['easy',T2('आसान','Easy')],['medium',T2('मध्यम','Medium')],['hard',T2('कठिन','Hard')]].map(([k,t])=>b((S.level||'medium')===k,`bhOnPref('level','${k}')`,t)).join('')}</div>
+  ${onSlots('bhOnQuick','bhOnCreate')}
+  <div class="lbl" style="font-size:13px">${T2('सब खिलाड़ी अलग-अलग खेलते हैं। खाली सीटों पर बॉट बैठेंगे। ऑनलाइन में 💎 का लेन-देन नहीं।','Everyone plays for themselves. Empty seats get bots. No 💎 are won or lost online.')}</div>
+  <div class="row"><button class="ghost" onclick="closeM()">${T2('बंद करें','Close')}</button></div>`}
+const bhOnOpts=()=>({game:'bhabhi',n:PG.set.bn||4,...bhOpt(),level:PG.set.level||'medium'});
+const bhOnQuick=()=>onConnect(()=>onSend({t:'quick',...bhOnOpts()}));
+const bhOnCreate=()=>onConnect(()=>onSend({t:'create',...bhOnOpts()}));
+/* server ka state apni seat ke hisaab se ghumana (aap hamesha neeche, baaki seat ke kram me) */
+function bhRot(m){
+  const g=m.G,n=g.n,s=m.seat,R=a=>a.map((_,i)=>a[(i+s)%n]),L=p=>p==null?p:(p-s+n)%n,LA=a=>a.map(L);
+  const ev=g.ev?{...g.ev}:g.ev;
+  if(ev){['p','by','to'].forEach(k=>{if(ev[k]!=null)ev[k]=L(ev[k])});if(ev.trick)ev.trick=ev.trick.map(x=>({p:L(x.p),c:x.c}))}
+  return {...g,hands:R(g.hands),isOut:R(g.isOut),voids:R(g.voids),order:LA(g.order),leader:L(g.leader),turn:L(g.turn),
+    trick:g.trick.map(x=>({p:L(x.p),c:x.c})),parts:LA(g.parts),refused:LA(g.refused),ask:g.ask?{from:L(g.ask.from),to:L(g.ask.to)}:g.ask,
+    bhabhi:L(g.bhabhi),shoot:g.shoot?{...g.shoot,w:L(g.shoot.w),y:L(g.shoot.y),loser:L(g.shoot.loser)}:g.shoot,ev}
+}
+function bOnEnter(m){
+  const o=document.getElementById('pk');if(o)o.remove();if(typeof ui==='object'&&ui)ui.modal=null;
+  ON.active=true;clearTimeout(BU.t);bhCloseOv();
+  BU={online:true,q:[],tn:m.tn,pend:0,dl:m.ms,t0:Date.now(),dur:Math.max(300,m.ms),busy:false,practice:false,rec:false,fee:0,reward:0,note:'',key:null,show:null,hint:null,emo:{},endKey:''};
+  BG=bhRot(m);setBots();$.className='kot bh';snd.deal();bhRender();bOnPost();
+}
+function bOnState(m){if(!ON.active||!BU.online){bOnEnter(m);return}BU.q.push(m);bDrain()}
+function bDrain(){while(BU.q.length&&!BU.busy)bApply(BU.q.shift())}
+function bApply(m){
+  const g0=BG,n=bhRot(m);BU.pend=0;BU.dl=m.ms;BU.t0=Date.now();BU.dur=Math.max(300,m.ms);BG=n;setBots();
+  const e=n.ev;BU.note=bhEvText(n);
+  if(e&&e.type==='play'&&e.p!==0)snd.play();
+  if(e&&(e.type==='pick'||e.type==='discard')){
+    const gone=n.isOut.map((o,i)=>o&&!(g0&&g0.isOut[i])?pn(i):null).filter(Boolean);
+    BU.show={trick:e.trick,kind:e.type,text:bhEvText(n)+(gone.length?' · ✅ '+gone.join(', ')+' '+T2('सुरक्षित बाहर','safe and out'):'')};
+    BU.busy=true;if(e.type==='pick')setTimeout(()=>snd.err&&snd.err(),150);else setTimeout(snd.win,200);
+    if(gone.length)setTimeout(snd.win,500);
+    bhRender();const id=BU;
+    setTimeout(()=>{if(BU!==id||BG!==n)return;BU.busy=false;BU.show=null;bhRender();bOnPost();bDrain()},n.phase==='over'?1700:1800);
+    return}
+  if(e&&e.type==='give')setTimeout(snd.win,200);
+  bhRender();bOnPost();
+}
+function bOnPost(){
+  const g=BG;if(!g||BU.busy)return;
+  if(g.phase==='over'){if(BU.endKey!=='over'){BU.endKey='over';bhEnd()}return}
+  if(g.turn===0){snd.turn&&snd.turn();vib(20)}
+}
+function bOnSend(m){
+  const g=BG;if(!g||BU.pend||BU.busy||g.turn!==0)return;
+  BU.pend=1;setTimeout(()=>{if(BU)BU.pend=0},2500);
+  if(m.t==='play')snd.play();else snd.bid();
+  const o=m.t==='play'?{t:'play',c:{s:m.c.s,r:m.c.r}}:m.t==='ask'?{t:'ask',to:(m.to+ON.seat)%g.n}:{t:m.t};
+  onSend({t:'move',m:o});
+}
+/* ===================== DESIGN V3: ek jaisa table + logo + dashboard ===================== */
+if(!PG.set.tcol)PG.set.tcol='#1f8a5f';
+const hx3=h=>{h=String(h).replace('#','');if(h.length===3)h=h.split('').map(x=>x+x).join('');return [0,2,4].map(i=>parseInt(h.substr(i,2),16)||0)};
+const mix3=(a,b,t)=>'#'+a.map((v,i)=>Math.round(v+(b[i]-v)*t).toString(16).padStart(2,'0')).join('');
+function applyTable(){const B=hx3(PG.set.tcol||'#1f8a5f'),W=[255,255,255],K=[0,0,0],r=document.documentElement.style;
+  r.setProperty('--fl',mix3(B,W,.18));r.setProperty('--fm',mix3(B,K,.12));r.setProperty('--b1',mix3(B,K,.3));r.setProperty('--b2',mix3(B,K,.55));r.setProperty('--b3',mix3(B,K,.8))}
+applyTable();
+const FNAME={cb:['कॉल ब्रेक','CALL BREAK'],kot:['कोट पीस','KOT PIECE'],rang:['रंग बोल','RANG BOL'],seep:['सीप','SEEP'],bh:['भाभी – देवर','BHABHI – DEVAR']};
+function feltHTML(id){return `<div class="bbg"></div><div class="bfelt ${id}" data-n="${T2(FNAME[id][0],FNAME[id][1])}"></div>`}
+/* ---- table colour chunna ---- */
+const TCOLS=['#1f8a5f','#1f6fb2','#b03a3a','#7a4bb0','#c9772a','#1c8f94','#c2467d','#2d3338','#6b4a2b'];
+function tcolSwatches(){const c=(PG.set.tcol||TCOLS[0]).toLowerCase();return `<div class="tsw">${TCOLS.map(x=>`<button class="swb ${x===c?'on':''}" style="background:${x}" onclick="setTcol('${x}')"></button>`).join('')}<label class="swb swc"><input type="color" value="${c}" oninput="liveTcol(this.value)" onchange="setTcol(this.value)"></label></div>`}
+function tcolHTML(){return `<div class="lbl">🎨 ${T2('टेबल का रंग (सभी गेम में)','Table colour (all games)')}</div>${tcolSwatches()}`}
+function tcovHTML(){return `<h2>🎨 ${T2('टेबल का रंग','Table colour')}</h2>${tcolSwatches()}<small style="display:block;text-align:center;opacity:.85;margin:4px 0">${T2('आख़िरी गोल बटन से अपनी पसंद का कोई भी रंग चुनिए','Use the rainbow circle for any colour you like')}</small><div class="row"><button class="gb" onclick="document.getElementById('tcov').remove()">✔ ${T2('ठीक है','Done')}</button></div>`}
+function liveTcol(v){PG.set.tcol=v;applyTable()}
+function setTcol(v){PG.set.tcol=v;save();applyTable();
+  const b=document.querySelector('#pk .box');if(b&&b.querySelector('.tsw'))b.innerHTML=settingsHTML();
+  const t=document.querySelector('#tcov .box');if(t)t.innerHTML=tcovHTML()}
+function tablePick(){if(document.getElementById('tcov'))return;stage.insertAdjacentHTML('beforeend',`<div class="ov" id="tcov"><div class="box" style="width:430px">${tcovHTML()}</div></div>`)}
+new MutationObserver(()=>{if(!$.querySelector('.bfelt')||$.querySelector('.tcb'))return;
+  const sp=$.querySelector('.kbar .sp'),b2=$.querySelector('.bt2');
+  if(sp)sp.insertAdjacentHTML('afterend','<button class="ghost sm tcb" onclick="tablePick()">🎨</button>');
+  else if(b2)b2.insertAdjacentHTML('afterbegin','<button class="wb ib tcb" onclick="tablePick()">🎨</button>')}).observe($,{childList:true});
+/* ---- Rang Bol: kabhi-kabhi 10+ bolne layak taqatwar haath ---- */
+function powerHand(h,st){
+  const r=st.seed!=null?rng(st.seed*977+st.round*131+11):()=>rand(1000000)/1000000;
+  if(r()>=.2)return;
+  const q=Math.floor(r()*4),su=Math.floor(r()*4),rk=[14,13,12,11,10,9,8,7];rk[5+Math.floor(r()*3)]=6;
+  const os=[0,1,2,3].filter(x=>x!==su).sort(()=>r()-.5).slice(0,2);
+  const want=[...rk.map(x=>({s:su,r:x})),...os.map(x=>({s:x,r:14}))];
+  const eq=(a,b)=>a.s===b.s&&a.r===b.r,isW=c=>want.some(w=>eq(w,c));
+  want.forEach(w=>{if(h[q].some(c=>eq(c,w)))return;
+    const j=h[q].findIndex(c=>!isW(c));if(j<0)return;
+    for(let t=0;t<4;t++){if(t===q)continue;const k=h[t].findIndex(c=>eq(c,w));if(k>=0){const x=h[q][j];h[q][j]=h[t][k];h[t][k]=x;break}}});
+}
+/* ---- Rang Bol: bade bid ke ank (1 se 13) ---- */
+rangCallPanel=function(g){
+  const hi=g.call.hi,lo=hi?hi.n+1:5,ns=[];for(let i=lo;i<=9;i++)ns.push(i);RB.n=Math.max(lo,Math.min(RB.n,9));
+  if(!ns.length)return `<b>${T2('बोली 9 तक पहुँच गई। आप सिर्फ़ पास कर सकते हैं','The call has reached 9. You can only pass')}</b><div class="row"><button class="ghost" onclick="rangAct(0,{t:'pass'})">${T2('पास','Pass')}</button></div>`;
+  return `<b style="font-size:18px">${hi?`📢 ${pn(hi.p)} ${T2('ने बोला','called')} <span style="font-size:28px">${(rKnown(hi.p,g)&&hi.s!=null)?rS(hi.s):rLock} ${hi.n}</span> · <span style="color:#9be7ff">${T2('रंग लेना है तो','To take the suit bid')} ${lo}+</span>`:T2('आपके 5 पत्ते हैं। रंग बोलना है? कितनी चालें बनाओगे? (5 या ज़्यादा)','Your 5 cards. Name a suit? How many tricks (5 or more)?')}</b>
+  <div class="rnum big">${ns.map(i=>`<button class="${i===RB.n?'':'ghost'}" onclick="rangPick('n',${i})">${i}</button>`).join('')}</div>
+  <div class="row"><small>${T2('अब रंग दबाइए →','Now tap a suit →')}</small>${[0,1,2,3].map(s=>`<button class="sb" onclick="rangAct(0,{t:'call',n:${RB.n},s:${s}})" style="background:#fff;color:${s%2?'#d11f1f':'#111'}">${SUITS[s]} ${RB.n}</button>`).join('')}<button class="ghost" onclick="rangAct(0,{t:'pass'})">${T2('पास','Pass')}</button></div>`;
+};
+rangBidPanel=function(g){
+  const min=RangBid.minBid(g,0),ns=[];for(let i=min;i<=13;i++)ns.push(i);if(RB.n<min||RB.n>13)RB.n=min;
+  const can=g.changedBy==null;
+  return `<b style="font-size:19px">${T2('आपकी बिड: कितनी चालें जीतोगे?','Your bid: how many tricks will you win?')}</b>
+  <small style="display:block;font-size:14px">${g.caller===null?T2('किसी ने रंग नहीं बोला — कट हुकुम ♠ है','Nobody named a suit — trump is Spades ♠'):`${T2('कट','Trump')} ${rS(g.trump)} · 📢 ${pn(g.caller)} ${T2('ने बोला','called')} ${g.callN}${g.caller===0?' — '+T2('आपको कम से कम '+g.callN+' बनानी हैं','you must bid at least '+g.callN):''}`}</small>
+  <div class="rnum">${ns.map(i=>`<button class="${i===RB.n?'':'ghost'}" onclick="rangPick('n',${i})">${i}</button>`).join('')}</div>
+  ${can&&RB.n>=10?`<div class="row" style="font-size:16px">🔄 ${T2('कट बदलें (10+ पर)','Change trump (10+)')}: <button class="${RB.s==null?'':'ghost'}" onclick="rangPick('s',null)">${T2('वही','Same')} ${SUITS[g.trump]}</button>${[0,1,2,3].filter(s=>s!==g.trump).map(s=>`<button class="sb ${RB.s===s?'':'ghost'}" style="background:#fff;color:${s%2?'#d11f1f':'#111'}" onclick="rangPick('s',${s})">${SUITS[s]}</button>`).join('')}</div>`:''}
+  <div class="row"><button class="gb bigb" onclick="rangAct(0,{t:'bid',n:${RB.n}${can&&RB.n>=10&&RB.s!=null?',s:'+RB.s:''}})">✔ ${T2('बिड','Bid')} ${RB.n}${can&&RB.n>=10&&RB.s!=null?' '+SUITS[RB.s]:''}</button></div>`;
+};
+/* ---- logo + emblem ---- */
+const EC=(x,y,r,a,b,col,sc)=>`<g transform="translate(${x} ${y}) rotate(${r}) scale(${sc||1})"><rect x="-17" y="-48" width="34" height="48" rx="5" fill="#fff" stroke="#8a8a8a" stroke-width="1.2"/><text x="-13" y="-34" font-size="14" font-weight="700" font-family="Arial" fill="${col}">${a}</text><text x="0" y="-9" text-anchor="middle" font-size="26" font-family="Arial" fill="${col}">${b}</text></g>`;
+const SPK='<path d="M100 12l3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1z" fill="#ffd54a"/>';
+const EMB={
+ cb:()=>EC(60,92,-28,'5','♥','#d11f1f')+EC(60,92,28,'9','♣','#111')+EC(60,92,0,'A','♠','#111')+SPK,
+ kot:()=>EC(60,94,-36,'K','♠','#111')+EC(60,94,-12,'K','♥','#d11f1f')+EC(60,94,12,'K','♣','#111')+EC(60,94,36,'K','♦','#d11f1f')+'<path d="M38 24l4-15 10 9 8-13 8 13 10-9 4 15z" fill="#f5c542" stroke="#b8860b" stroke-width="2" stroke-linejoin="round"/><circle cx="60" cy="6" r="3" fill="#fff3b0"/>',
+ rang:()=>'<circle cx="60" cy="50" r="42" fill="#0004" transform="translate(0 4)"/><path d="M60 50V12a38 38 0 0 1 38 38z" fill="#3b8fe0"/><path d="M60 50h38a38 38 0 0 1-38 38z" fill="#f5a623"/><path d="M60 50V88a38 38 0 0 1-38-38z" fill="#3aa55d"/><path d="M60 50H22a38 38 0 0 1 38-38z" fill="#e5484d"/><circle cx="60" cy="50" r="38" fill="none" stroke="#fff" stroke-width="4"/><g font-family="Arial" font-size="24" fill="#fff" text-anchor="middle"><text x="79" y="44">♠</text><text x="79" y="80">♦</text><text x="41" y="80">♣</text><text x="41" y="44">♥</text></g><circle cx="60" cy="50" r="8" fill="#ffd54a" stroke="#fff" stroke-width="2"/><path d="M92 78l16 14-4-20z" fill="#fff"/>',
+ seep:()=>EC(30,92,-14,'7','♦','#d11f1f',.85)+EC(52,92,-2,'9','♠','#111',.85)+'<g transform="rotate(32 82 52)"><rect x="79" y="-4" width="7" height="52" rx="3" fill="#8b5a2b"/><rect x="73" y="46" width="19" height="9" rx="2" fill="#c9a227"/><path d="M72 55h21l9 36H63z" fill="#e8b33a" stroke="#a8761a" stroke-width="1.5"/><path d="M72 58l-4 32M79 58l-2 32M86 58l2 32M93 58l4 32" stroke="#a8761a" stroke-width="1.2"/></g>'+SPK,
+ bh:()=>EC(22,94,-22,'A','♠','#111',.85)+EC(98,94,22,'K','♥','#d11f1f',.85)+'<path d="M24 96c2-22 16-26 36-26s34 4 36 26z" fill="#a8123f"/><ellipse cx="60" cy="46" rx="35" ry="40" fill="#c2185b"/><ellipse cx="60" cy="50" rx="21" ry="25" fill="#ffd7b0"/><path d="M38 40Q60 14 82 40Q60 30 38 40z" fill="#2b1d12"/><path d="M60 26v10" stroke="#f5c542" stroke-width="2"/><circle cx="60" cy="39" r="3.5" fill="#f5c542" stroke="#b8860b"/><circle cx="60" cy="44" r="2.4" fill="#d11f1f"/><path d="M47 49q4-4 8 0M65 49q4-4 8 0" stroke="#222" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="62" cy="57" r="2" fill="none" stroke="#f5c542" stroke-width="1.4"/><path d="M52 64q8 6 16 0" stroke="#b3261e" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="38" cy="58" r="3.5" fill="#f5c542"/><circle cx="82" cy="58" r="3.5" fill="#f5c542"/><path d="M40 78Q60 96 80 78" stroke="#f5c542" stroke-width="4" fill="none" stroke-linecap="round"/>'
+};
+const GTITLE={cb:'CALL BREAK',kot:'KOT PIECE',rang:'RANG BOL',seep:'SEEP',bh:'BHABHI DEVAR'};
+const emblem=id=>`<svg viewBox="0 0 120 100" aria-hidden="true">${EMB[id]()}</svg>`;
+function gameLogo(id){const t=GTITLE[id],w=Math.min(310,t.length*31),g='lg'+id,F="font-family=\"'Lilita One','Baloo 2',Impact,sans-serif\" font-size=\"52\"";
+  return `<svg viewBox="0 0 360 112"><defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6c8"/><stop offset=".35" stop-color="#f2c94c"/><stop offset=".55" stop-color="#a8761a"/><stop offset=".75" stop-color="#ffe27a"/><stop offset="1" stop-color="#8a5a0b"/></linearGradient></defs><g transform="translate(138 -6) scale(.7)">${EMB[id]()}</g><text x="180" y="102" text-anchor="middle" textLength="${w}" lengthAdjust="spacingAndGlyphs" ${F} fill="#5b2a0a" stroke="#5b2a0a" stroke-width="9" stroke-linejoin="round">${t}</text><text x="180" y="102" text-anchor="middle" textLength="${w}" lengthAdjust="spacingAndGlyphs" ${F} fill="url(#${g})" stroke="#fff3b0" stroke-width="1">${t}</text></svg>`}
+/* ---- sab games ka dashboard: Call Break jaisa PLAY NOW ---- */
+function resetAll(){if((ON.active||ON.room)&&!ON.keep)onlineLeave();G=null;KG=null;RG=null;SG=null;BG=null;clearTimeout(KU.t);clearTimeout(RU.t);clearTimeout(SU.t);clearTimeout(BU.t);KU={};RU={};SU={};BU={};$.className=''}
+function dashHome(c){
+  resetAll();const u=me(),sd=u.shareDay===today(),n=c.subs.length,left=480-(n*210+(n-1)*16)/2;
+  $.innerHTML=`<div class="top"><div class="prof" onclick="pick()"><div class="av">${avHTML(0)}</div><div class="pi"><b>${u.name}</b><div class="gm">${ic('gem')} ${gems()}</div></div><button class="plus" onclick="event.stopPropagation();gemsBox()">+</button></div>
+   <div class="logo3d">${gameLogo(c.id)}</div>
+   <button class="gb sharepill" onclick="shareApp()">${ic('share')} ${T2('शेयर करो','Share')} <b>${sd?'':'+20 '+ic('gem')}</b></button></div>
+  <div class="pills" style="top:114px"><button class="pl" onclick="${c.setup}">${c.pill} ▾</button></div>
+  <button class="playnow" onclick="${c.play}"><span>${T2('अभी खेलो','PLAY NOW')}</span><small>${c.psub}</small></button>
+  <div class="subs" style="left:${left}px">${c.subs.map(([f,i,t,s])=>`<div class="sc2" onclick="${f}">${ic(i)}<b>${t}</b><small>${s}</small></div>`).join('')}</div>
+  <div class="nav">${c.nav.map(([f,i])=>`<button onclick="${f}">${ic(i)}</button>`).join('')}</div>`;
+  if(bonusDone!==today()){bonusDone=today();setTimeout(bonusCheck,350)}
+}
+const LVN3=()=>({easy:T2('आसान','Easy'),medium:T2('मध्यम','Medium'),hard:T2('कठिन','Hard')});
+const SUBP=T2('कोच के साथ सीखो','Learn with the coach'),SUBF=T2('दोस्तों के साथ','Play with Friends'),SUBR=T2('रूम कोड से','Room code · online');
+kotDash=function(){const u=me(),S=PG.set,L=LVN3(),kd=u.kotDaily&&u.kotDaily.date===today()?T2('आज का बेस्ट: ','Today best: ')+u.kotDaily.score+' '+T2('सर','tricks'):T2('रोज़ नया हाथ','A new hand daily');
+  dashHome({id:'kot',setup:'kotSetup()',pill:`${ic('users')} 2 ${T2('बनाम','vs')} 2 · ${S.ktarget} ${T2('अंक','pts')} · ${L[S.level]}`,play:'kotStart(false)',psub:`${T2('बॉट्स के साथ तुरंत मैच','Instant match vs bots')} · 🎟 ${KOT_FEE} 💎`,
+   subs:[['kotStart(true)','cap',T2('अभ्यास','Practice'),SUBP],['onlineRandom()','globe',T2('ऑनलाइन खेलो','Play Online'),T2('रैंडम खिलाड़ी · क्विक मैच','Random players · quick match')],['onlineFriends()','users',SUBF,T2('रूम बनाओ / कोड से जुड़ो','Create / join by room code')],["kotStart('daily')",'cal',T2('डेली चैलेंज','Daily Challenge'),kd]],
+   nav:[['kotLb()','trophy'],['badges()','medal'],['hub()','game'],['kotRules()','help'],['settings()','gear']]})};
+rangDash=function(){const u=me(),S=PG.set,L=LVN3(),dl=u.rangDaily&&u.rangDaily.date===today()?T2('आज का बेस्ट: ','Today best: ')+u.rangDaily.score:T2('रोज़ नया हाथ','A new hand daily');
+  dashHome({id:'rang',setup:'rangSetup()',pill:`${ic('users')} 4 ${T2('खिलाड़ी','players')} · ${rModeLbl(S)} · ${L[S.level]}`,play:'rangStart(false)',psub:`${T2('बॉट्स के साथ तुरंत मैच','Instant match vs bots')} · 🎟 ${RANG_FEE} 💎`,
+   subs:[['rangStart(true)','cap',T2('अभ्यास','Practice'),SUBP],['onlineRandom()','globe',T2('ऑनलाइन खेलो','Play Online'),T2('रैंडम खिलाड़ी · क्विक मैच','Random players · quick match')],['onlineFriends()','users',SUBF,T2('रूम बनाओ / कोड से जुड़ो','Create / join by room code')],["rangStart('daily')",'cal',T2('डेली चैलेंज','Daily Challenge'),dl]],
+   nav:[['rangLb()','trophy'],['badges()','medal'],['hub()','game'],['rangRules()','help'],['settings()','gear']]})};
+seepDash=function(){const S=PG.set,L=LVN3();
+  dashHome({id:'seep',setup:'seepSetup()',pill:`${ic('users')} ${S.sn} ${T2('खिलाड़ी','players')} · ${seepVarLbl()} · ${L[S.level]||L.medium}`,play:'seepStart(false)',psub:`${T2('बॉट्स के साथ तुरंत मैच','Instant match vs bots')} · 🎟 ${SEEP_FEE} 💎`,
+   subs:[['seepStart(true)','cap',T2('अभ्यास','Practice'),T2('बिना टाइमर · 💡 सुझाव','No timer · 💡 hints')],['onlineRandom()','globe',T2('ऑनलाइन खेलो','Play Online'),T2('रैंडम खिलाड़ी · क्विक मैच','Random players · quick match')],['onlineFriends()','users',SUBF,T2('रूम बनाओ / कोड से जुड़ो','Create / join by room code')],['seepRules()','help',T2('कैसे खेलें','How to play'),T2('नियम सीखो','Learn the rules')]],
+   nav:[['seepLb()','trophy'],['badges()','medal'],['hub()','game'],['seepRules()','help'],['settings()','gear']]})};
+bhDash=function(){const S=PG.set,L=LVN3();
+  dashHome({id:'bh',setup:'bhSetup()',pill:`${ic('users')} ${S.bn} ${T2('खिलाड़ी','players')} · ${L[S.level]||L.medium}`,play:'bhStart(false)',psub:`${T2('बॉट्स के साथ तुरंत मैच','Instant match vs bots')} · 🎟 ${BH_FEE} 💎`,
+   subs:[['bhStart(true)','cap',T2('अभ्यास','Practice'),T2('बिना टाइमर · 💡 सुझाव','No timer · 💡 hints')],['bhSetup()','sliders',T2('खिलाड़ी व नियम','Players & rules'),T2('3 से 8 खिलाड़ी','3 to 8 players')],['bhRules()','help',T2('कैसे खेलें','How to play'),T2('नियम सीखो','Learn the rules')]],
+   nav:[['bhLb()','trophy'],['badges()','medal'],['hub()','game'],['bhRules()','help'],['settings()','gear']]})};
+/* ---- game chunne wali screen: 5 logo wale tile ---- */
+hub=function(){
+  resetAll();PG.set.game='';
+  const u=me(),W=g=>((u[g]||{}).won||0),
+  T=[['cb','#b6492f','#97351f','#d9784f','#5b1f33','Call Break',T2('4–6 खिलाड़ी · बॉट्स · ऑनलाइन','4–6 players · bots · online'),'🏆 '+(u.won||0)],
+     ['kot','#1f8a52','#126a3a','#52c88a','#0a3a22','Kot Piece',T2('2 बनाम 2 · जोड़ी में · ऑनलाइन','2 vs 2 · partners · online'),'🏆 '+W('kot')],
+     ['rang','#6a3fb0','#4a2a85','#a47be0','#2a1650','Rang Bol',T2('4 खिलाड़ी · रंग बोलो · ऑनलाइन','4 players · name the trump · online'),'🏆 '+W('rang')],
+     ['seep','#d0592f','#9a3a18','#f0966c','#5a2008','Seep',T2('2/4 खिलाड़ी · बॉट्स · ऑनलाइन','2/4 players · bots · online'),'🏆 '+W('seep')],
+     ['bh','#c2185b','#7b0f3a','#f48fb1','#4a0620','Bhabhi – Devar',T2('3–8 खिलाड़ी · बॉट्स · ऑनलाइन','3–8 players · bots · online'),'😅 '+((u.bhabhi||{}).bhabhi||0)]],
+  PK={cb:'cb',kot:'kot',rang:'rang',seep:'seep',bh:'bhabhi'};
+  $.innerHTML=`<div class="top"><div class="prof" onclick="pick()"><div class="av">${avHTML(0)}</div><div class="pi"><b>${u.name}</b><div class="gm">${ic('gem')} ${gems()}</div></div><button class="plus" onclick="event.stopPropagation();gemsBox()">+</button></div>
+   <div class="logo3d">${LOGO3D}</div><div class="ibs"><button class="wb iconb" onclick="settings()">⚙</button></div></div>
+   <div class="pills" style="top:114px"><button class="pl big">🎮 ${T2('अपना गेम चुनिए','Choose your game')}</button></div>
+   <div class="gts">${T.map(([id,a,b,bc,sh,nm,sub,st])=>`<div class="tl gt" style="background:linear-gradient(${a},${b});border-color:${bc};box-shadow:0 6px 0 ${sh}" onclick="pickGame('${PK[id]}')"><div class="em">${emblem(id)}</div><div class="gtn">${nm}</div><small>${sub}</small><small>${st}</small></div>`).join('')}</div>`;
+  if(bonusDone!==today()){bonusDone=today();setTimeout(bonusCheck,350)}
+};
+document.head.insertAdjacentHTML('beforeend',`<style>
+/* ===== v3: ek jaisa table (Bhabhi jaisa), rang chunne layak ===== */
+.bbg{background:radial-gradient(ellipse at 50% 42%,var(--b1,#24855d) 0%,var(--b2,#145a3d) 46%,var(--b3,#0a2c20) 100%)!important}
+.bfelt{z-index:0!important;background:radial-gradient(ellipse at 50% 40%,var(--fl,#2fa073),var(--fm,#176f4c) 70%)!important}
+.bfelt::after{content:attr(data-n)!important;font-family:'Lilita One','Baloo 2',system-ui,sans-serif;font-size:56px!important;font-weight:400!important;letter-spacing:6px!important;color:#ffffff24!important;text-shadow:0 2px 0 #0003;text-align:center;white-space:nowrap}
+.bfelt::before{content:'♠   ♥   ♣   ♦';position:absolute;left:0;right:0;bottom:20px;text-align:center;font-size:24px;letter-spacing:10px;color:#ffffff1c}
+.bfelt.cb{left:150px;top:116px;width:660px;height:286px}
+.kot .kchip,.chip{background:linear-gradient(160deg,#41314fee,#1b1325ee)!important;border:2px solid #d4af37!important;border-radius:16px!important;box-shadow:0 5px 14px #000a}
+.chip{padding:4px 6px!important;width:auto!important;min-width:112px}
+.kot .kchip.on,.chip.on{box-shadow:0 0 0 3px #ffd54a,0 0 20px #ffd54a}.kot .kchip.on{outline:none}
+.kot .kbar,.bar{background:linear-gradient(#34203f,#170f20)!important;border-bottom:3px solid #d4af37}
+.bar{top:0!important;left:0!important;right:0!important;height:48px;padding:0 18px}
+.kot .kmsg,.msg,.kt{z-index:3}
+.tcb{padding:5px 10px}
+.tsw{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0 10px}
+.swb{width:38px;height:38px;border-radius:50%;padding:0;border:3px solid #fff9;box-shadow:0 3px 0 #0006;position:relative}
+.swb.on{border-color:#ffd54a;outline:3px solid #fff}
+.swc{background:conic-gradient(#f44,#fd4,#4d4,#4df,#44f,#f4f,#f44);display:inline-block;overflow:hidden}
+.swc input{position:absolute;inset:0;width:100%;height:100%;opacity:0;padding:0;border:0;cursor:pointer}
+/* ===== v3: Rang Bol bid panel (bade ank, 1 se 13) ===== */
+.kpan.rb{top:148px!important;left:50px!important;right:50px!important;padding:8px 12px!important}
+.kpan.rb button{font-size:22px;min-width:0}
+.rnum{display:flex;gap:5px;justify-content:center;margin:8px 0}
+.rnum button{flex:none;width:54px!important;height:56px;padding:0!important;font-size:30px!important;font-weight:800;border-radius:12px;min-width:0!important}
+.rnum.big button{width:84px!important;height:62px;font-size:34px!important}
+.kpan.rb .sb{min-width:70px!important;font-size:30px!important;padding:8px 16px!important}
+.kpan.rb .bigb{font-size:30px!important;padding:10px 44px!important}
+/* ===== v3: game chunne wali screen ===== */
+.gts{position:absolute;left:10px;width:940px;top:156px;display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.gt{height:300px!important;gap:6px;font-size:20px}
+.gt .em svg{width:150px;height:120px;filter:drop-shadow(0 5px 4px #0007)}
+.gt .gtn{font-family:'Lilita One','Baloo 2',sans-serif;font-size:23px;line-height:1.1;color:#ffe27a;text-shadow:0 2px 0 #0007;padding:0 6px}
+.gt small{font-size:12px;padding:0 8px}
+</style>`);
+
+/* ===== v4: Bhabhi chaal seedhi, daily gems bonus, 3D, TAASH ADDA logo ===== */
+if(!PG.set.bdirFix){PG.set.bdir='cb';PG.set.bdirFix=1;save()}
+function bhDailyBonus(){dailyGems()}
+bhDash=function(){const S=PG.set,L=LVN3(),u=me(),done=u.bhBonusDay===today();
+  dashHome({id:'bh',setup:'bhSetup()',pill:`${ic('users')} ${S.bn} ${T2('खिलाड़ी','players')} · ${L[S.level]||L.medium}`,play:'bhStart(false)',psub:`${T2('बॉट्स के साथ तुरंत मैच','Instant match vs bots')} · 🎟 ${BH_FEE} 💎`,
+   subs:[['bhStart(true)','cap',T2('अभ्यास','Practice'),T2('बिना टाइमर · 💡 सुझाव','No timer · 💡 hints')],
+         ['onlineRandom()','globe',T2('ऑनलाइन खेलो','Play Online'),T2('रैंडम खिलाड़ी · क्विक मैच','Random players · quick match')],['onlineFriends()','users',SUBF,T2('रूम बनाओ / कोड से जुड़ो','Create / join by room code')],
+         ['bhRules()','help',T2('कैसे खेलें','How to play'),T2('नियम सीखो','Learn the rules')]],
+   nav:[['bhLb()','trophy'],['badges()','medal'],['hub()','game'],['bhSetup()','sliders'],['settings()','gear']]})};
+document.head.insertAdjacentHTML('beforeend',`<style>
+/* kinaron par dusri (tan) screen nahi dikhni chahiye */
+html,body{background:#14202e!important}
+#bg{box-shadow:inset 0 0 110px #00000044!important}
+/* 3D table */
+.bfelt{border:6px solid #e9c75a!important;box-shadow:inset 0 0 0 3px #7a5a10,inset 0 28px 48px #0000004d,inset 0 -18px 30px #ffffff14,0 0 0 6px #6b3f1d,0 0 0 9px #3d2209,0 15px 0 9px #2d1807,0 32px 38px 6px #000b!important;
+  background:radial-gradient(ellipse at 36% 20%,#ffffff3a,#0000 48%),radial-gradient(ellipse at 50% 40%,var(--fl,#2fa073),var(--fm,#176f4c) 70%)!important}
+/* 3D patte */
+.card{background:linear-gradient(115deg,#ffffffb0 0,#ffffff00 38%,#0000 62%,#00000016 100%),linear-gradient(155deg,#fff 0,#fbf6ea 60%,#efe5cf 100%);
+  box-shadow:inset 0 1px 0 #fff,1px 1px 0 #ddd2b9,2px 2px 0 #c7bb9f,3px 3px 0 #ab9f84,4px 9px 12px #000a}
+.card::before{content:'♠ TAASH ADDA';position:absolute;left:4px;bottom:6px;writing-mode:vertical-rl;transform:rotate(180deg);font:400 7px 'Lilita One','Baloo 2',Arial,sans-serif;letter-spacing:1.2px;color:#a9780f;opacity:.9;pointer-events:none;white-space:nowrap;z-index:2}
+.stb .card::before,.card.mini::before,.slast .card::before{display:none}
+.stb .card.sbk::before{display:block;content:'♠\\A TAASH\\A ADDA';white-space:pre;writing-mode:horizontal-tb;transform:none;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;text-align:center;font-size:9px;color:#ffe27a;line-height:1.2}
+.bf i::after{content:'♠';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#ffe27a;text-shadow:0 1px 0 #0008}
+.bf i{box-shadow:1px 2px 0 #0006,2px 4px 5px #0008}
+/* 3D avatar */
+.av,.mini{background:radial-gradient(circle at 32% 26%,#ffffff 0,#efe8d6 52%,#b8ac91 100%)!important;border:3px solid #fff!important;
+  box-shadow:inset 0 -8px 12px #0000004d,inset 0 5px 7px #ffffffcc,0 4px 0 #00000055,0 9px 14px #000a!important}
+.av::after,.kchip .a::after{content:'';position:absolute;left:12%;top:6%;width:48%;height:30%;border-radius:50%;background:radial-gradient(ellipse at 50% 35%,#ffffffd0,#fff0 72%);transform:rotate(-22deg);pointer-events:none;z-index:3}
+.kchip .a{border:2px solid #fff;box-shadow:inset 0 -7px 10px #0000005a,0 4px 0 #00000066,0 8px 12px #000a}
+</style>`);
+
+
+/* ===================== DAILY GEMS (alag button) + DOOSRA GAME button + HARI BATTI (kis ki chaal) ===================== */
+function dailyGems(){
+  const u=me(),t=today(),box=h=>modal(h);
+  if(u.dgDay===t){
+    box(`<h2 style="text-align:center">🎁 ${T2('डेली जेम्स','Daily Gems')}</h2><div class="bigem" style="font-size:40px">✔</div><p style="text-align:center;font-size:16px;line-height:1.6">${T2('आज के जेम्स आप ले चुके हैं। कल फिर आइए!','You already took today\'s gems. Come back tomorrow!')}<br>🔥 ${T2('लगातार दिन','Day streak')}: <b>${u.dgStreak||1}</b></p><div class="row"><button class="gb" onclick="closeM()">${T2('ठीक है','OK')}</button></div>`);return}
+  const y=new Date();y.setDate(y.getDate()-1);const yd=y.getFullYear()*10000+(y.getMonth()+1)*100+y.getDate();
+  u.dgStreak=u.dgDay===yd?(u.dgStreak||0)+1:1;u.dgDay=t;
+  const amt=20+Math.min(u.dgStreak-1,6)*10;u.gems=gems()+amt;save();
+  box(`<h2 style="text-align:center">🎁 ${T2('डेली जेम्स','Daily Gems')}</h2><div class="bigem">+${amt} 💎</div><p style="text-align:center;font-size:16px;line-height:1.6">🔥 ${T2('लगातार दिन','Day streak')}: <b>${u.dgStreak}</b><br><small>${T2('रोज़ आने पर जेम्स बढ़ते हैं (7वें दिन +80)','Gems grow every consecutive day (day 7 = +80)')}</small></p><div class="row"><button class="gb" onclick="closeM()">${T2('लीजिए','Claim')}</button></div>`);
+  document.querySelectorAll('.gm').forEach(e=>e.innerHTML=ic('gem')+' '+gems());
+  document.querySelectorAll('.dgb').forEach(e=>{e.classList.remove('rdy');const q=e.querySelector('small');if(q)q.textContent=T2('मिल गया ✔','Claimed ✔')});
+}
+document.head.insertAdjacentHTML('beforeend',`<style>
+/* alag buttons: Daily Gems (baayen) aur Doosra Game (daayen) */
+.swg{position:absolute;z-index:8;display:flex;align-items:center;gap:8px;height:54px;padding:0 16px 0 10px;border-radius:26px;color:#fff;font-weight:800;text-align:left;border:3px solid #fff;line-height:1.05}
+.swg .e{font-size:28px}.swg b{display:block;font-size:15px;line-height:1.2}.swg small{display:block;font-size:11px;font-weight:700;opacity:.95}
+.dgb{position:relative}
+.nav .dgb{background:linear-gradient(#ffd54a,#e08a00)!important;border-color:#fff3b0!important;box-shadow:0 4px 0 #8a4f00!important}
+.dgb.rdy{animation:dgs 1.4s ease-in-out infinite}
+.dgb.rdy::after{content:'1';position:absolute;top:-5px;right:-5px;width:22px;height:22px;border-radius:50%;background:#e02424;color:#fff;font:800 13px/18px system-ui,sans-serif;text-align:center;border:2px solid #fff}
+.dgb .ei{width:30px;height:30px}
+@keyframes dgp{50%{box-shadow:0 4px 0 #8a4f00,0 0 0 8px #ffd54a66}}
+.swg{right:26px;top:140px;background:linear-gradient(#26b5d9,#106a92);box-shadow:0 4px 0 #083e57}
+.swg:active,.dgb:active{transform:translateY(3px);box-shadow:none}
+/* kis ki chaal hai: saaf hari batti + naam ka nishaan */
+.kchip.on,.kot .kchip.on,.kot.bh .kchip.on,.chip.on{outline:none!important;border-color:#39ff6a!important;box-shadow:0 0 0 4px #39ff6a,0 0 20px 6px #39ff6acc!important;animation:gbs .15s var(--gd,0ms) backwards!important}
+@keyframes gbs{from{box-shadow:0 0 0 0 #39ff6a00}}
+@keyframes gin{from{opacity:0}}
+.tc.new{animation:tcin .28s cubic-bezier(.2,.8,.3,1) both}
+@keyframes tcin{from{transform:translate(var(--dx),var(--dy)) rotate(-8deg) scale(.85);opacity:.15}}
+.kchip.on::after,.chip.on::after{content:'';position:absolute;inset:-7px;border-radius:inherit;border:3px solid #39ff6a;pointer-events:none;will-change:transform,opacity;animation:gin .15s var(--gd,0ms) backwards,tglo 1s ease-in-out var(--gd,0ms) infinite}
+@keyframes tglo{50%{opacity:.2;transform:scale(1.07)}}
+.kchip.on::before,.chip.on::before{content:'● चाल · TURN';position:absolute;left:50%;top:-25px;transform:translateX(-50%);white-space:nowrap;background:#16b83a;color:#fff;font:800 12px/1 system-ui,sans-serif;padding:4px 10px;border-radius:12px;border:2px solid #fff;box-shadow:0 2px 6px #000a;z-index:9;pointer-events:none;animation:gin .15s var(--gd,0ms) backwards}
+.kchip.kme.on::before,#sx0.chip.on::before{content:'● आपकी चाल';left:0;transform:none;background:#0a9e2a;font-size:13px;padding:5px 12px}
+#myfx{position:fixed;inset:0;border:5px solid #39ff6a;box-shadow:inset 0 0 30px 4px #39ff6a66;pointer-events:none;z-index:99980;animation:tgl2 1.2s ease-in-out infinite}
+@keyframes tgl2{50%{opacity:.3}}
+@media(prefers-reduced-motion:reduce){.kchip.on::after,.chip.on::after,.dgb.rdy,#myfx{animation:none!important}}
+/* kamzor phone ke liye halka mod */
+html.lite *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html.lite .kchip.on::after,html.lite .chip.on::after,html.lite .dgb.rdy,html.lite #myfx,html.lite .playnow,html.lite .sharepill,html.lite #splash .sl{animation:none!important}
+html.lite #splash .sl,html.lite .logo3d{filter:none!important}
+</style>`);
+new MutationObserver(()=>{
+  const top=$.querySelector('.top');
+  if(top&&PG.cur&&me()&&!$.querySelector('.dgb,.swg')){
+    const rdy=me().dgDay!==today(),tip=T2('डेली जेम्स','Daily Gems');
+    const nav=$.querySelector('.nav'),ibs=$.querySelector('.ibs');
+    if(nav)nav.insertAdjacentHTML('beforeend',`<button class="dgb ${rdy?'rdy':''}" title="${tip}" aria-label="${tip}" onclick="dailyGems()">${ic('gem')}</button>`);
+    else if(ibs)ibs.insertAdjacentHTML('afterbegin',`<button class="wb iconb dgb ${rdy?'rdy':''}" title="${tip}" aria-label="${tip}" onclick="dailyGems()">🎁</button>`);
+    if(!$.querySelector('.gts'))top.insertAdjacentHTML('beforeend',`<button class="swg" onclick="hub()"><span class="e">🎮</span><span><b>${T2('दूसरा गेम खेलें','Play another game')}</b><small>${T2('सारे गेम देखें ▸','See all games ▸')}</small></span></button>`);
+  }
+  const my=!!$.querySelector('.kme.on,#sx0.on');let fx=document.getElementById('myfx');
+  if(my&&!fx){fx=document.createElement('div');fx.id='myfx';document.body.appendChild(fx)}else if(!my&&fx)fx.remove();
+}).observe($,{childList:true});
+
+
+document.head.insertAdjacentHTML('beforeend',`<style>.box:has(.pvp)>.lbl:not(.keep),.box:has(.pvp)>.seg{display:none}</style>`);
+if((navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=2)document.documentElement.classList.add('lite');
+/* ===== SPLASH: shuruaat me TAASH ADDA ka naam aur logo ===== */
+document.head.insertAdjacentHTML('beforeend',`<style>
+#splash{position:absolute;inset:0;z-index:99990;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:radial-gradient(ellipse at 50% 40%,#2a8a5f 0%,#14583c 50%,#08241a 100%);color:#fff;opacity:1;transition:opacity .6s ease}
+#splash.out{opacity:0;pointer-events:none}
+#splash::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,#ffffff07 0 16px,#0000000d 16px 32px)}
+#splash .sl{position:relative;width:620px;height:196px;filter:drop-shadow(0 10px 14px #000a);animation:splz .9s ease-out both}
+#splash .sl svg{width:100%;height:100%}
+#splash .sn{position:relative;font-family:'Lilita One','Baloo 2',system-ui,sans-serif;font-size:56px;letter-spacing:8px;color:#ffe27a;text-shadow:0 4px 0 #5b2a0a,0 8px 14px #000a;animation:splz 1s .15s ease-out both}
+#splash .ss{position:relative;font-size:20px;font-weight:700;letter-spacing:3px;color:#fff;opacity:.9;animation:splz 1s .3s ease-out both}
+#splash .sb{position:relative;margin-top:16px;width:260px;height:8px;border-radius:6px;background:#0006;overflow:hidden;border:1px solid #ffffff55}
+#splash .sb i{display:block;height:100%;width:0;background:linear-gradient(#ffe27a,#d4a017);animation:splb 2.1s .2s ease-in-out forwards}
+@keyframes splz{from{opacity:0;transform:scale(.7) translateY(16px)}to{opacity:1;transform:none}}
+@keyframes splb{to{width:100%}}
+</style>`);
+(function(){
+  const el=document.createElement('div');el.id='splash';
+  el.innerHTML=`<div class="sl">${LOGO3D}</div><div class="ss">ताश अड्डा · ${T2('सभी ताश के खेल एक जगह','All your card games in one place')}</div><div class="sb"><i></i></div>`;
+  stage.appendChild(el);
+  const close=()=>{if(!el.isConnected||el.classList.contains('out'))return;el.classList.add('out');setTimeout(()=>el.remove(),700)};
+  el.onclick=close;setTimeout(close,2500);
+})();
+if(PG.cur&&me()&&!PG.set.game&&!document.querySelector('#sov'))home();   // app khulte hi pehle ban chuki game-chunne wali screen ko Seep ke saath dobara banao
 </script>
 </body>
 </html>
