@@ -117,7 +117,7 @@ const norm = o => o.game === 'seep'
     level: LV(o.level)
   };
 const keyOf = o => [o.game, o.n, o.mode, o.rounds, o.target, o.ktarget, o.level, o.sv, o.sm, o.fr, o.ask, o.so].join('|');
-function newCode() { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let c; do { c = Array.from({ length: 5 }, () => A[rnd(A.length)]).join(''); } while (rooms.has(c)); return c; }
+function newCode() { const len = rooms.size > 5000 ? 5 : 4; let c; do { c = String(rnd(10 ** len - 10 ** (len - 1)) + 10 ** (len - 1)); } while (rooms.has(c)); return c; }   // PIN: sirf ginti (4 ank, bahut zyada rooms hon to 5)
 function mkRoom(o, pub) {
   const q = norm(o), r = { ...q, code: newCode(), key: keyOf(q), pub: !!pub, phase: 'lobby', seats: Array.from({ length: q.n }, () => ({ k: 'empty' })),
     G: null, host: -1, tn: 0, timer: null, startAt: 0, holdUntil: 0, deadline: 0, emptyT: null };
@@ -276,8 +276,10 @@ function handle(c, m) {
       break;
     }
     case 'join': {
-      if (!c.token) return; const r = rooms.get(clean(m.code, 5).toUpperCase());
-      if (!r) return c.ws.send({ t: 'err', msg: 'ye room nahi mila', code: 'noroom' });
+      if (!c.token) return; const pin = String(m.code == null ? '' : m.code).replace(/\D/g, '').slice(0, 5);
+      if (pin.length < 4) return c.ws.send({ t: 'err', msg: 'PIN 4 ank ka hona chahiye', code: 'badpin' });
+      const r = rooms.get(pin);
+      if (!r) return c.ws.send({ t: 'err', msg: 'galat PIN — ye room nahi mila', code: 'noroom' });
       if (r.phase !== 'lobby') return c.ws.send({ t: 'err', msg: 'is room ka game shuru ho chuka hai', code: 'started' });
       if (!r.seats.some(s => s.k === 'empty')) return c.ws.send({ t: 'err', msg: 'room bhar chuka hai', code: 'full' });
       leave(c); addHuman(r, c); bcastRoom(r); break;
@@ -313,10 +315,18 @@ function onClose(c) {
 }
 
 /* ---------- HTTP + upgrade ---------- */
+let pageCache = null;
 const server = http.createServer((req, res) => {
   const u = req.url.split('?')[0];
   if (u === '/' || u === '/index.html') {
-    try { const b = fs.readFileSync(WWW); res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }); return res.end(b); }
+    try {   // gzip + ETag: 400 KB ki file ~130 KB me jati hai, dobara kholne par 304 (kuch bhi download nahi)
+      const st = fs.statSync(WWW);
+      if (!pageCache || pageCache.m !== st.mtimeMs) { const raw = fs.readFileSync(WWW); pageCache = { m: st.mtimeMs, raw, gz: require('zlib').gzipSync(raw, { level: 9 }), etag: '"' + st.mtimeMs.toString(36) + '-' + raw.length.toString(36) + '"' }; }
+      if (req.headers['if-none-match'] === pageCache.etag) { res.writeHead(304, { ETag: pageCache.etag, 'Cache-Control': 'no-cache' }); return res.end(); }
+      const gz = /\bgzip\b/.test(req.headers['accept-encoding'] || '');
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache', ETag: pageCache.etag, Vary: 'Accept-Encoding', ...(gz ? { 'Content-Encoding': 'gzip' } : {}) });
+      return res.end(gz ? pageCache.gz : pageCache.raw);
+    }
     catch (e) { res.writeHead(500); return res.end('index.html nahi mila'); }
   }
   if (u === '/healthz') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ ok: true, rooms: rooms.size, clients: clients.size })); }
