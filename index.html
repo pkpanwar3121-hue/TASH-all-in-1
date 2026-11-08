@@ -352,7 +352,7 @@ function faceArt(r,s){
   return `<svg class="fa" viewBox="0 0 60 76">${hair}<path d="M5 76c0-15 11-21 25-21s25 6 25 21z" fill="${col}"/><path d="M22 56l8 20 8-20z" fill="${g}"/><circle cx="30" cy="38" r="13" fill="#ffdcb0" stroke="#5a3a1d" stroke-width="1.2"/>${beard}<circle cx="25" cy="36" r="1.8" fill="#222"/><circle cx="35" cy="36" r="1.8" fill="#222"/><path d="M26 43q4 3 8 0" stroke="#7a2e2e" stroke-width="1.8" fill="none" stroke-linecap="round"/>${hat}</svg>`;
 }
 /* logo + tiers */
-const LOGO3D=`<svg viewBox="0 0 360 112"><defs><linearGradient id="mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6c8"/><stop offset=".35" stop-color="#f2c94c"/><stop offset=".55" stop-color="#a8761a"/><stop offset=".75" stop-color="#ffe27a"/><stop offset="1" stop-color="#8a5a0b"/></linearGradient></defs>
+let LOGO3D=`<svg viewBox="0 0 360 112"><defs><linearGradient id="mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6c8"/><stop offset=".35" stop-color="#f2c94c"/><stop offset=".55" stop-color="#a8761a"/><stop offset=".75" stop-color="#ffe27a"/><stop offset="1" stop-color="#8a5a0b"/></linearGradient></defs>
 <g transform="translate(180 62)"><g transform="rotate(-24)"><rect x="-19" y="-58" width="38" height="54" rx="6" fill="#fff" stroke="#999"/><text x="-12" y="-36" font-size="20" font-family="Arial" fill="#111">♠</text></g><g transform="rotate(24)"><rect x="-19" y="-58" width="38" height="54" rx="6" fill="#fff" stroke="#999"/><text x="-12" y="-36" font-size="20" font-family="Arial" fill="#d11f1f">♥</text></g><g><rect x="-19" y="-62" width="38" height="54" rx="6" fill="#fff" stroke="#999"/><text x="-12" y="-38" font-size="22" font-family="Arial" fill="#111">A</text><text x="-14" y="-16" font-size="26" font-family="Arial" fill="#d11f1f">♦</text></g></g>
 <text x="180" y="102" text-anchor="middle" textLength="300" lengthAdjust="spacingAndGlyphs" font-family="'Lilita One','Baloo 2',Impact,sans-serif" font-size="52" fill="#5b2a0a" stroke="#5b2a0a" stroke-width="9" stroke-linejoin="round">TAASH ADDA</text>
 <text x="180" y="102" text-anchor="middle" textLength="300" lengthAdjust="spacingAndGlyphs" font-family="'Lilita One','Baloo 2',Impact,sans-serif" font-size="52" fill="url(#mg)" stroke="#fff3b0" stroke-width="1">TAASH ADDA</text></svg>`;
@@ -618,7 +618,7 @@ const RangBid={
     const d=st.seed!=null?sshuffle(newDeck(),st.seed*31+st.round*7+3):shuffle(newDeck());
     const h=[[],[],[],[]];let idx=0;
     for(const cnt of [5,4,4])for(let k=0;k<4;k++){h[(st.dealer+1+k)%4].push(...d.slice(idx,idx+cnt));idx+=cnt}
-    powerHand(h,st);return {...st,hands:h,vis:[5,5,5,5],call:{hi:null,passed:[false,false,false,false]},log:[],bids:[null,null,null,null],
+    powerHand(h,st);return {...st,hands:h,vis:[5,5,5,5],call:{hi:null,passed:[false,false,false,false]},log:[],bids:[null,null,null,null],free:[0,0,0,0],
       trump:null,caller:null,callN:0,changedBy:null,won:[0,0,0,0],voids:[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],trick:[],played:[],turn:(st.dealer+1)%4,phase:'call',lastTrick:null,roundScore:null};
   },
   hand(st,p){return sortHand(st.hands[p].slice(0,st.vis[p]))},
@@ -649,7 +649,7 @@ const RangBid={
       s.vis=[13,13,13,13];s.phase='bid';s.turn=(s.dealer+1)%4;return s;
     }
     if(m.t==='bid'){
-      s.bids[p]=m.n;if(m.s!=null){s.trump=m.s;s.changedBy=p}
+      s.bids[p]=m.n;if(m.s!=null){s.trump=m.s;s.changedBy=p;if(!s.free)s.free=[0,0,0,0];for(let q=0;q<4;q++)if(s.bids[q]===null){s.bids[q]=0;s.free[q]=1}}   // rang badalne ke baad bachhe khiladiyon ko bid nahi bolni: 'free', jitni chaal banegi utne hi ank
       s.turn=(p+1)%4;
       if(s.bids.every(b=>b!==null)){s.phase='play';s.turn=s.caller!=null?s.caller:(s.dealer+1)%4}   // sabse bada call bolne wala pehla patta chalega
       return s;
@@ -661,9 +661,9 @@ const RangBid={
       const w=kotWinner(s.trick,s.trump);s.won[w]++;s.lastTrick={cards:s.trick,w};s.trick=[];s.turn=w;
       if(s.hands.every(h=>!h.length)){
         const r1=x=>Math.round(x*10)/10;
-        s.roundScore=s.bids.map((b,i)=>s.won[i]>=b?r1(b+(s.won[i]-b)*.1):-b);
+        s.roundScore=s.bids.map((b,i)=>s.free&&s.free[i]?r1(s.won[i]):(s.won[i]>=b?r1(b+(s.won[i]-b)*.1):-b));
         s.totals=s.totals.map((t,i)=>r1(t+s.roundScore[i]));
-        s.history.push({bids:s.bids.slice(),won:s.won.slice(),score:s.roundScore,trump:s.trump,caller:s.caller,callN:s.callN,changedBy:s.changedBy});
+        s.history.push({bids:s.bids.slice(),free:(s.free||[0,0,0,0]).slice(),won:s.won.slice(),score:s.roundScore,trump:s.trump,caller:s.caller,callN:s.callN,changedBy:s.changedBy});
         const fin=s.target?(Math.max(...s.totals)>=s.target||s.round+1>=15):(s.round+1>=s.rounds);
         s.phase=fin?'over':'roundEnd';
       }
@@ -714,7 +714,7 @@ const RangBots={
 /* chaal chalne ki niti: jeet sakte ho to sabse chhote jeetne wale patte se jeeto (rang na ho to kat maro), warna sabse chhota patta */
 function rangPlay(st,p,mv,hand){
   const tr=st.trump,val=c=>c.r+(c.s===tr?20:0),sorted=mv.slice().sort((a,b)=>val(a.c)-val(b.c));
-  const need=st.bids[p]-st.won[p],left=hand.length;
+  const need=(st.free&&st.free[p]?13:st.bids[p])-st.won[p],left=hand.length;
   const boss=c=>{for(let r=c.r+1;r<=14;r++)if(!st.played.some(x=>x.s===c.s&&x.r===r)&&!hand.some(x=>x.s===c.s&&x.r===r))return false;return true};
   const win=m=>kotWinner([...st.trick,{p,c:m.c}],tr)===p;
   if(!st.trick.length){                                              // pehli chaal
@@ -1151,7 +1151,8 @@ if(window.visualViewport)visualViewport.addEventListener('resize',fit);
   new MutationObserver(f).observe(a,{attributes:true,attributeFilter:['class']});f()})();   // game table poori screen par
 fit();setTimeout(fit,300);setTimeout(fit,1200);setTimeout(fit,3000);   // app khulte waqt size der se milta hai
 let G=null,ui={hold:false,show:null,modal:null};
-const BOT_MIN=1800,BOT_MAX=3300,HUMAN_MS=15000;   // bot ka soch-samay aur aapka samay (ms)
+let BOT_MIN=1800,BOT_MAX=3300,BID_MS=1200,BID_R=600;const HUMAN_MS=15000;
+function applySpeed(){const k={slow:1.5,normal:1,fast:.6}[(typeof PG==='object'&&PG.set&&PG.set.bspd)||'normal']||1;BOT_MIN=Math.round(1800*k);BOT_MAX=Math.round(3300*k);BID_MS=Math.round(1200*k);BID_R=Math.round(600*k)}   // bot ka soch-samay aur aapka samay (ms)
 const SC=['#111','#d11f1f','#111','#d11f1f'];   // ♠♣ kaala, ♥♦ laal
 const cardHTML=(c,x='',st='')=>`<div class="card s${c.s} ${x}" style="--c:${SC[c.s]};${st}"><i>${rankName(c.r)}<small>${SUITS[c.s]}</small></i>${c.r>10?faceArt(c.r,c.s):`<span>${SUITS[c.s]}</span>`}</div>`;
 const EMOJI=['😎','🦁','🐯','🦊','🐼','🐸','🦉','🐵','🐲','🤖','👑','🥷','🧙','🎩','🐻','🐨','🐰','🐶','🐱','🦄','🐧','🦅','🐺','🦈','🐙','🦋','🐢','🐘','🦒','🦓','😈','🤠','🥳','😏','🤓','🧛','🧞','👽','👻','💀','🔥','⭐','🌟','💎','🎯','⚡','🌈','🍀','🚀','🏆','🍕','🎸','⚽','🏏','🚗','🌹'];
@@ -1463,7 +1464,7 @@ function settingsHTML(){
   <div class="row"><button class="ghost" onclick="closeM();logout()">${T2('खिलाड़ी बदलें','Switch player')}</button><button onclick="closeM()">${T2('बंद करें','Close')}</button></div>`}
 function settings(){setpOpen()}
 function badCard(m){snd.err();flash(m)}
-function setSet(k,v){PG.set[k]=v;save();if(k==='theme')document.body.dataset.th=v;if(k==='cs')setTimeout(()=>snd.play(),60);if(k==='fs'){if(v)goFull();else if(document.fullscreenElement)document.exitFullscreen()}if(k==='cd')applyCD();if(k==='music')music(v);if(k==='tune')music(PG.set.music);setpDraw();if(k==='sound'&&v)snd.bid()}
+function setSet(k,v){PG.set[k]=v;save();if(k==='bspd')applySpeed();if(k==='lite')applyLite();if(k==='wake')applyWake();if(k==='theme')document.body.dataset.th=v;if(k==='cs')setTimeout(()=>snd.play(),60);if(k==='fs'){if(v)goFull();else if(document.fullscreenElement)document.exitFullscreen()}if(k==='cd')applyCD();if(k==='music')music(v);if(k==='tune')music(PG.set.music);setpDraw();if(k==='sound'&&v)snd.bid()}
 function setVol(v){PG.set.vol=+v;if(MG)MG.gain.value=gainOf();save();const e=document.getElementById('vv');if(e)e.textContent=v+'%'}
 
 /* game flow */
@@ -1489,12 +1490,12 @@ function step(){
   const p=G.turn,g=G,human=p===0;
   ui.forced=0;
   if(human&&G.phase==='play'){const mv0=CallBreak.getValidMoves(G,0);
-    if(mv0.length===1){   // sirf ek hi patta chal sakta hai (aakhri patta bhi): apne aap chal jaye
+    if(mv0.length===1&&PG.set.auto1!==false){   // sirf ek hi patta chal sakta hai (aakhri patta bhi): apne aap chal jaye
       ui.forced=1;ui.dur=0;ui.fb=null;ui.hint=G.practice&&PG.set.coach?computeHint():null;render();snd.turn();
       ui.timer=setTimeout(()=>{if(G!==g||ui.hold||ui.modal)return;act(0,mv0[0])},G.practice?2600:900);return}}
   if(human&&G.practice){ui.dur=0;ui.fb=null;ui.hint=PG.set.coach?computeHint():null;render();snd.turn();return}   // practice: koi timer nahi
   ui.t0=Date.now();
-  ui.dur=human?(G.phase==='play'?HUMAN_MS:10000):(G.phase==='bid'?1200+rand(600):BOT_MIN+rand(BOT_MAX-BOT_MIN));
+  ui.dur=human?(G.phase==='play'?HUMAN_MS:10000):(G.phase==='bid'?BID_MS+rand(BID_R):BOT_MIN+rand(BOT_MAX-BOT_MIN));
   render();if(human)snd.turn();
   ui.timer=setTimeout(()=>{
     if(G!==g||ui.hold||ui.modal)return;
@@ -1678,7 +1679,7 @@ function onlineStep(){
   if(!G||ui.hold||ui.modal||!['bid','play'].includes(G.phase)){ui.dur=0;return}
   const p=G.turn,g=G;ui.t0=Date.now();ui.dur=Math.max(300,ON.dl||0);
   if(p===0&&G.phase==='play'){const mv0=CallBreak.getValidMoves(G,0);
-    if(mv0.length===1){ui.forced=1;render();snd.turn();ui.timer=setTimeout(()=>{if(G!==g||ui.hold||ui.modal)return;act(0,mv0[0])},900);return}}
+    if(mv0.length===1&&PG.set.auto1!==false){ui.forced=1;render();snd.turn();ui.timer=setTimeout(()=>{if(G!==g||ui.hold||ui.modal)return;act(0,mv0[0])},900);return}}
   render();if(p===0){snd.turn();vib(20)}
 }
 function onlineSend(m){
@@ -1793,7 +1794,7 @@ function kotStep(){
     if(KU.practice||!['call','change','newtrump','play'].includes(g.phase))return;
     const d=g.phase==='play'?15000:20000;KU.t0=Date.now();KU.dl=d;
     KU.t=setTimeout(()=>{if(KG!==g||KG.turn!==0||KU.busy)return;const mv=KotPiece.getValidMoves(g,0);flash(T2('समय खत्म — अपने आप चल दिया','Time up — auto move'));kotAct(0,KotBots.medium(g,0,mv))},d);return}
-  KU.t=setTimeout(()=>{const mv=KotPiece.getValidMoves(g,g.turn);kotAct(g.turn,(KotBots[KU.daily?'medium':PG.set.level]||KotBots.medium)(g,g.turn,mv))},g.phase==='play'?BOT_MIN+rand(BOT_MAX-BOT_MIN):1200+rand(600));
+  KU.t=setTimeout(()=>{const mv=KotPiece.getValidMoves(g,g.turn);kotAct(g.turn,(KotBots[KU.daily?'medium':PG.set.level]||KotBots.medium)(g,g.turn,mv))},g.phase==='play'?BOT_MIN+rand(BOT_MAX-BOT_MIN):BID_MS+rand(BID_R));
 }
 function kotScoreHTML(g,mode){   // Call Break jaisa scoreboard: har round ka hisaab + kul score
   const r=g.roundInfo||{},rows=g.history.map((h,i)=>`<tr><td>${T2('राउंड','Round')} ${i+1}</td><td><b>${h.won[0]}</b></td><td><b>${h.won[1]}</b></td><td>${h.wt===0?'✅ '+T2('हम जीते','We won'):'❌ '+T2('वे जीते','They won')}${h.kot?' 🔥 KOT':''}</td></tr>`).join('');
@@ -2020,7 +2021,7 @@ const RANG_HOW=[
 ['⬆️ कोई और रंग बदलना चाहे तो उसे ज़्यादा बोलना होगा, जैसे 6 (उसका रंग जाने बिना)। कोई और न बोले तो पहले वाले का रंग कट माना जाता है। किसी ने रंग नहीं बोला तो हुकुम ♠ कट।','⬆️ To take the suit away you must bid higher, e.g. 6 (without knowing his suit). If nobody raises, that suit is trump. If nobody names a suit, Spades is trump.'],
 ['🂠 फिर बाकी पत्ते बँटते हैं, सबके 13 पत्ते हो जाते हैं, और तब सबको दिखता है कि किसने कौन सा रंग बोला था (वही कट है)।','🂠 Then the rest are dealt: 13 each, and now everyone sees which suit was named (that is the trump).'],
 ['📢 असली बिड: सब 13 पत्ते देखकर Call Break की तरह बिड बोलते हैं। रंग बोलने वाले को कम से कम अपनी बोली जितनी (5, 6...) बिड लगानी ही होगी, चाहे तो ज़्यादा। बाकी की बिड 1 से 13 तक, कम से कम 1। पहले वाली 5/6 की बोली सिर्फ़ रंग के लिए थी, वह रद्द हो जाती है।','📢 Real bid: after seeing 13 cards everyone bids like Call Break. The suit caller must bid at least his called number (5, 6...) and may bid more. Others bid anywhere from 1 to 13 (minimum 1). The earlier 5/6 call only decided the suit.'],
-['🔟 कभी-कभी किसी खिलाड़ी को बहुत ताक़तवर हाथ (लंबा रंग + इक्के) मिलता है। 10 या ज़्यादा बिड बोलने वाला (जब तक किसी ने रंग न बदला हो) कट का रंग बदल सकता है।','🔟 A bid of 10 or more lets that player change the trump (only once per round).'],
+['🔟 कभी-कभी किसी खिलाड़ी को बहुत ताक़तवर हाथ (लंबा रंग + इक्के) मिलता है। 10 या ज़्यादा बिड बोलने वाला (जब तक किसी ने रंग न बदला हो) कट का रंग बदल सकता है। ✨ रंग बदलते ही जिन खिलाड़ियों की बिड बाकी है उन्हें बिड बोलने की ज़रूरत नहीं — उनकी बिड "फ्री" हो जाती है और वे जितनी चालें बनाएँगे उतने ही अंक लिखे जाएँगे।','🔟 A bid of 10 or more lets that player change the trump (only once per round). ✨ The moment the trump is changed, players who have not bid yet need not bid — their bid becomes "Free" and they simply score as many points as the tricks they win.'],
 ['▶️ चाल: जो रंग चला गया वही चलिए, और जीत सकते हैं तो उससे बड़ा पत्ता ही चलना होगा। उस रंग का पत्ता न हो तो कट (तुरुप) मारना ज़रूरी है (कट पहले चल चुका हो तो उससे बड़ा कट; बड़ा कट न हो तो कोई भी पत्ता)। कट भी न हो तो अपनी मर्ज़ी का पत्ता।','▶️ Play: follow the suit led, and you must play a higher card if you can. If you have none of that suit you must trump (over-trump if a trump is already played; if you cannot over-trump, play any card). If you have no trump either, play any card.'],
 ['🏆 अंक: बिड पूरी तो बिड + हर एक्स्ट्रा चाल का 0.1, वरना बिड जितने माइनस।','🏆 Score: bid met = bid + 0.1 per extra trick, otherwise minus the bid.'],
 ['🪙 जेम्स नकली हैं, असली कीमत नहीं।','🪙 Gems are virtual and have no real value.']];
@@ -2103,7 +2104,7 @@ function rangBidPanel(g){
 function rangClock(g){
   if(RU.online)return;
   const key=[g.phase,g.turn,g.trick.length,g.played.length,g.log.length,g.bids.filter(x=>x!=null).length,g.round].join('|');
-  if(RU.key!==key){RU.key=key;RU.t0=Date.now();RU.dur=g.turn===0?(RU.practice?0:(g.phase==='play'?15000:20000)):(g.phase==='play'?BOT_MIN+rand(BOT_MAX-BOT_MIN):1200+rand(600))}
+  if(RU.key!==key){RU.key=key;RU.t0=Date.now();RU.dur=g.turn===0?(RU.practice?0:(g.phase==='play'?15000:20000)):(g.phase==='play'?BOT_MIN+rand(BOT_MAX-BOT_MIN):BID_MS+rand(BID_R))}
 }
 function rangOk(hand,trick){return rangValid(hand,trick,RG.trump)}   // insaan par bhi wahi niyam
 function rangRender(){
@@ -2126,11 +2127,12 @@ function rangRender(){
     if(g.phase==='call'){const l=[...g.log].reverse().find(x=>x.p===p);if(!l)return '';
       if(l.pass){t=T2('पास','Pass');c='pass'}else{t=(rKnown(p,g)&&l.s!=null)?`<span style="color:${l.s%2?'#d11f1f':'#111'}">${SUITS[l.s]}</span> ${l.n}`:`🔒 ${l.n}`;c=(l===last?'new':'')}}
     else{const b=g.bids[p];if(b==null)return '';
-      if(g.phase==='bid'){t='✔ '+b;c='rbd new'}
+      if(g.free&&g.free[p]){t=g.phase==='bid'?'🆓 '+T2('फ्री','Free'):`🆓 ✋ ${g.won[p]}`;c=g.phase==='bid'?'rbd new':'rmt'}
+      else if(g.phase==='bid'){t='✔ '+b;c='rbd new'}
       else{const m=g.won[p]>=b;t=m?`✓ ${Math.round((b+(g.won[p]-b)*.1)*10)/10} · ✋ ${g.won[p]}`:`🎯 ${b} · ✋ ${g.won[p]}`;c=m?'rmt':'rbd'}}
     return `<div class="rbub ${SD[p]} ${c}">${t}</div>`};
   const ring=p=>{const on=live&&g.turn===p&&RU.dur;return on?`<svg class="ring" viewBox="0 0 60 60"><circle class="bg" cx="30" cy="30" r="27"/><circle class="fg" cx="30" cy="30" r="27" style="animation-duration:${RU.dur}ms;animation-delay:-${Math.min(Date.now()-RU.t0,RU.dur)}ms"/></svg>`:''};
-  const pt=p=>{const b=g.bids[p];return(g.phase==='play'&&b!=null&&g.won[p]>=b)?`<div class="pt">✓ ${Math.round((b+(g.won[p]-b)*.1)*10)/10}</div>`:''};
+  const pt=p=>{const b=g.bids[p];if(g.free&&g.free[p])return g.phase==='play'&&g.won[p]>0?`<div class="pt">✓ ${g.won[p]}</div>`:'';return(g.phase==='play'&&b!=null&&g.won[p]>=b)?`<div class="pt">✓ ${Math.round((b+(g.won[p]-b)*.1)*10)/10}</div>`:''};
   const ch=p=>`<div class="kchip ${p===0?'kme':''} ${live&&g.turn===p?'on':''} ${g.phase==='call'&&hi&&hi.p===p?'hi':''}" style="left:${CP[p][0]}px;top:${CP[p][1]}px"><div class="a" ${p?'':'onclick="pick()"'}>${ring(p)}${avHTML(p)}${pt(p)}</div><b class="nm2">${pn(p)}${g.caller===p&&g.phase!=='call'?' 📢':''}</b><small>Σ ${g.totals[p]}</small>${bub(p)}${RU.emo&&RU.emo[p]?`<div class="eb">${emoHTML(RU.emo[p])}</div>`:''}</div>`;
   const box=g.phase==='call'?(hi?((rKnown(hi.p,g)&&hi.s!=null)?`<div class="ts" style="color:${hi.s%2?'#d11f1f':'#111'}">${SUITS[hi.s]}</div>${T2('बोली','CALL')} ${hi.n}<small>📢 ${pn(hi.p)}</small>`:`<div class="ts" style="color:#78909c">🔒</div>${T2('बोली','CALL')} ${hi.n}<small>📢 ${pn(hi.p)} · ${T2('रंग छुपा','suit hidden')}</small>`):`<div class="ts" style="color:#aaa">?</div>${T2('कोई रंग नहीं','No suit yet')}`)
     :`<div class="ts" style="color:${g.trump%2?'#d11f1f':'#111'}">${SUITS[g.trump]}</div>${T2('कट','TRUMP')}<small>${g.changedBy!=null?'🔄 '+pn(g.changedBy):g.caller!=null?'📢 '+pn(g.caller)+' '+SUITS[g.trump]+g.callN:T2('डिफ़ॉल्ट','default')}</small>`;
@@ -2165,7 +2167,7 @@ function rCoach(g){
     b=T2(`कट ${sn(g.trump)} के ${cnt(g.trump)} पत्ते हैं (बड़े: ${big(g.trump)}) और बाहर के इक्के-बादशाह मिलाकर लगभग ${e.toFixed(1)} चालें दिखती हैं।`,`You hold ${cnt(g.trump)} of trump ${sn(g.trump)} (big: ${big(g.trump)}); with outside aces/kings about ${e.toFixed(1)} tricks.`);
     c=g.caller===0?T2(`आपने रंग बोला था, इसलिए कम से कम ${g.callN}।`,`You called the suit, so at least ${g.callN}.`):T2('इतनी ही बिड लगाइए जितनी पक्की बन सके — पूरी न हुई तो माइनस।','Bid only what you can make — a failed bid costs minus points.');
   }else{
-    const nm=x=>rankName(x.r)+SUITS[x.s],lead=!g.trick.length,need=g.bids[0]-g.won[0];
+    const nm=x=>rankName(x.r)+SUITS[x.s],lead=!g.trick.length,need=(g.free&&g.free[0]?13:g.bids[0])-g.won[0];
     a=T2('यह पत्ता चलिए: '+nm(m.c),'Play this card: '+nm(m.c));
     b=lead?(need>0?T2('आपको अभी और चालें चाहिए — पक्का जीतने वाला (बड़ा) पत्ता चलिए।','You still need tricks — lead a card likely to win.'):T2('आपकी बिड पूरी है — छोटा पत्ता चलिए, चाल जीतने की ज़रूरत नहीं।','Your bid is made — lead low, no need to win more.'))
       :(need>0&&kotWinner([...g.trick,{p:0,c:m.c}],g.trump)===0?T2('यह पत्ता चाल जीत सकता है और आपको चालें चाहिए।','This card can win the trick and you need tricks.'):T2('यह चाल जीतना मुश्किल या ज़रूरी नहीं — सबसे छोटा पत्ता चलिए।','Hard (or not needed) to win this trick — play your lowest.'));
@@ -2212,7 +2214,7 @@ function rangStep(){
 function rangScoreHTML(g,mode){      // mode: 'round' | 'over' | 'view'
   const f=v=>Number.isInteger(v)?String(v):v.toFixed(1),lead=Math.max(...g.totals),POS=[T2('पहला','1st'),T2('दूसरा','2nd'),T2('तीसरा','3rd'),T2('चौथा','4th')];
   const rk=g.totals.map(t=>g.totals.filter(x=>x>t).length);
-  const rows=g.history.map((r,i)=>`<tr><td>${T2('राउंड','Round')} ${i+1}<small>${SUITS[r.trump]}${r.caller!=null?' 📢'+pn(r.caller).slice(0,5):''}</small></td>${r.score.map((v,j)=>`<td><b style="${v<0?'color:#ff8a80':''}">${v>0?'+':''}${f(v)}</b><small>${r.won[j]}/${r.bids[j]}</small></td>`).join('')}</tr>`).join('');
+  const rows=g.history.map((r,i)=>`<tr><td>${T2('राउंड','Round')} ${i+1}<small>${SUITS[r.trump]}${r.caller!=null?' 📢'+pn(r.caller).slice(0,5):''}</small></td>${r.score.map((v,j)=>`<td><b style="${v<0?'color:#ff8a80':''}">${v>0?'+':''}${f(v)}</b><small>${r.won[j]}/${r.free&&r.free[j]?T2('फ्री','free'):r.bids[j]}</small></td>`).join('')}</tr>`).join('');
   const re=mode==='round';
   return `<div class="box sbx" style="width:660px"><h2>${mode==='over'?'🏁 '+T2('खेल खत्म','Game over'):re?T2('राउंड '+g.history.length+' खत्म','Round '+g.history.length+' complete'):T2('स्कोरबोर्ड','Scoreboard')}${g.target?' · 🎯 '+g.target:''}</h2>
   <table class="sbt"><tr><th></th>${[0,1,2,3].map(p=>`<th>${pn(p)}</th>`).join('')}</tr>${rows}
@@ -2272,11 +2274,11 @@ function rangOnlineHTML(){
 function rRot(m){
   const g=m.G,s=m.seat,R=a=>a.map((_,i)=>a[(i+s)%4]),L=p=>p==null?p:(p-s+4)%4;
   const rt=t=>t?{cards:t.cards.map(x=>({p:L(x.p),c:x.c})),w:L(t.w)}:t;
-  return {...g,hands:R(g.hands),vis:R(g.vis),bids:R(g.bids),won:R(g.won),totals:R(g.totals),voids:R(g.voids),dealer:L(g.dealer),turn:L(g.turn),
+  return {...g,hands:R(g.hands),vis:R(g.vis),bids:R(g.bids),free:R(g.free||[0,0,0,0]),won:R(g.won),totals:R(g.totals),voids:R(g.voids),dealer:L(g.dealer),turn:L(g.turn),
     caller:L(g.caller),changedBy:L(g.changedBy),call:{hi:g.call.hi?{...g.call.hi,p:L(g.call.hi.p)}:null,passed:R(g.call.passed)},
     log:g.log.map(x=>({...x,p:L(x.p)})),trick:g.trick.map(x=>({p:L(x.p),c:x.c})),lastTrick:rt(g.lastTrick),
     roundScore:g.roundScore?R(g.roundScore):g.roundScore,
-    history:g.history.map(h=>({...h,bids:R(h.bids),won:R(h.won),score:R(h.score),caller:L(h.caller),changedBy:L(h.changedBy)}))};
+    history:g.history.map(h=>({...h,bids:R(h.bids),free:R(h.free||[0,0,0,0]),won:R(h.won),score:R(h.score),caller:L(h.caller),changedBy:L(h.changedBy)}))};
 }
 function rOnEnter(m){
   const o=document.getElementById('pk');if(o)o.remove();if(ui)ui.modal=null;
@@ -3153,19 +3155,50 @@ rangBidPanel=function(g){
   <div class="row"><button class="gb bigb" onclick="rangAct(0,{t:'bid',n:${RB.n}${can&&RB.n>=10&&RB.s!=null?',s:'+RB.s:''}})">✔ ${T2('बिड','Bid')} ${RB.n}${can&&RB.n>=10&&RB.s!=null?' '+SUITS[RB.s]:''}</button></div>`;
 };
 /* ---- logo + emblem ---- */
-const EC=(x,y,r,a,b,col,sc)=>`<g transform="translate(${x} ${y}) rotate(${r}) scale(${sc||1})"><rect x="-17" y="-48" width="34" height="48" rx="5" fill="#fff" stroke="#8a8a8a" stroke-width="1.2"/><text x="-13" y="-34" font-size="14" font-weight="700" font-family="Arial" fill="${col}">${a}</text><text x="0" y="-9" text-anchor="middle" font-size="26" font-family="Arial" fill="${col}">${b}</text></g>`;
+const EC=(x,y,r,a,b,col,sc)=>`<g transform="translate(${x} ${y}) rotate(${r}) scale(${sc||1})"><rect x="-15" y="-45" width="34" height="48" rx="5" fill="#0006"/><rect x="-17" y="-48" width="34" height="48" rx="5" fill="url(#ec)" stroke="#8d94a0" stroke-width="1.3"/><rect x="-15" y="-46" width="30" height="20" rx="4" fill="#fff" opacity=".55"/><text x="-13" y="-34" font-size="14" font-weight="700" font-family="Arial" fill="${col}">${a}</text><text x="0" y="-9" text-anchor="middle" font-size="26" font-family="Arial" fill="${col}">${b}</text></g>`;
 const SPK='<path d="M100 12l3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1z" fill="#ffd54a"/>';
+const EDEFS='<defs><linearGradient id="eg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6c8"/><stop offset=".4" stop-color="#f2c94c"/><stop offset=".72" stop-color="#c98a12"/><stop offset="1" stop-color="#8a5a0b"/></linearGradient><linearGradient id="ec" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d9dee7"/></linearGradient><linearGradient id="ebl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6db5ff"/><stop offset="1" stop-color="#1f5fb8"/></linearGradient><linearGradient id="eor" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd05a"/><stop offset="1" stop-color="#e07a10"/></linearGradient><linearGradient id="egr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6fdc8c"/><stop offset="1" stop-color="#1f8a48"/></linearGradient><linearGradient id="ere" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff8a8a"/><stop offset="1" stop-color="#c01f2d"/></linearGradient><linearGradient id="ewd" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d9a05f"/><stop offset=".5" stop-color="#a86a2c"/><stop offset="1" stop-color="#6e3f16"/></linearGradient><radialGradient id="epk" cx=".4" cy=".3" r=".8"><stop offset="0" stop-color="#ff5fa8"/><stop offset="1" stop-color="#9b0f4c"/></radialGradient><linearGradient id="epu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d1246b"/><stop offset="1" stop-color="#6e0d3b"/></linearGradient><radialGradient id="esk" cx=".4" cy=".3" r=".9"><stop offset="0" stop-color="#ffe6c8"/><stop offset="1" stop-color="#e9a877"/></radialGradient></defs>';
+const SPADE='M60 6C60 6 20 36 20 58c0 14 11 20 22 15 3-1.5 6-4 8-7-1 10-5 18-12 26h44c-7-8-11-16-12-26 2 3 5 5.5 8 7 11 5 22-1 22-15C100 36 60 6 60 6z';
 const EMB={
- cb:()=>EC(60,92,-28,'5','♥','#d11f1f')+EC(60,92,28,'9','♣','#111')+EC(60,92,0,'A','♠','#111')+SPK,
- kot:()=>EC(60,94,-36,'K','♠','#111')+EC(60,94,-12,'K','♥','#d11f1f')+EC(60,94,12,'K','♣','#111')+EC(60,94,36,'K','♦','#d11f1f')+'<path d="M38 24l4-15 10 9 8-13 8 13 10-9 4 15z" fill="#f5c542" stroke="#b8860b" stroke-width="2" stroke-linejoin="round"/><circle cx="60" cy="6" r="3" fill="#fff3b0"/>',
- rang:()=>'<circle cx="60" cy="50" r="42" fill="#0004" transform="translate(0 4)"/><path d="M60 50V12a38 38 0 0 1 38 38z" fill="#3b8fe0"/><path d="M60 50h38a38 38 0 0 1-38 38z" fill="#f5a623"/><path d="M60 50V88a38 38 0 0 1-38-38z" fill="#3aa55d"/><path d="M60 50H22a38 38 0 0 1 38-38z" fill="#e5484d"/><circle cx="60" cy="50" r="38" fill="none" stroke="#fff" stroke-width="4"/><g font-family="Arial" font-size="24" fill="#fff" text-anchor="middle"><text x="79" y="44">♠</text><text x="79" y="80">♦</text><text x="41" y="80">♣</text><text x="41" y="44">♥</text></g><circle cx="60" cy="50" r="8" fill="#ffd54a" stroke="#fff" stroke-width="2"/><path d="M92 78l16 14-4-20z" fill="#fff"/>',
- seep:()=>EC(30,92,-14,'7','♦','#d11f1f',.85)+EC(52,92,-2,'9','♠','#111',.85)+'<g transform="rotate(32 82 52)"><rect x="79" y="-4" width="7" height="52" rx="3" fill="#8b5a2b"/><rect x="73" y="46" width="19" height="9" rx="2" fill="#c9a227"/><path d="M72 55h21l9 36H63z" fill="#e8b33a" stroke="#a8761a" stroke-width="1.5"/><path d="M72 58l-4 32M79 58l-2 32M86 58l2 32M93 58l4 32" stroke="#a8761a" stroke-width="1.2"/></g>'+SPK,
- bh:()=>EC(22,94,-22,'A','♠','#111',.85)+EC(98,94,22,'K','♥','#d11f1f',.85)+'<path d="M24 96c2-22 16-26 36-26s34 4 36 26z" fill="#a8123f"/><ellipse cx="60" cy="46" rx="35" ry="40" fill="#c2185b"/><ellipse cx="60" cy="50" rx="21" ry="25" fill="#ffd7b0"/><path d="M38 40Q60 14 82 40Q60 30 38 40z" fill="#2b1d12"/><path d="M60 26v10" stroke="#f5c542" stroke-width="2"/><circle cx="60" cy="39" r="3.5" fill="#f5c542" stroke="#b8860b"/><circle cx="60" cy="44" r="2.4" fill="#d11f1f"/><path d="M47 49q4-4 8 0M65 49q4-4 8 0" stroke="#222" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="62" cy="57" r="2" fill="none" stroke="#f5c542" stroke-width="1.4"/><path d="M52 64q8 6 16 0" stroke="#b3261e" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="38" cy="58" r="3.5" fill="#f5c542"/><circle cx="82" cy="58" r="3.5" fill="#f5c542"/><path d="M40 78Q60 96 80 78" stroke="#f5c542" stroke-width="4" fill="none" stroke-linecap="round"/>'
+ cb:()=>'<ellipse cx="60" cy="96" rx="34" ry="4.5" fill="#0006"/>'+EC(26,92,-32,'5','♥','#d11f1f',.9)+EC(94,92,32,'9','♣','#111',.9)+`<g transform="translate(60 52) scale(.8) translate(-60 -52)"><path d="${SPADE}" fill="url(#eg)" stroke="#5b2a0a" stroke-width="3.5" stroke-linejoin="round"/><path d="M44 24C32 38 27 48 27 58" stroke="#fff" stroke-opacity=".6" stroke-width="4" fill="none" stroke-linecap="round"/></g>`+SPK,
+ kot:()=>'<ellipse cx="60" cy="96" rx="36" ry="4.5" fill="#0006"/>'+EC(26,94,-34,'K','♠','#111',.9)+EC(94,94,34,'K','♥','#d11f1f',.9)+'<g transform="translate(12 -2) scale(.8)"><path d="M20 76L12 32l24 22 24-38 24 38 24-22-8 44z" fill="url(#eg)" stroke="#5b2a0a" stroke-width="3.5" stroke-linejoin="round"/><rect x="20" y="76" width="80" height="15" rx="5" fill="url(#eg)" stroke="#5b2a0a" stroke-width="3"/><circle cx="12" cy="30" r="6" fill="#e5484d" stroke="#5b2a0a" stroke-width="2"/><circle cx="60" cy="14" r="7" fill="#3b8fe0" stroke="#5b2a0a" stroke-width="2"/><circle cx="108" cy="30" r="6" fill="#3aa55d" stroke="#5b2a0a" stroke-width="2"/><circle cx="36" cy="84" r="3.5" fill="#e5484d"/><circle cx="60" cy="84" r="3.5" fill="#fff"/><circle cx="84" cy="84" r="3.5" fill="#3b8fe0"/><path d="M30 46l8 14M60 30l-12 22" stroke="#fff" stroke-opacity=".6" stroke-width="4" stroke-linecap="round"/></g>',
+ rang:()=>'<ellipse cx="58" cy="96" rx="34" ry="4.5" fill="#0006"/><circle cx="58" cy="50" r="44" fill="url(#eg)" stroke="#5b2a0a" stroke-width="3"/><path d="M58 50V16a34 34 0 0 1 34 34z" fill="url(#ebl)"/><path d="M58 50h34a34 34 0 0 1-34 34z" fill="url(#eor)"/><path d="M58 50V84a34 34 0 0 1-34-34z" fill="url(#egr)"/><path d="M58 50H24a34 34 0 0 1 34-34z" fill="url(#ere)"/><circle cx="58" cy="50" r="34" fill="none" stroke="#fff" stroke-width="2.5"/><g font-family="Arial" font-size="22" fill="#fff" text-anchor="middle"><text x="75" y="42">♠</text><text x="75" y="75">♦</text><text x="41" y="75">♣</text><text x="41" y="42">♥</text></g><circle cx="58" cy="50" r="8" fill="url(#eg)" stroke="#5b2a0a" stroke-width="2"/><ellipse cx="44" cy="26" rx="20" ry="9" fill="#fff" opacity=".3" transform="rotate(-24 44 26)"/><path d="M102 42l14 8-14 8z" fill="#fff" stroke="#5b2a0a" stroke-width="2" stroke-linejoin="round"/>',
+ seep:()=>'<ellipse cx="60" cy="96" rx="36" ry="4.5" fill="#0006"/>'+EC(30,92,-14,'7','♦','#d11f1f',.88)+EC(54,92,-2,'9','♠','#111',.88)+'<g transform="rotate(32 82 52)"><rect x="79" y="-4" width="8" height="52" rx="3.5" fill="url(#ewd)" stroke="#5a3210" stroke-width="1.2"/><rect x="72" y="45" width="21" height="10" rx="2.5" fill="url(#eg)" stroke="#5b2a0a" stroke-width="1.5"/><path d="M71 55h23l10 38H61z" fill="url(#eor)" stroke="#a8561a" stroke-width="1.8" stroke-linejoin="round"/><path d="M71 58l-5 33M79 58l-3 33M87 58l2 33M95 58l5 33" stroke="#a8561a" stroke-width="1.3"/><path d="M76 58l-3 24" stroke="#fff" stroke-opacity=".6" stroke-width="2.5" stroke-linecap="round"/></g>'+SPK,
+ bh:()=>EC(22,94,-22,'A','♠','#111',.85)+EC(98,94,22,'K','♥','#d11f1f',.85)+'<path d="M24 96c2-22 16-26 36-26s34 4 36 26z" fill="url(#epu)"/><ellipse cx="60" cy="46" rx="35" ry="40" fill="url(#epk)"/><ellipse cx="60" cy="50" rx="21" ry="25" fill="url(#esk)"/><path d="M38 40Q60 14 82 40Q60 30 38 40z" fill="#2b1d12"/><path d="M60 26v10" stroke="#f5c542" stroke-width="2"/><circle cx="60" cy="39" r="3.5" fill="#f5c542" stroke="#b8860b"/><circle cx="60" cy="44" r="2.4" fill="#d11f1f"/><path d="M47 49q4-4 8 0M65 49q4-4 8 0" stroke="#222" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="62" cy="57" r="2" fill="none" stroke="#f5c542" stroke-width="1.4"/><path d="M52 64q8 6 16 0" stroke="#b3261e" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="38" cy="58" r="3.5" fill="#f5c542"/><circle cx="82" cy="58" r="3.5" fill="#f5c542"/><path d="M40 78Q60 96 80 78" stroke="#f5c542" stroke-width="4" fill="none" stroke-linecap="round"/>',
 };
 const GTITLE={cb:'CALL BREAK',kot:'KOT PIECE',rang:'RANG BOL',seep:'SEEP',bh:'BHABHI DEVAR'};
-const emblem=id=>`<svg viewBox="0 0 120 100" aria-hidden="true">${EMB[id]()}</svg>`;
-function gameLogo(id){const t=GTITLE[id],w=Math.min(310,t.length*31),g='lg'+id,F="font-family=\"'Lilita One','Baloo 2',Impact,sans-serif\" font-size=\"52\"";
-  return `<svg viewBox="0 0 360 112"><defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6c8"/><stop offset=".35" stop-color="#f2c94c"/><stop offset=".55" stop-color="#a8761a"/><stop offset=".75" stop-color="#ffe27a"/><stop offset="1" stop-color="#8a5a0b"/></linearGradient></defs><g transform="translate(138 -6) scale(.7)">${EMB[id]()}</g><text x="180" y="102" text-anchor="middle" textLength="${w}" lengthAdjust="spacingAndGlyphs" ${F} fill="#5b2a0a" stroke="#5b2a0a" stroke-width="9" stroke-linejoin="round">${t}</text><text x="180" y="102" text-anchor="middle" textLength="${w}" lengthAdjust="spacingAndGlyphs" ${F} fill="url(#${g})" stroke="#fff3b0" stroke-width="1">${t}</text></svg>`}
+const emblem=id=>`<svg viewBox="0 0 120 100" aria-hidden="true" overflow="visible">${EDEFS}${EMB[id]()}</svg>`;
+const LGP={cb:{a:'#f0525a',b:'#8f1424',x:'#4a1208',f:['#fff8d2','#f6d055','#d19416','#ffe583','#8f5d0c']},
+ kot:{a:'#9a68f0',b:'#43268f',x:'#241254',f:['#fff8d2','#f6d055','#d19416','#ffe583','#8f5d0c']},
+ rang:{a:'#2f7fe0',b:'#0f2f78',x:'#0d1d4a',f:['#ff6b6b','#ffb938','#fff06a','#52d98a','#4aa0ff']},
+ seep:{a:'#2fc1a8',b:'#0e6b5c',x:'#06332b',f:['#fff4c8','#ffd24a','#ff9a24','#ffd98a','#b3600c']},
+ bh:{a:'#e5367c',b:'#7a0f45',x:'#45072a',f:['#fff5fa','#ffc0da','#ff6aa6','#ffd6e6','#b3236b']}};
+function gameLogo(id){
+  const t=GTITLE[id],c=LGP[id],w=Math.min(284,t.length*26),g='lg'+id,F=`font-family="'Lilita One','Baloo 2',Impact,sans-serif" font-size="46" text-anchor="middle" textLength="${w}" lengthAdjust="spacingAndGlyphs"`;
+  const fc=id==='rang'?`<linearGradient id="${g}f" x1="0" y1="0" x2="1" y2="0">${c.f.map((k,i)=>`<stop offset="${i/4}" stop-color="${k}"/>`).join('')}</linearGradient>`:`<linearGradient id="${g}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.f[0]}"/><stop offset=".38" stop-color="${c.f[1]}"/><stop offset=".62" stop-color="${c.f[2]}"/><stop offset=".8" stop-color="${c.f[3]}"/><stop offset="1" stop-color="${c.f[4]}"/></linearGradient>`;
+  const ext=[1,2,3,4,5,6].map(i=>`<text x="180" y="${95+i}" ${F} fill="${c.x}" stroke="${c.x}" stroke-width="7" stroke-linejoin="round">${t}</text>`).join('');
+  return `<svg viewBox="0 0 360 112">${EDEFS}<defs>${fc}<linearGradient id="${g}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.a}"/><stop offset="1" stop-color="${c.b}"/></linearGradient><clipPath id="${g}c"><text x="180" y="95" ${F}>${t}</text></clipPath></defs>
+  <ellipse cx="180" cy="106" rx="156" ry="5" fill="#0006"/>
+  <path d="M24 62H6l13 17-13 17h18z" fill="${c.b}" stroke="${c.x}" stroke-width="2.5" stroke-linejoin="round"/><path d="M336 62h18l-13 17 13 17h-18z" fill="${c.b}" stroke="${c.x}" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M32 54h296a8 8 0 0 1 8 8v34a8 8 0 0 1-8 8H32a8 8 0 0 1-8-8V62a8 8 0 0 1 8-8z" fill="url(#${g}b)" stroke="${c.x}" stroke-width="3"/>
+  <path d="M34 58h292" stroke="#fff" stroke-opacity=".5" stroke-width="2.2" stroke-linecap="round"/><path d="M34 99h292" stroke="#000" stroke-opacity=".25" stroke-width="2" stroke-linecap="round"/>
+  <g transform="translate(142 3) scale(.66)">${EMB[id]()}</g>
+  ${ext}<text x="180" y="95" ${F} fill="url(#${g}f)" stroke="${c.x}" stroke-width="2.2" paint-order="stroke">${t}</text>
+  <g clip-path="url(#${g}c)"><rect x="0" y="60" width="360" height="18" fill="#fff" opacity=".28"/></g></svg>`}
+/* ---- ek hi jagah: poore app ka (Taash Adda) 3D logo ---- */
+function appLogo(){
+  const F=`font-family="'Lilita One','Baloo 2',Impact,sans-serif" font-size="52" text-anchor="middle" textLength="296" lengthAdjust="spacingAndGlyphs"`;
+  const ext=[1,2,3,4,5,6,7].map(i=>`<text x="180" y="${96+i}" ${F} fill="#3a1a05" stroke="#3a1a05" stroke-width="8" stroke-linejoin="round">TAASH ADDA</text>`).join('');
+  const fan=[[-38,'A','♠','#111'],[-13,'A','♥','#d11f1f'],[13,'A','♦','#d11f1f'],[38,'A','♣','#111']].map(([r,a,b,col],i)=>`<g class="fc" style="--r:${r}deg;--n:${i}">${EC(180,80,0,a,b,col,1.3)}</g>`).join('');
+  return `<svg viewBox="0 0 360 112">${EDEFS}<defs><linearGradient id="lbf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff8d2"/><stop offset=".36" stop-color="#f6d055"/><stop offset=".6" stop-color="#d19416"/><stop offset=".8" stop-color="#ffe583"/><stop offset="1" stop-color="#8f5d0c"/></linearGradient><linearGradient id="lbb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f8a5a"/><stop offset="1" stop-color="#0a3d2a"/></linearGradient><clipPath id="lbc"><text x="180" y="96" ${F}>TAASH ADDA</text></clipPath></defs>
+  <ellipse cx="180" cy="108" rx="160" ry="4.5" fill="#0006"/>
+  ${fan}
+  <path d="M30 58h300a9 9 0 0 1 9 9v34a9 9 0 0 1-9 9H30a9 9 0 0 1-9-9V67a9 9 0 0 1 9-9z" fill="url(#lbb)" stroke="#f2c94c" stroke-width="3.5"/><path d="M34 62h292" stroke="#fff" stroke-opacity=".35" stroke-width="2" stroke-linecap="round"/>
+  ${ext}<text x="180" y="96" ${F} fill="url(#lbf)" stroke="#3a1a05" stroke-width="2.4" paint-order="stroke">TAASH ADDA</text>
+  <g clip-path="url(#lbc)"><rect x="0" y="62" width="360" height="20" fill="#fff" opacity=".28"/><rect class="shn" x="-90" y="50" width="46" height="62" fill="#fff" opacity=".7" transform="skewX(-20)"/></g>
+  <path d="M312 18l3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1z" fill="#ffd54a"/><path d="M42 26l2 5 5 .7-3.7 3.5 1 5-4.3-2.7-4.3 2.7 1-5-3.7-3.5 5-.7z" fill="#ffd54a"/></svg>`}
+LOGO3D=appLogo();
+const fcCss=`.fc{transform-box:view-box;transform-origin:180px 80px;transform:rotate(var(--r,0deg))}`;document.head.insertAdjacentHTML('beforeend','<style>'+fcCss+'</style>');
 /* ---- sab games ka dashboard: Call Break jaisa PLAY NOW ---- */
 function resetAll(){if((ON.active||ON.room)&&!ON.keep)onlineLeave();G=null;KG=null;RG=null;SG=null;BG=null;clearTimeout(KU.t);clearTimeout(RU.t);clearTimeout(SU.t);clearTimeout(BU.t);KU={};RU={};SU={};BU={};$.className=''}
 function dashHome(c){
@@ -3363,7 +3396,11 @@ function setpDraw(){
      +row('🃏',T2('पत्तों की आवाज़','Card sound'),sg('cs',[['soft',T2('नरम','Soft')],['deep',T2('गहरी','Deep')],['bright',T2('तेज़','Bright')]],S.cs||'soft'),T2('दबाकर सुनिए','Tap to hear'))
      +row('📳',T2('वाइब्रेशन','Vibration'),tg(S.vib,'vib')),
    game:row('👆',T2('पत्ता चलाने का तरीका','How to play a card'),sg('playmode',[['drag',T2('खींचकर','Drag')],['tap',T2('टैप','Tap')],['both',T2('दोनों','Both')]],S.playmode||'drag'))
-     +row('⛶',T2('पूरी स्क्रीन','Full screen'),tg(S.fs!==false,'fs'),T2('खेलते समय ऊपर-नीचे की पट्टी छुपाएँ','Hide the top and bottom bars while playing')),
+     +row('⛶',T2('पूरी स्क्रीन','Full screen'),tg(S.fs!==false,'fs'),T2('खेलते समय ऊपर-नीचे की पट्टी छुपाएँ','Hide the top and bottom bars while playing'))
+     +row('🤖',T2('बॉट की रफ़्तार','Bot speed'),sg('bspd',[['slow','🐢 '+T2('धीमा','Slow')],['normal',T2('सामान्य','Normal')],['fast','⚡ '+T2('तेज़','Fast')]],S.bspd||'normal'),T2('बॉट्स के साथ खेलते समय','When playing with bots'))
+     +row('☝️',T2('एक ही पत्ता हो तो अपने आप चलाओ','Auto-play the only card'),tg(S.auto1!==false,'auto1'),T2('जब सिर्फ़ एक ही पत्ता चल सकता हो (Call Break)','When only one card is legal (Call Break)'))
+     +row('📱',T2('स्क्रीन चालू रखो','Keep screen on'),tg(S.wake!==false,'wake'),T2('खेलते समय स्क्रीन अपने आप बंद न हो','Stop the screen from sleeping while you play'))
+     +row('🔋',T2('हल्का मोड','Light mode'),tg(liteOn(),'lite'),T2('चमक और एनिमेशन कम — पुराने फ़ोन में लैग घटाता है','Fewer effects and animations — reduces lag on older phones')),
    look:row('🪵',T2('बैकग्राउंड का रंग','Background colour'),`<div class="swr">${TH.map(([k,a,b])=>`<button class="swt ${S.theme===k?'on':''}" style="background:repeating-linear-gradient(180deg,${a} 0 9px,${b} 9px 11px)" onclick="setSet('theme','${k}')" aria-label="${k}"></button>`).join('')}</div>`)
      +row('🎨',T2('टेबल का रंग','Table colour'),tcolSwatches(),T2('सभी गेम में','In all games'))
      +row('🂡',T2('पत्तों का डिज़ाइन','Card design'),sg('cd',[['classic',T2('क्लासिक','Classic')],['four',T2('4 रंग','4-colour')],['dark',T2('डार्क','Dark')],['royal',T2('रॉयल','Royal')]],S.cd||'classic'))
@@ -3497,7 +3534,13 @@ document.head.insertAdjacentHTML('beforeend',`<style>
 let PEND_PIN=(()=>{try{return(new URLSearchParams(location.search).get('pin')||'').replace(/\D/g,'').slice(0,5)}catch(e){return ''}})();
 function checkPin(){if(PEND_PIN&&PG.cur&&me()&&!ON.active){const p=PEND_PIN;PEND_PIN='';try{history.replaceState(null,'',location.pathname)}catch(e){}frJoinView(p);if(p.length>=4)frGo()}}
 (function(){const h0=home;home=function(){h0();setTimeout(checkPin,0)}})();
-if((navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=2)document.documentElement.classList.add('lite');
+const liteAuto=()=>(navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=2;
+const liteOn=()=>PG.set.lite===undefined?liteAuto():!!PG.set.lite;
+function applyLite(){document.documentElement.classList.toggle('lite',liteOn())}
+let WL=null;
+async function applyWake(){try{if(PG.set.wake!==false&&'wakeLock' in navigator&&!document.hidden){if(!WL){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>{WL=null})}}else if(WL){await WL.release();WL=null}}catch(e){}}
+document.addEventListener('visibilitychange',applyWake);document.addEventListener('pointerdown',()=>{if(!WL)applyWake()},{once:false});
+applyLite();applySpeed();applyWake();
 document.head.insertAdjacentHTML('beforeend',`<style>
 /* ===== har rang me sunhari lakdi jaisa background (sirf rang badalta hai) ===== */
 :root{--w1:#e3a54f;--w2:#eab15c;--w3:#dd9c46;--wl:#b87a2f;--wsh:#6b3a0f77}
@@ -3507,33 +3550,55 @@ body[data-th=red]{--w1:#cf6868;--w2:#dd7b7b;--w3:#c45c5c;--wl:#7a2828;--wsh:#350
 body[data-th=dark]{--w1:#3f5047;--w2:#4c5e55;--w3:#35453d;--wl:#141c18;--wsh:#00000099}
 body #bg,body[data-th=green] #bg,body[data-th=blue] #bg,body[data-th=red] #bg,body[data-th=dark] #bg{background:repeating-linear-gradient(90deg,#ffffff0d 0 2px,#0000 2px 9px),repeating-linear-gradient(180deg,var(--w1) 0 70px,var(--wl) 70px 72px,var(--w2) 72px 142px,var(--wl) 142px 144px,var(--w3) 144px 214px,var(--wl) 214px 216px);box-shadow:inset 0 0 130px var(--wsh)}
 </style>`);
-/* ===== SPLASH: shuruaat me TAASH ADDA ka naam aur logo ===== */
+/* ===== SPLASH: shuruaat me TAASH ADDA ka naam aur logo (poori screen, animation ke saath) ===== */
 document.head.insertAdjacentHTML('beforeend',`<style>
-#splash{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;z-index:99990;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:radial-gradient(ellipse at 50% 40%,#2a8a5f 0%,#14583c 50%,#08241a 100%);color:#fff;opacity:1;transition:opacity .6s ease}
+#splash{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;z-index:99990;overflow:hidden;color:#fff;opacity:1;transition:opacity .7s ease;background:radial-gradient(ellipse 85% 95% at 50% 42%,#3bb47b 0%,#22835a 38%,#0f4a33 72%,#06251a 100%)}
 #splash.out{opacity:0;pointer-events:none}
-#splash::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,#ffffff07 0 16px,#0000000d 16px 32px)}
-#splash .sl{position:relative;width:min(620px,86vw);height:auto;aspect-ratio:620/196;filter:drop-shadow(0 10px 14px #000a);animation:splz .9s ease-out both}
-#splash .sl svg{width:100%;height:100%}
-#splash .sn{position:relative;font-family:'Lilita One','Baloo 2',system-ui,sans-serif;font-size:56px;letter-spacing:8px;color:#ffe27a;text-shadow:0 4px 0 #5b2a0a,0 8px 14px #000a;animation:splz 1s .15s ease-out both}
-#splash .ss{position:relative;font-size:20px;font-weight:700;letter-spacing:3px;color:#fff;opacity:.9;animation:splz 1s .3s ease-out both}
-#splash .sb{position:relative;margin-top:16px;width:260px;height:8px;border-radius:6px;background:#0006;overflow:hidden;border:1px solid #ffffff55}
-#splash .sb i{display:block;height:100%;width:0;background:linear-gradient(#ffe27a,#d4a017);animation:splb 2.1s .2s ease-in-out forwards}
-#splash .sld{position:relative;font-size:16px;font-weight:700;letter-spacing:2px;opacity:.85}
-#splash .sgo{position:relative;margin-top:6px;border:3px solid #fff;border-radius:34px;padding:12px 44px;font-size:26px;font-weight:900;color:#3a2100;background:linear-gradient(#ffd54a,#e08a00);box-shadow:0 5px 0 #8a4f00;animation:sgp 1.3s ease-in-out infinite}
-#splash .sgo small{display:block;font-size:13px;font-weight:700;opacity:.8}
-@keyframes sgp{50%{transform:scale(1.06)}}
-@keyframes splz{from{opacity:0;transform:scale(.7) translateY(16px)}to{opacity:1;transform:none}}
+#splash .sbg{position:absolute;inset:0;background:repeating-linear-gradient(45deg,#ffffff08 0 18px,#00000010 18px 36px);animation:sfade 1s both}
+#splash .sbg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%,#0000 60%,#0000005a 100%)}
+#splash .sfl{position:absolute;inset:0;pointer-events:none}
+#splash .sfl span{position:absolute;bottom:-12vh;font-size:var(--s);color:#fff;opacity:0;animation:sfloat var(--d) linear var(--dl) infinite}
+@keyframes sfloat{0%{transform:translateY(0) rotate(0);opacity:0}12%{opacity:.16}85%{opacity:.12}100%{transform:translateY(-120vh) rotate(50deg);opacity:0}}
+#splash .sc{position:absolute;left:50%;top:50%;width:960px;height:540px;transform:translate(-50%,-50%)}
+#splash .sc>*{position:absolute;left:0;right:0;margin:auto}
+#splash .sl{top:40px;width:640px;height:200px;filter:drop-shadow(0 14px 16px #000b);animation:slin 1s cubic-bezier(.2,.9,.3,1.15) both}
+#splash .sl svg{width:100%;height:100%;overflow:visible}
+@keyframes slin{from{opacity:0;transform:scale(.55) translateY(30px)}to{opacity:1;transform:none}}
+#splash .sl .fc{animation:fanop .9s cubic-bezier(.2,.9,.3,1.2) both;animation-delay:calc(.12s * var(--n) + .1s)}
+@keyframes fanop{from{transform:rotate(0deg) translateY(24px);opacity:0}}
+#splash .sl .shn{animation:shine 1.1s 1.2s ease-in-out both}
+@keyframes shine{from{transform:translateX(0) skewX(-20deg)}to{transform:translateX(560px) skewX(-20deg)}}
+#splash .ss{top:252px;text-align:center;font-size:21px;font-weight:700;letter-spacing:3px;text-shadow:0 2px 6px #000a;animation:supx .8s .9s both}
+@keyframes supx{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+#splash .sem{top:300px;width:620px;height:100px;display:flex;justify-content:space-between;align-items:flex-start}
+#splash .se{width:112px;text-align:center;animation:spop .6s cubic-bezier(.2,.9,.3,1.3) both;animation-delay:calc(1.1s + .13s * var(--i))}
+#splash .se svg{width:88px;height:74px;filter:drop-shadow(0 5px 5px #000a)}
+#splash .se small{display:block;font-size:12px;font-weight:700;letter-spacing:.5px;opacity:.85;margin-top:2px}
+@keyframes spop{from{opacity:0;transform:scale(.3) translateY(20px)}to{opacity:1;transform:none}}
+#splash .sb{top:430px;width:300px;height:10px;border-radius:6px;background:#0007;overflow:hidden;border:1px solid #ffffff55;animation:supx .6s 1.4s both}
+#splash .sb i{display:block;height:100%;width:0;background:linear-gradient(#ffe27a,#d4a017);box-shadow:0 0 10px #ffd54a;animation:splb 2.4s 1.5s ease-in-out forwards}
 @keyframes splb{to{width:100%}}
+#splash .sld{top:452px;text-align:center;font-size:16px;font-weight:700;letter-spacing:2px;opacity:.85}
+#splash .sgo{top:416px;width:400px;height:76px;border:3px solid #fff;border-radius:38px;font-size:28px;font-weight:900;color:#3a2100;background:linear-gradient(#ffd54a,#e08a00);box-shadow:0 6px 0 #8a4f00,0 0 28px #ffd54a99;animation:sgp 1.3s ease-in-out infinite,supx .5s both;padding:0;line-height:1.1}
+#splash .sgo small{display:block;font-size:14px;font-weight:700;opacity:.8}
+@keyframes sgp{50%{transform:scale(1.05)}}
+@keyframes sfade{from{opacity:0}}
+html.lite #splash *{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important}
+html.lite #splash .sfl{display:none}
+html.lite #splash .sl,html.lite #splash .se svg{filter:none}
 </style>`);
 (function(){
   const el=document.createElement('div');el.id='splash';
-  el.innerHTML=`<div class="sl">${LOGO3D}</div><div class="ss">ताश अड्डा · ${T2('सभी ताश के खेल एक जगह','All your card games in one place')}</div><div class="sb"><i></i></div>`;
+  const fl=Array.from({length:12},(_,i)=>`<span style="left:${(i*8.3+rand(6))%100}vw;--s:${26+rand(40)}px;--d:${9+rand(8)}s;--dl:${-rand(12)}s">${'♠♥♦♣'[i%4]}</span>`).join('');
+  el.innerHTML=`<div class="sbg"></div><div class="sfl">${fl}</div><div class="sc" id="spsc"><div class="sl">${LOGO3D}</div><div class="ss">ताश अड्डा · ${T2('सभी ताश के खेल एक जगह','All your card games in one place')}</div>
+  <div class="sem">${['cb','kot','rang','seep','bh'].map((id,i)=>`<div class="se" style="--i:${i}">${emblem(id)}<small>${GTITLE[id]}</small></div>`).join('')}</div><div class="sb"><i></i></div></div>`;
   document.body.appendChild(el);
-  const close=()=>{if(!el.isConnected||el.classList.contains('out'))return;el.classList.add('out');setTimeout(()=>{el.remove();checkPin()},700)};
+  const sc=el.querySelector('#spsc'),fit=()=>{const k=Math.min(innerWidth/960,innerHeight/540);sc.style.transform=`translate(-50%,-50%) scale(${k})`};fit();addEventListener('resize',fit);
+  const close=()=>{if(!el.isConnected||el.classList.contains('out'))return;el.classList.add('out');removeEventListener('resize',fit);setTimeout(()=>{el.remove();checkPin()},750)};
   const canFS=!!document.documentElement.requestFullscreen&&PG.set.fs!==false&&!document.fullscreenElement&&!matchMedia('(display-mode: standalone)').matches&&!matchMedia('(display-mode: fullscreen)').matches;
-  if(!canFS){el.onclick=close;setTimeout(close,2500);return}
-  el.querySelector('.sb').insertAdjacentHTML('afterend',`<div class="sld">${T2('लोड हो रहा है…','Loading…')}</div>`);
-  setTimeout(()=>{const l=el.querySelector('.sld');if(!l)return;l.outerHTML=`<button class="sgo">▶ ${T2('खेलना शुरू करें','Tap to play')}<small>${T2('पूरी स्क्रीन में','Full screen')}</small></button>`;el.querySelector('.sb').style.visibility='hidden'},2200);
+  if(!canFS){el.onclick=close;setTimeout(close,3400);return}
+  sc.insertAdjacentHTML('beforeend',`<div class="sld">${T2('लोड हो रहा है…','Loading…')}</div>`);
+  setTimeout(()=>{const l=sc.querySelector('.sld');if(!l)return;l.outerHTML=`<button class="sgo">▶ ${T2('खेलना शुरू करें','Tap to play')}<small>${T2('पूरी स्क्रीन में','Full screen')}</small></button>`;sc.querySelector('.sb').style.visibility='hidden'},3300);
   el.onclick=()=>{if(!el.querySelector('.sgo'))return;goFull();close()};
 })();
 if(PG.cur&&me()&&!PG.set.game&&!document.querySelector('#sov'))home();   // app khulte hi pehle ban chuki game-chunne wali screen ko Seep ke saath dobara banao
