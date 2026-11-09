@@ -14,7 +14,7 @@ const T = {                                   // samay (ms). test ke liye env se
   round: +process.env.ROUND_WAIT_MS || 8000,  // round ke beech ka score-screen
   quick: +process.env.QUICK_WAIT_MS || 12000, // quick match me doosre khiladi ka intezaar
   botMin: +process.env.BOT_MIN_MS || 1000, botMax: +process.env.BOT_MAX_MS || 2000,
-  bidMin: +process.env.BID_MIN_MS || 700, bidMax: +process.env.BID_MAX_MS || 1100,
+  bidMin: +process.env.BID_MIN_MS || 1300, bidMax: +process.env.BID_MAX_MS || 1900,
   emptyRoom: +process.env.EMPTY_ROOM_MS || 60000,
   play: +process.env.PLAY_MS || 15000,             // teeno game: patta chalne ke liye 15 second
   kturn: +process.env.KOT_TURN_MS || 30000,         // Kot Piece: rang bolne/badalne me sochne ka samay thoda zyada
@@ -23,15 +23,23 @@ const T = {                                   // samay (ms). test ke liye env se
 
 /* ---------- game engine: index.html se ---------- */
 const WWW = [path.join(__dirname, 'index.html'), path.join(__dirname, '..', 'www', 'index.html')].find(f => fs.existsSync(f)) || path.join(__dirname, 'index.html');   // dono tarah chalta hai: sab ek hi folder me, ya www/ alag
+const ENG_NOTE = [];   // engine load me koi dikkat hui to yahan likhi jayegi (/healthz me dikhti hai)
 function loadEngine() {
   const h = fs.readFileSync(WWW, 'utf8');
   const a = h.indexOf('/* ============ 1. CARD LIBRARY'), b = h.indexOf('/* ============ 4. DATA');
   if (a < 0 || b < 0) throw new Error('engine markers index.html me nahi mile');
-  const sl = (m1, m2) => { const x = h.indexOf(m1), y = h.indexOf(m2); if (x < 0 || y < 0 || y < x) throw new Error('engine markers index.html me nahi mile: ' + m1); return h.slice(x, y); };
-  const power = sl('function powerHand(h,st){', '/* ---- Rang Bol: bade bid ke ank'), seep = sl('const SeepEng=(()=>{', '/* ============ SEEP: SCREEN'), bhab = sl('const BhEng=(()=>{', '/* ============ BHABHI: SCREEN');
+  const sl = (m1, m2) => { const x = h.indexOf(m1), y = h.indexOf(m2); if (x < 0 || y < 0 || y < x) throw new Error('marker nahi mila: ' + m1); return h.slice(x, y); };
+  const opt = (name, m1, m2, stub) => { try { return sl(m1, m2); } catch (e) { ENG_NOTE.push(name + ': ' + e.message); console.error('engine adhura:', name, e.message); return stub; } };   // koi ek engine na mile to baaki chalte rahein
+  const power = opt('powerHand', 'function powerHand(h,st){', '/* ---- Rang Bol: bade bid ke ank', 'function powerHand(){return 0}');
+  const seep = opt('seep', 'const SeepEng=(()=>{', '/* ============ SEEP: SCREEN', 'const SeepEng=null;');
+  const bhab = opt('bhabhi', 'const BhEng=(()=>{', '/* ============ BHABHI: SCREEN', 'const BhEng=null;');
   return new Function(h.slice(a, b) + '\n' + power + '\n' + seep + '\n' + bhab + ';return {CallBreak,Bots,KotPiece,KotBots,RangBid,RangBots,SeepEng,BhEng}')();
 }
-const { CallBreak, Bots, KotPiece, KotBots, RangBid, RangBots, SeepEng, BhEng } = loadEngine();
+let CallBreak = null, Bots = null, KotPiece = null, KotBots = null, RangBid = null, RangBots = null, SeepEng = null, BhEng = null;
+try { ({ CallBreak, Bots, KotPiece, KotBots, RangBid, RangBots, SeepEng, BhEng } = loadEngine()); }
+catch (e) { ENG_NOTE.push('engine load nahi hua: ' + e.message); console.error('ENGINE LOAD FAIL (server phir bhi chalega, sirf online khel band):', e); }
+process.on('uncaughtException', e => console.error('uncaughtException (server chalta rahega):', e));
+process.on('unhandledRejection', e => console.error('unhandledRejection:', e));
 
 /* Seep aur Bhabhi ke engine ko wahi interface dete hain jo baaki teen engine ka hai: createInitialState / getValidMoves / applyMove / nextRound */
 const SeepOL = {
@@ -329,7 +337,7 @@ const server = http.createServer((req, res) => {
     }
     catch (e) { res.writeHead(500); return res.end('index.html nahi mila'); }
   }
-  if (u === '/healthz') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ ok: true, rooms: rooms.size, clients: clients.size })); }
+  if (u === '/healthz') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ ok: true, rooms: rooms.size, clients: clients.size, node: process.version, up: Math.round(process.uptime()), engines: ENG_NOTE.length ? ENG_NOTE : 'ok' })); }
   if (u === '/privacy' || u === '/privacy.html') {
     const f = [path.join(__dirname, 'privacy.html'), path.join(__dirname, '..', 'www', 'privacy.html')].find(x => fs.existsSync(x));
     if (f) {
