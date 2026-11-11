@@ -1,6 +1,6 @@
 /* Taash Adda service worker: app turant khule (cache se), peeche se naya version aa jaye.
    Render ka free server so jaye tab bhi app ka pehla screen kaala nahi dikhega. */
-const V = 'taash-v3';
+const V = 'taash-v4';
 const SHELL = ['/', '/manifest.json', '/icon-192.png'];
 self.addEventListener('install', e => { self.skipWaiting(); e.waitUntil(caches.open(V).then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {}))))); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
