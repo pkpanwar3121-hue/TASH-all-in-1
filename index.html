@@ -434,6 +434,7 @@ function validCards(hand,trick){
   }
   return hand;
 }
+function cbLead(s){let best=-1,bp=null;for(let i=0;i<s.n;i++){const q=(s.dealer+1+i)%s.n,b=s.bids[q];if(b!=null&&b>best){best=b;bp=q}}return best>=10?bp:(s.dealer+1)%s.n}   // 10+ bolne wala pehle chalega
 const CallBreak={
   id:'callbreak',name:'Call Break',minPlayers:4,maxPlayers:6,supportsTeams:false,ROUNDS:5,
   createInitialState(o={}){const n=o.players||4,t=o.target||0;return this.deal({n,hpp:n===4?13:n===5?10:8,round:0,rounds:t?0:(o.rounds||5),target:t,dealer:0,totals:Array(n).fill(0),history:[],seed:o.seed})},
@@ -453,7 +454,7 @@ const CallBreak={
     const s=structuredClone(st);
     if(m.t==='bid'){
       s.bids[p]=m.n;s.turn=(p+1)%s.n;
-      if(s.bids.every(b=>b!==null)){s.phase='play';s.turn=(s.dealer+1)%s.n}
+      if(s.bids.every(b=>b!==null)){s.phase='play';s.turn=cbLead(s)}
       return s;
     }
     s.hands[p]=s.hands[p].filter(c=>!(c.s===m.c.s&&c.r===m.c.r));
@@ -462,7 +463,7 @@ const CallBreak={
       const w=trickWinner(s.trick);s.won[w]++;s.lastTrick={cards:s.trick,w};s.trick=[];s.turn=w;
       if(s.hands.every(h=>!h.length)){
         const mul=1;   // 5 ya 6 khiladi me bhi ank wahi: jitni bid boli utne hi
-        s.roundScore=s.bids.map((b,i)=>Math.round((s.won[i]>=b?b+(s.won[i]-b)*.1:0)*mul*10)/10);   // bid poori nahi hui to gola (0), minus nahi
+        s.roundScore=s.bids.map((b,i)=>Math.round((s.won[i]>=b?b+(s.won[i]-b)*.1:-b)*mul*10)/10);
         s.totals=s.totals.map((t,i)=>Math.round((t+s.roundScore[i])*10)/10);
         s.history.push({bids:s.bids,won:s.won,score:s.roundScore});
         const fin=s.target?(Math.max(...s.totals)>=s.target||s.round+1>=15):(s.round+1>=s.rounds);   // target mode: sabse pehle 11/21 par pahunchne wala
@@ -608,6 +609,12 @@ function rangNextCaller(s,p){
   for(let k=1;k<=4;k++){const q=(p+k)%4;if(!s.call.passed[q]&&!(s.call.hi&&s.call.hi.p===q))return q}
   return -1;
 }
+function rangLead(s){   // jisne 10+ bola wahi pehla patta chalega (rang badalne wala sabse pehle); koi 10 wala nahi to rang bolne wala
+  if(s.changedBy!=null)return s.changedBy;
+  let best=-1,bp=null;for(let i=0;i<4;i++){const q=(s.dealer+1+i)%4,b=s.bids[q];if(b!=null&&b>best){best=b;bp=q}}
+  if(best>=10)return bp;
+  return s.caller!=null?s.caller:(s.dealer+1)%4;
+}
 const RangBid={
   id:'rangbid',name:'Rang Bol',minPlayers:4,maxPlayers:4,supportsTeams:false,
   createInitialState(o={}){
@@ -649,9 +656,9 @@ const RangBid={
       s.vis=[13,13,13,13];s.phase='bid';s.turn=(s.dealer+1)%4;return s;
     }
     if(m.t==='bid'){
-      s.bids[p]=m.n;if(m.s!=null){s.trump=m.s;s.changedBy=p;if(!s.free)s.free=[0,0,0,0];for(let q=0;q<4;q++)if(q!==p){s.bids[q]=0;s.free[q]=1}}   // rang badalne ke baad bachhe khiladiyon ko bid nahi bolni: 'free', jitni chaal banegi utne hi ank
+      s.bids[p]=m.n;if(m.s!=null){s.trump=m.s;s.changedBy=p;if(p!==s.caller){if(!s.free)s.free=[0,0,0,0];for(let q=0;q<4;q++)if(q!==p){s.bids[q]=0;s.free[q]=1}}}   // 'free' sirf tab jab rang bolne wale ke alawa koi aur rang badle   // rang badalne ke baad bachhe khiladiyon ko bid nahi bolni: 'free', jitni chaal banegi utne hi ank
       s.turn=(p+1)%4;
-      if(s.bids.every(b=>b!==null)){s.phase='play';s.turn=s.caller!=null?s.caller:(s.dealer+1)%4}   // sabse bada call bolne wala pehla patta chalega
+      if(s.bids.every(b=>b!==null)){s.phase='play';s.turn=rangLead(s)}   // 10 bolne wala (ya rang bolne wala) pehla patta chalega
       return s;
     }
     if(s.trick.length&&m.c.s!==s.trick[0].c.s)s.voids[p][s.trick[0].c.s]=1;   // is rang ka patta nahi hai
@@ -661,7 +668,7 @@ const RangBid={
       const w=kotWinner(s.trick,s.trump);s.won[w]++;s.lastTrick={cards:s.trick,w};s.trick=[];s.turn=w;
       if(s.hands.every(h=>!h.length)){
         const r1=x=>Math.round(x*10)/10;
-        s.roundScore=s.bids.map((b,i)=>s.free&&s.free[i]?r1(s.won[i]):(s.won[i]>=b?r1(b+(s.won[i]-b)*.1):0));   // gola
+        s.roundScore=s.bids.map((b,i)=>s.free&&s.free[i]?r1(s.won[i]):(s.won[i]>=b?r1(b+(s.won[i]-b)*.1):-b));
         s.totals=s.totals.map((t,i)=>r1(t+s.roundScore[i]));
         s.history.push({bids:s.bids.slice(),free:(s.free||[0,0,0,0]).slice(),won:s.won.slice(),score:s.roundScore,trump:s.trump,caller:s.caller,callN:s.callN,changedBy:s.changedBy});
         const fin=s.target?(Math.max(...s.totals)>=s.target||s.round+1>=15):(s.round+1>=s.rounds);
@@ -1263,7 +1270,7 @@ function chip(p){
   const bd=G.bids[p],wn=G.won[p],mulx=1,pt=bd!=null&&wn>=bd?`<div class="pt">✓ ${fmt(Math.round((bd+(wn-bd)*.1)*mulx*10)/10)}</div>`:'';
   const fc={l:'bf3',r:'bf1',row:'bf2',rc:'bf2'}[k],fan=p&&n&&fc?`<div class="bf ${fc}">${Array.from({length:n},(_,i)=>`<i style="left:${i*2.6}px;transform:rotate(${(i-(n-1)/2)*5}deg)"></i>`).join('')}</div>`:'';
   const pos=`left:${L}px;top:${T}px;right:auto;bottom:auto${k==='rc'?';transform:translateX(-50%)':''}`;
-  return `<div class="chip ${k==='rc'||k==='row'?'rowc':''} ${on?'on':''} ${ui.show&&ui.show.w===p?'won':''}" id="sx${p}" style="${pos};--gd:${Math.max(0,320-(Date.now()-(ui.actAt||0)))}ms"><div class="av" ${p?'':'onclick="pick()"'}>${ring}${avHTML(p)}${fan}${pt}${ui.emo&&ui.emo[p]?`<div class="eb">${emoHTML(ui.emo[p])}</div>`:''}</div><div class="nm">${pn(p)}</div><div class="sc">Bid ${G.bids[p]??(G.phase==='bid'&&G.turn===p?'💭':'-')} · Jeete ${G.won[p]}</div></div>`;
+  return `<div data-p="${p}" class="chip ${k==='rc'||k==='row'?'rowc':''} ${on?'on':''} ${ui.show&&ui.show.w===p?'won':''}" id="sx${p}" style="${pos};--gd:${Math.max(0,320-(Date.now()-(ui.actAt||0)))}ms"><div class="av" ${p?'':'onclick="pick()"'}>${ring}${avHTML(p)}${fan}${pt}${ui.emo&&ui.emo[p]?`<div class="eb">${emoHTML(ui.emo[p])}</div>`:''}</div><div class="nm">${pn(p)}</div><div class="sc">Bid ${G.bids[p]??(G.phase==='bid'&&G.turn===p?'💭':'-')} · Jeete ${G.won[p]}</div></div>`;
 }
 function render(){
   $.className=(G.practice?'prac ':'')+'n'+G.n;
@@ -1305,7 +1312,7 @@ function resultHTML(){
 const again=()=>ON.active?onlineAgain():start(G.practice?1:G.daily?'daily':0);
 function scoreHTML(){
   const re=G.phase==='roundEnd'&&!ui.modal,n=G.n,lead=Math.max(...G.totals);
-  const rows=G.history.map((r,i)=>`<tr><td>${T2('राउंड','Round')} ${i+1}</td>${r.score.map((v,j)=>`<td>${r.won[j]<r.bids[j]?'<b class="gola">0</b>':`<b>${fmt(v)}</b>`}<small>${r.won[j]}/${r.bids[j]}</small></td>`).join('')}</tr>`).join('');
+  const rows=G.history.map((r,i)=>`<tr><td>${T2('राउंड','Round')} ${i+1}</td>${r.score.map((v,j)=>`<td>${r.won[j]<r.bids[j]?`<b class="gola">${r.bids[j]}</b>`:`<b>${fmt(v)}</b>`}<small>${r.won[j]}/${r.bids[j]}</small></td>`).join('')}</tr>`).join('');
   return `<div class="box sbx" style="width:${n>4?860:660}px"><h2>${re?T2('राउंड '+(G.round+1)+' खत्म','Round '+(G.round+1)+' complete'):T2('स्कोरबोर्ड','Scoreboard')}${G.target?' · 🎯 '+G.target:''}</h2>
   <table class="sbt"><tr><th></th>${Array.from({length:n},(_,p)=>`<th>${pn(p)}</th>`).join('')}</tr>${rows}
   <tr class="tot"><th>${T2('कुल','Total')}</th>${G.totals.map(t=>`<th class="${t===lead?'lead':''}">${fmt(t)}</th>`).join('')}</tr>
@@ -1435,7 +1442,8 @@ const HOW=[['🎯 लक्ष्य: हर राउंड में आपन
 ['📢 बिड: पत्ते बँटने के बाद हर खिलाड़ी 1 से 13 के बीच बिड लगाता है।','📢 Bid: after the deal, each player bids a number from 1 to 13.'],
 ['♠ हुकुम तुरुप है: हुकुम का कोई भी पत्ता दूसरे रंगों के हर पत्ते को हरा देता है।','♠ Spades are trump: any spade beats every card of the other suits.'],
 ['🃏 चाल के नियम: (1) जो रंग चला गया वही चलिए; (2) हो सके तो उससे बड़ा चलिए; (3) वह रंग न हो तो हुकुम से काटिए; (4) दोनों न हों तो कोई भी पत्ता।','🃏 Play rules: (1) follow the suit led; (2) play higher if you can; (3) no such suit? cut with a spade; (4) neither? play anything.'],
-['🏆 स्कोर: बिड पूरी हुई तो बिड + 0.1 × अतिरिक्त हाथ; नहीं हुई तो गोला (0)।','🏆 Score: bid met = bid + 0.1 × extra tricks; missed = a gola (0).'],
+['🥇 पहली चाल: जिसने 10 या ज़्यादा बिड बोली वही सबसे पहले पत्ता चलेगा; न हो तो डीलर के बाद वाला।','🥇 First lead: the player who bid 10 or more leads first; otherwise the player after the dealer.'],
+['🏆 स्कोर: बिड पूरी हुई तो बिड + 0.1 × अतिरिक्त हाथ; नहीं हुई तो बिड कटती है और उस पर गोला (○) लगता है।','🏆 Score: bid met = bid + 0.1 × extra tricks; missed = bid deducted, shown as a gola (circle) on the bid.'],
 ['🎓 नए हैं? Practice में खेलिए: कोच हर चाल से पहले बताएगा कि क्या करना है और क्यों।','🎓 New? Play Practice: the coach tells you what to do and why before every move.']];
 HOW.push(['👥 खिलाड़ी: 4 से 6। 5 खिलाड़ियों में दो और 6 में चारों 2 के पत्ते हटा दिए जाते हैं (5 खिलाड़ी: 10-10 पत्ते, 6 खिलाड़ी: 8-8 पत्ते)।','👥 Players: 4 to 6. With 5 players two 2s are removed, with 6 players all four 2s (10 cards each for 5 players, 8 each for 6).'],
  ['🎯 खेल दो तरह का: राउंड वाला (1, 3 या 5 राउंड) या टारगेट वाला, जिसमें जो सबसे पहले 11 या 21 अंक पर पहुँचे वह जीतता है। ऊपर के बटनों से चुनिए।','🎯 Two ways to play: Rounds (1, 3 or 5) or Target, where the first to reach 11 or 21 points wins. Pick with the buttons at the top.'],
@@ -1692,23 +1700,27 @@ function onlineAgain(){ON.keep=1;ON.active=false;onSend({t:'again'});home();ON.k
 /* ---- emoji aur taiyaar sandesh (sabhi online table par) ---- */
 const QMSG=[['जल्दी खेलो! ⚡','Fast! ⚡'],['नमस्ते 👋','Hello 👋'],['Hi 🙂','Hi 🙂'],['बहुत बढ़िया! 👏','Well played! 👏'],['अच्छी चाल 👌','Nice move 👌'],['धन्यवाद 🙏','Thanks 🙏'],['वाह! 🔥','Wow! 🔥'],['अरे यार 😅','Oh no 😅'],['थोड़ा रुको ⏳','Wait a moment ⏳'],['फिर खेलें? 🔁','Play again? 🔁'],['गुड लक 🍀','Good luck 🍀'],['बाय 👋','Bye 👋'],['मज़ा आ गया 😄','Great game 😄'],['क़िस्मत अच्छी है 😎','Lucky you 😎']];
 const EMO7=['👍','😂','😮','🔥','👏','😡','🙏'];
-const emoHTML=e=>(/^q\d+$/.test(e)&&QMSG[+e.slice(1)])?`<span class="qtxt">${QMSG[+e.slice(1)][li()]}</span>`:e;
+const emoHTML=e=>{const [c,to]=String(e).split('|'),body=(/^q\d+$/.test(c)&&QMSG[+c.slice(1)])?`<span class="qtxt">${QMSG[+c.slice(1)][li()]}</span>`:c;return body+(to!==undefined&&to!==''?`<small class="emt">→ ${pn(+to)}</small>`:'')};
 function onEmo(m){
   if(!ON.active||!ON.room)return;
   const gm=ON.room.game||'cb',n=(gm==='cb'&&G)?G.n:(gm==='seep'&&SG)?SG.n:(gm==='bhabhi'&&BG)?BG.n:4;
   if((gm==='cb'&&!G)||(gm==='kot'&&!KG)||(gm==='rang'&&!RG)||(gm==='seep'&&!SG)||(gm==='bhabhi'&&!BG))return;
   const st=gm==='bhabhi'?BU:gm==='seep'?SU:gm==='kot'?KU:gm==='rang'?RU:ui,p=(m.seat-ON.seat+n)%n;
-  st.emo=st.emo||{};st.emo[p]=m.e;
+  const val=(typeof m.to==='number'&&m.to>=0&&m.to!==m.seat)?m.e+'|'+((m.to-ON.seat+n)%n):m.e;
+  st.emo=st.emo||{};st.emo[p]=val;
   const rr=()=>{if(gm==='bhabhi')bhRender();else if(gm==='seep')seepRender();else if(gm==='kot')kotRender();else if(gm==='rang')rangRender();else R2()};rr();
-  setTimeout(()=>{if(st.emo&&st.emo[p]===m.e){delete st.emo[p];if(ON.active)rr()}},m.e[0]==='q'?3400:2600);
+  setTimeout(()=>{if(st.emo&&st.emo[p]===val){delete st.emo[p];if(ON.active)rr()}},m.e[0]==='q'?3400:2600);
 }
-function emoBox(){
-  const o=document.getElementById('emop');if(o){o.remove();return}
-  $.insertAdjacentHTML('beforeend',`<div class="emopick qp" id="emop"><div class="qe">${EMO7.map(e=>`<button onclick="sendEmo('${e}')">${e}</button>`).join('')}</div><div class="qg">${QMSG.map((q,i)=>`<button onclick="sendEmo('q${i}')">${q[li()]}</button>`).join('')}</div></div>`);
+function emoBox(p){   // p = kis khiladi ko bhejna hai (chip par 💬 dabane se); khali = sabko
+  const o=document.getElementById('emop');if(o){o.remove();if(p===undefined||window._emoTo===(p>0?p:0))return}
+  window._emoTo=p>0?p:0;
+  const nm=p>0?'→ '+pn(p):T2('सबको भेजें','Send to everyone');
+  $.insertAdjacentHTML('beforeend',`<div class="emopick qp" id="emop"><div class="qh">${nm}</div><div class="qe">${EMO7.map(e=>`<button onclick="sendEmo('${e}')">${e}</button>`).join('')}</div><div class="qg">${QMSG.map((q,i)=>`<button onclick="sendEmo('q${i}')">${q[li()]}</button>`).join('')}</div></div>`);
 }
 function sendEmo(e){
   if(Date.now()<(window._emoT||0)){flash(T2('थोड़ा रुककर भेजिए','Wait a moment'));return}
-  window._emoT=Date.now()+1500;onSend({t:'emo',e});const o=document.getElementById('emop');if(o)o.remove();
+  const n=(ON.room&&ON.room.n)||4,t=window._emoTo>0?(window._emoTo+ON.seat)%n:-1;
+  window._emoT=Date.now()+1500;onSend({t:'emo',e,to:t});const o=document.getElementById('emop');if(o)o.remove();
 }
 /* ============ 8. KOT PIECE: SCREEN ============ */
 document.head.insertAdjacentHTML('beforeend','<style>.kbar{position:absolute;left:0;right:0;top:0;height:46px;display:flex;gap:12px;align-items:center;padding:0 12px;background:#000a;color:#fff;font-weight:700;font-size:15px;z-index:5}.kbar .sp{flex:1}.kbar button{padding:5px 12px}.kchip{position:absolute;display:flex;flex-direction:column;align-items:center;color:#fff;font-size:13px;width:120px;padding:4px;z-index:2}.kchip .a{font-size:32px;line-height:1.1}.kchip.on{outline:3px solid #ffd54a;border-radius:12px;background:#0005}.kt{position:absolute;transform:none}.kt.win .card{outline:4px solid #ffd54a}.kpan{position:absolute;left:150px;right:150px;top:92px;background:#12261df2;border:2px solid #ffd54a;border-radius:14px;padding:14px;color:#fff;text-align:center;z-index:6;line-height:1.5}.kpan .row{justify-content:center;flex-wrap:wrap}.kpan button{flex:none;min-width:96px;font-size:22px}.kmsg{position:absolute;left:0;right:0;top:48px;text-align:center;color:#ffd54a;font-weight:700;font-size:16px;line-height:1.35;text-shadow:0 1px 3px #000}.kmsg small{display:block;color:#fff;font-size:14px;font-weight:600}.kme{flex-direction:row;width:auto;gap:8px;align-items:center;background:#0007;border-radius:12px;padding:4px 12px;white-space:nowrap}.kme .a{font-size:26px}.ktr{position:absolute;right:12px;top:52px;width:122px;background:#fff;border:3px solid #ffd54a;border-radius:14px;text-align:center;color:#222;font-weight:800;padding:4px 2px;z-index:4;box-shadow:0 4px 10px #0008}.ktr .ts{font-size:68px;line-height:1.05}.ktr small{display:block;font-size:12px;color:#444;font-weight:700}.bigt th{color:#ffd54a;padding:6px}.bigt td{padding:6px;border-top:1px solid #fff3}.kcoach{position:absolute;left:640px;top:296px;width:306px;max-height:94px;overflow:auto;background:#12261df2;border:2px solid #ffd54a;border-radius:12px;padding:6px 9px;color:#fff;line-height:1.35;z-index:5}.kcoach .a{font-weight:800;color:#9be7ff;margin:2px 0}.kcoach b{color:#ffd54a}.kcoach small{display:block;color:#ddd}.kcoach .fbx{border-bottom:1px solid #fff3;padding-bottom:3px;margin-bottom:3px}.kcoach .fbx.ok b{color:#8fe0a8}.kcoach .ch button{padding:1px 8px;font-size:13px}</style>');
@@ -1757,7 +1769,7 @@ function kotRender(){
   else if(g.phase==='newtrump')who?pan=`<b>${T2('अपने 13 पत्ते देखिए। नया कट चुनिए या वही रखिए','See your 13 cards. Pick a new trump or keep it')}</b><p style="font-size:14px;margin:4px 0">⚠️ ${T2('रंग बदलने के बाद विरोधी टीम एक भी बार सर उठा ले, तो राउंड वहीं खत्म — विरोधी जीतेंगे और आपकी टीम पर कोट लगेगा।','If you change and the opponents collect even once, the round ends there — they win and your team gets Kot.')}</p><div class="row">${[0,1,2,3].filter(s=>s!==g.trump).map(s=>sBtn(s,'kotNew')).join('')}</div><div class="row"><button class="ghost" style="font-size:16px" onclick="kotAct(0,{t:'keepT'})">${T2('रंग वही रखो','Keep the same trump')}</button></div>`:msg=`${nm} ${T2('नया रंग चुन रहा है…','is picking the new trump…')}`;
   else msg=KU.show?KU.note:who?T2('आपकी चाल — उठा हुआ पत्ता चलिए','Your turn — tap a raised card'):`${nm} ${T2('की चाल','to play')}`;
   const co=kCoach(g),cb=kCoachBox(co);
-  const ch=p=>`<div class="kchip ${p===0?'kme':''} ${g.turn===p&&g.phase!=='roundEnd'?'on':''}" style="left:${CP[p][0]}px;top:${CP[p][1]}px"><div class="a">${avHTML(p)}</div><b>${pn(p)}</b><small>${p%2?T2('विरोधी','Opp'):p?T2('साथी','Partner'):T2('आप','You')} · 🃏${g.hands[p].length}</small><b style="color:#ffd54a;font-size:16px">${T2('सर','Sar')}: ${g.tw[p]}</b>${KU.emo&&KU.emo[p]?`<div class="eb">${emoHTML(KU.emo[p])}</div>`:''}</div>`;
+  const ch=p=>`<div data-p="${p}" class="kchip ${p===0?'kme':''} ${g.turn===p&&g.phase!=='roundEnd'?'on':''}" style="left:${CP[p][0]}px;top:${CP[p][1]}px"><div class="a">${avHTML(p)}</div><b>${pn(p)}</b><small>${p%2?T2('विरोधी','Opp'):p?T2('साथी','Partner'):T2('आप','You')} · 🃏${g.hands[p].length}</small><b style="color:#ffd54a;font-size:16px">${T2('सर','Sar')}: ${g.tw[p]}</b>${KU.emo&&KU.emo[p]?`<div class="eb">${emoHTML(KU.emo[p])}</div>`:''}</div>`;
   $.innerHTML=`${feltHTML('kot')}
   <div class="kbar"><button class="ghost sm" onclick="kotHome()">🏠</button>${KU.practice?'<span>🎓 '+T2('अभ्यास','Practice')+'</span>':''}${KU.daily?'<span>📅 '+T2('डेली','Daily')+'</span>':''}${KU.practice&&KU.hist&&KU.hist.length?`<button class="ghost sm" onclick="kotUndo()">↩ ${T2('पीछे','Undo')}</button>`:''}${KU.online?'<span>🌐</span><span id="ktm"></span>':'<span>💎 '+gems()+'</span>'}<span>${T2('हम','Us')} ${g.score[0]} – ${g.score[1]} ${T2('वे','Them')} · 🎯${g.target}</span><span class="sp"></span>${KU.online?`<button class="ghost sm" onclick="emoBox()">💬</button>`:''}<span>📦 ${T2('जमा','Pile')} ${g.pile}</span><span style="font-size:13px">${T2('उठी सर','Collected')}</span><span style="background:#1b8a4a;border:2px solid #ffd54a;border-radius:12px;padding:0 14px;font-size:22px">${T2('हम','Us')} <b>${g.won[0]}</b></span><span style="background:#a33;border:2px solid #ffd54a;border-radius:12px;padding:0 14px;font-size:22px">${T2('वे','Them')} <b>${g.won[1]}</b></span><button class="ghost sm mutebtn" onclick="muteTog()">${PG.set.music?'🔊':'🔇'}</button><button class="ghost sm" onclick="kotRules()">❓</button></div>
   ${g.trump!=null&&g.phase!=='call'?`<div class="ktr"><div class="ts" style="color:${g.trump%2?'#d11f1f':'#111'}">${SUITS[g.trump]}</div>${T2('कट','TRUMP')}<small>${kHow(g)}</small></div>`:''}${kPile(g)}${cb}<div class="kmsg">${msg}${g.phase==='play'&&!KU.show&&(g.pile>0)?`<small>📦 ${g.pile} ${T2('सर जमा हैं','tricks pending')} — ${pn(g.last)} ${T2('ने आख़िरी सर जीती। अगली भी वही जीते तो सब उठा लेगा','won the last one. If he wins the next too, he takes them all')}</small>`:''}${g.phase==='change'&&g.trump!=null?`<small>${kHow(g)} · ${T2('कट','trump')} ${kSp(g.trump)}</small>`:''}</div>${[0,1,2,3].map(ch).join('')}
@@ -2021,9 +2033,10 @@ const RANG_HOW=[
 ['⬆️ कोई और रंग बदलना चाहे तो उसे ज़्यादा बोलना होगा, जैसे 6 (उसका रंग जाने बिना)। कोई और न बोले तो पहले वाले का रंग कट माना जाता है। किसी ने रंग नहीं बोला तो हुकुम ♠ कट।','⬆️ To take the suit away you must bid higher, e.g. 6 (without knowing his suit). If nobody raises, that suit is trump. If nobody names a suit, Spades is trump.'],
 ['🂠 फिर बाकी पत्ते बँटते हैं, सबके 13 पत्ते हो जाते हैं, और तब सबको दिखता है कि किसने कौन सा रंग बोला था (वही कट है)।','🂠 Then the rest are dealt: 13 each, and now everyone sees which suit was named (that is the trump).'],
 ['📢 असली बिड: सब 13 पत्ते देखकर Call Break की तरह बिड बोलते हैं। रंग बोलने वाले को कम से कम अपनी बोली जितनी (5, 6...) बिड लगानी ही होगी, चाहे तो ज़्यादा। बाकी की बिड 1 से 13 तक, कम से कम 1। पहले वाली 5/6 की बोली सिर्फ़ रंग के लिए थी, वह रद्द हो जाती है।','📢 Real bid: after seeing 13 cards everyone bids like Call Break. The suit caller must bid at least his called number (5, 6...) and may bid more. Others bid anywhere from 1 to 13 (minimum 1). The earlier 5/6 call only decided the suit.'],
-['🔟 कभी-कभी किसी खिलाड़ी को बहुत ताक़तवर हाथ (लंबा रंग + इक्के) मिलता है। 10 या ज़्यादा बिड बोलने वाला (जब तक किसी ने रंग न बदला हो) कट का रंग बदल सकता है। ✨ रंग बदलने वाले को कम से कम 10 चालें बनानी ही होंगी। बाकी सब खिलाड़ियों (रंग बोलने वाले समेत) को बिड बोलने की ज़रूरत नहीं — उनकी बिड \"फ्री\" हो जाती है और वे जितनी चालें बनाएँगे (चाहे एक भी नहीं) उतने ही अंक लिखे जाएँगे। अगर 10 पूरी न हुई तो गोला (0)।','🔟 A bid of 10 or more lets that player change the trump (only once per round). ✨ The player who changes the trump must make at least 10 tricks. Everyone else (including the original caller) need not bid — their bid becomes \"Free\" and they simply score as many points as the tricks they win, even if that is none. If the changer misses 10, he gets a gola (0).'],
+['🔟 कभी-कभी किसी खिलाड़ी को बहुत ताक़तवर हाथ (लंबा रंग + इक्के) मिलता है। 10 या ज़्यादा बिड बोलने वाला (जब तक किसी ने रंग न बदला हो) कट का रंग बदल सकता है। ✨ अगर रंग बोलने वाले के अलावा कोई और रंग बदलता है तो उसे कम से कम 10 चालें बनानी ही होंगी और बाकी सब खिलाड़ियों (रंग बोलने वाले समेत) को बिड बोलने की ज़रूरत नहीं — उनकी बिड \"फ्री\" हो जाती है और वे जितनी चालें बनाएँगे (चाहे एक भी नहीं) उतने ही अंक लिखे जाएँगे। अगर 10 पूरी न हुईं तो उसकी बिड पर गोला (○) लगता है और अंक कटते हैं।','🔟 A bid of 10 or more lets that player change the trump (only once per round). ✨ If anyone other than the original caller changes the trump, he must make at least 10 tricks and everyone else (including the original caller) need not bid — their bid becomes \"Free\" and they simply score as many points as the tricks they win, even if that is none. If the changer misses 10, a gola (circle) goes on his bid and the points are deducted.'],
+['🥇 पहली चाल: जिसने 10 या ज़्यादा बिड बोली वही सबसे पहले पत्ता चलेगा (रंग बदलने वाला सबसे पहले)। 10 बोलने वाला कोई न हो तो रंग बोलने वाला पहला पत्ता चलता है। अगर रंग बोलने वाला (5/6 बोलकर) बाद में खुद 10 बोल दे तो \"फ्री\" नहीं लगता — सब सामान्य बिड बोलते हैं।','🥇 First lead: the player who bid 10 or more leads the first card (the player who changed the trump leads first). If nobody bid 10+, the suit caller leads. If the caller himself later bids 10 (after calling 5/6), \"Free\" does not apply — everyone bids normally.'],
 ['▶️ चाल: जो रंग चला गया वही चलिए, और जीत सकते हैं तो उससे बड़ा पत्ता ही चलना होगा। उस रंग का पत्ता न हो तो कट (तुरुप) मारना ज़रूरी है (कट पहले चल चुका हो तो उससे बड़ा कट; बड़ा कट न हो तो कोई भी पत्ता)। कट भी न हो तो अपनी मर्ज़ी का पत्ता।','▶️ Play: follow the suit led, and you must play a higher card if you can. If you have none of that suit you must trump (over-trump if a trump is already played; if you cannot over-trump, play any card). If you have no trump either, play any card.'],
-['🏆 अंक: बिड पूरी तो बिड + हर एक्स्ट्रा चाल का 0.1, वरना गोला (0 अंक) — माइनस नहीं।','🏆 Score: bid met = bid + 0.1 per extra trick, otherwise a gola (0 points) — no minus.'],
+['🏆 अंक: बिड पूरी तो बिड + हर एक्स्ट्रा चाल का 0.1, वरना बिड जितने अंक कटते हैं — स्कोरबोर्ड में माइनस की जगह उस बिड पर गोला (○) लगता है।','🏆 Score: bid met = bid + 0.1 per extra trick, otherwise the bid is deducted — shown as a gola (circle) on that bid instead of a minus sign.'],
 ['🪙 जेम्स नकली हैं, असली कीमत नहीं।','🪙 Gems are virtual and have no real value.']];
 function rangOv(h,w,raw){rangCloseOv();$.insertAdjacentHTML('beforeend',`<div class="ov" id="rov">${raw?h:`<div class="box" ${w?`style="width:${w}px"`:''}>${h}</div>`}</div>`)}
 function rangCloseOv(){const o=document.getElementById('rov');if(o)o.remove()}
@@ -2133,7 +2146,7 @@ function rangRender(){
     return `<div class="rbub ${SD[p]} ${c}">${t}</div>`};
   const ring=p=>{const on=live&&g.turn===p&&RU.dur;return on?`<svg class="ring" viewBox="0 0 60 60"><circle class="bg" cx="30" cy="30" r="27"/><circle class="fg" cx="30" cy="30" r="27" style="animation-duration:${RU.dur}ms;animation-delay:-${Math.min(Date.now()-RU.t0,RU.dur)}ms"/></svg>`:''};
   const pt=p=>{const b=g.bids[p];if(g.free&&g.free[p])return g.phase==='play'&&g.won[p]>0?`<div class="pt">✓ ${g.won[p]}</div>`:'';return(g.phase==='play'&&b!=null&&g.won[p]>=b)?`<div class="pt">✓ ${Math.round((b+(g.won[p]-b)*.1)*10)/10}</div>`:''};
-  const ch=p=>`<div class="kchip ${p===0?'kme':''} ${live&&g.turn===p?'on':''} ${g.phase==='call'&&hi&&hi.p===p?'hi':''}" style="left:${CP[p][0]}px;top:${CP[p][1]}px"><div class="a" ${p?'':'onclick="pick()"'}>${ring(p)}${avHTML(p)}${pt(p)}</div><b class="nm2">${pn(p)}${g.caller===p&&g.phase!=='call'?' 📢':''}</b><small>Σ ${g.totals[p]}</small>${bub(p)}${RU.emo&&RU.emo[p]?`<div class="eb">${emoHTML(RU.emo[p])}</div>`:''}</div>`;
+  const ch=p=>`<div data-p="${p}" class="kchip ${p===0?'kme':''} ${live&&g.turn===p?'on':''} ${g.phase==='call'&&hi&&hi.p===p?'hi':''}" style="left:${CP[p][0]}px;top:${CP[p][1]}px"><div class="a" ${p?'':'onclick="pick()"'}>${ring(p)}${avHTML(p)}${pt(p)}</div><b class="nm2">${pn(p)}${g.caller===p&&g.phase!=='call'?' 📢':''}</b><small>Σ ${g.totals[p]}</small>${bub(p)}${RU.emo&&RU.emo[p]?`<div class="eb">${emoHTML(RU.emo[p])}</div>`:''}</div>`;
   const box=g.phase==='call'?(hi?((rKnown(hi.p,g)&&hi.s!=null)?`<div class="ts" style="color:${hi.s%2?'#d11f1f':'#111'}">${SUITS[hi.s]}</div>${T2('बोली','CALL')} ${hi.n}<small>📢 ${pn(hi.p)}</small>`:`<div class="ts" style="color:#78909c">🔒</div>${T2('बोली','CALL')} ${hi.n}<small>📢 ${pn(hi.p)} · ${T2('रंग छुपा','suit hidden')}</small>`):`<div class="ts" style="color:#aaa">?</div>${T2('कोई रंग नहीं','No suit yet')}`)
     :`<div class="ts" style="color:${g.trump%2?'#d11f1f':'#111'}">${SUITS[g.trump]}</div>${T2('कट','TRUMP')}<small>${g.changedBy!=null?'🔄 '+pn(g.changedBy):g.caller!=null?'📢 '+pn(g.caller)+' '+SUITS[g.trump]+g.callN:T2('डिफ़ॉल्ट','default')}</small>`;
   if(g.phase==='bid')RU.rvRound=g.round;
@@ -2165,7 +2178,7 @@ function rCoach(g){
     const e=rangEst(hand,g.trump);
     a=m.s!=null?T2(`बिड ${m.n} और कट बदलकर ${sn(m.s)}`,`Bid ${m.n} and change trump to ${sn(m.s)}`):T2('बिड '+m.n,'Bid '+m.n);
     b=T2(`कट ${sn(g.trump)} के ${cnt(g.trump)} पत्ते हैं (बड़े: ${big(g.trump)}) और बाहर के इक्के-बादशाह मिलाकर लगभग ${e.toFixed(1)} चालें दिखती हैं।`,`You hold ${cnt(g.trump)} of trump ${sn(g.trump)} (big: ${big(g.trump)}); with outside aces/kings about ${e.toFixed(1)} tricks.`);
-    c=g.caller===0?T2(`आपने रंग बोला था, इसलिए कम से कम ${g.callN}।`,`You called the suit, so at least ${g.callN}.`):T2('इतनी ही बिड लगाइए जितनी पक्की बन सके — पूरी न हुई तो गोला (0 अंक)।','Bid only what you can make — a failed bid scores a gola (0).');
+    c=g.caller===0?T2(`आपने रंग बोला था, इसलिए कम से कम ${g.callN}।`,`You called the suit, so at least ${g.callN}.`):T2('इतनी ही बिड लगाइए जितनी पक्की बन सके — पूरी न हुई तो उस बिड पर गोला (○) लगता है और उतने अंक कटते हैं।','Bid only what you can make — a failed bid gets a gola (circle) and that many points are deducted.');
   }else{
     const nm=x=>rankName(x.r)+SUITS[x.s],lead=!g.trick.length,need=(g.free&&g.free[0]?13:g.bids[0])-g.won[0];
     a=T2('यह पत्ता चलिए: '+nm(m.c),'Play this card: '+nm(m.c));
@@ -2214,7 +2227,7 @@ function rangStep(){
 function rangScoreHTML(g,mode){      // mode: 'round' | 'over' | 'view'
   const f=v=>Number.isInteger(v)?String(v):v.toFixed(1),lead=Math.max(...g.totals),POS=[T2('पहला','1st'),T2('दूसरा','2nd'),T2('तीसरा','3rd'),T2('चौथा','4th')];
   const rk=g.totals.map(t=>g.totals.filter(x=>x>t).length);
-  const rows=g.history.map((r,i)=>`<tr><td>${T2('राउंड','Round')} ${i+1}<small>${SUITS[r.trump]}${r.caller!=null?' 📢'+pn(r.caller).slice(0,5):''}</small></td>${r.score.map((v,j)=>`<td>${(r.won[j]<r.bids[j]&&!(r.free&&r.free[j]))?'<b class="gola">0</b>':`<b>${v>0?'+':''}${f(v)}</b>`}<small>${r.won[j]}/${r.free&&r.free[j]?T2('फ्री','free'):r.bids[j]}</small></td>`).join('')}</tr>`).join('');
+  const rows=g.history.map((r,i)=>`<tr><td>${T2('राउंड','Round')} ${i+1}<small>${SUITS[r.trump]}${r.caller!=null?' 📢'+pn(r.caller).slice(0,5):''}</small></td>${r.score.map((v,j)=>`<td>${(r.won[j]<r.bids[j]&&!(r.free&&r.free[j]))?`<b class="gola">${r.bids[j]}</b>`:`<b>${v>0?'+':''}${f(v)}</b>`}<small>${r.won[j]}/${r.free&&r.free[j]?T2('फ्री','free'):r.bids[j]}</small></td>`).join('')}</tr>`).join('');
   const re=mode==='round';
   return `<div class="box sbx" style="width:660px"><h2>${mode==='over'?'🏁 '+T2('खेल खत्म','Game over'):re?T2('राउंड '+g.history.length+' खत्म','Round '+g.history.length+' complete'):T2('स्कोरबोर्ड','Scoreboard')}${g.target?' · 🎯 '+g.target:''}</h2>
   <table class="sbt"><tr><th></th>${[0,1,2,3].map(p=>`<th>${pn(p)}</th>`).join('')}</tr>${rows}
@@ -2574,7 +2587,7 @@ function seepRender(){
   const co=(my||bidMy)&&SU.practice?seepCoach(g):null;SU.co=co;
   const playable=c=>mv.some(m=>SeepEng.same(m.c,c));
   const ring=p=>{const on=live&&cur===p&&SU.dur;return on?`<svg class="ring" viewBox="0 0 60 60"><circle class="bg" cx="30" cy="30" r="27"/><circle class="fg" cx="30" cy="30" r="27" style="animation-duration:${SU.dur}ms;animation-delay:-${Math.min(Date.now()-SU.t0,SU.dur)}ms"/></svg>`:''};
-  const ch=p=>`<div class="kchip ${p===0?'kme':''} ${live&&cur===p?'on':''}" style="left:${pos[p][0]}px;top:${pos[p][1]}px"><div class="a" ${p?'':'onclick="pick()"'}>${ring(p)}${avHTML(p)}</div><b class="nm2">${pn(p)}${g.bidder===p&&g.bid!=null?' 🎯'+g.bid:''}</b><small>${n===4?seepTeam(p%2)+' · ':''}🃏${g.hands[p].length} · 📥${g.caps[SeepEng.tm(g,p)].length}</small>${SU.emo&&SU.emo[p]?`<div class="eb">${emoHTML(SU.emo[p])}</div>`:''}</div>`;
+  const ch=p=>`<div data-p="${p}" class="kchip ${p===0?'kme':''} ${live&&cur===p?'on':''}" style="left:${pos[p][0]}px;top:${pos[p][1]}px"><div class="a" ${p?'':'onclick="pick()"'}>${ring(p)}${avHTML(p)}</div><b class="nm2">${pn(p)}${g.bidder===p&&g.bid!=null?' 🎯'+g.bid:''}</b><small>${n===4?seepTeam(p%2)+' · ':''}🃏${g.hands[p].length} · 📥${g.caps[SeepEng.tm(g,p)].length}</small>${SU.emo&&SU.emo[p]?`<div class="eb">${emoHTML(SU.emo[p])}</div>`:''}</div>`;
   const chips=(n===4?[0,1,2,3]:[0,1]).map(ch).join('');
   const tbl=g.hidden?[0,1,2,3].map(()=>'<div class="card sbk"></div>').join(''):g.table.map(i=>i.house?`<div class="sh ${i.pukka?'pk':''}"><b>${i.pukka?'🔒 ':''}${T2('घर','House')} ${i.val} · ${i.owners.map(o=>pn(o).slice(0,7)+(n===4?(o%2?' ('+seepTeam(1)+')':' ('+seepTeam(0)+')'):'')).join(' + ')}</b>${i.cards.map(c=>cardHTML(c)).join('')}</div>`:cardHTML(i.cards[0])).join('');
   const sel=SU.sel,hand=sortHand(g.hands[0]);
@@ -2929,7 +2942,7 @@ function bhRender(){
   const mir=PG.set.bdir!=='cw',pos=p=>{if(p===0)return [14,338];const q=BH_POS[n][p-1];return [mir?840-q[0]:q[0],q[1]]};
   const ring=p=>{const on=live&&g.turn===p&&BU.dur;return on?`<svg class="ring" viewBox="0 0 60 60"><circle class="bg" cx="30" cy="30" r="27"/><circle class="fg" cx="30" cy="30" r="27" style="animation-duration:${BU.dur}ms;animation-delay:-${Math.min(Date.now()-BU.t0,BU.dur)}ms"/></svg>`:''};
   const rk=p=>g.isOut[p]?(g.order.indexOf(p)+1):0;
-  const ch=p=>{const [x,y]=pos(p);return `<div class="kchip ${p===0?'kme':''} ${live&&g.turn===p?'on':''} ${g.isOut[p]?'out':''}" style="left:${x}px;top:${y}px"><div class="a" ${p?'':'onclick="pick()"'}>${ring(p)}${avHTML(p)}</div><b class="nm2">${pn(p)}${g.phase==='over'&&g.bhabhi===p?' 😅':''}</b><small>${g.isOut[p]?'✅ #'+rk(p):'🃏'+g.hands[p].length}</small>${BU.emo&&BU.emo[p]?`<div class="eb">${emoHTML(BU.emo[p])}</div>`:''}</div>`};
+  const ch=p=>{const [x,y]=pos(p);return `<div data-p="${p}" class="kchip ${p===0?'kme':''} ${live&&g.turn===p?'on':''} ${g.isOut[p]?'out':''}" style="left:${x}px;top:${y}px"><div class="a" ${p?'':'onclick="pick()"'}>${ring(p)}${avHTML(p)}</div><b class="nm2">${pn(p)}${g.phase==='over'&&g.bhabhi===p?' 😅':''}</b><small>${g.isOut[p]?'✅ #'+rk(p):'🃏'+g.hands[p].length}</small>${BU.emo&&BU.emo[p]?`<div class="eb">${emoHTML(BU.emo[p])}</div>`:''}</div>`};
   const chips=[...Array(n).keys()].map(ch).join('');
   const T=BU.show?BU.show.trick:g.trick,led=T.length?T[0].c.s:null;
   const hi=T.length?T.filter(x=>x.c.s===led).sort((a,b)=>b.c.r-a.c.r)[0]:null;
@@ -3314,17 +3327,34 @@ html,body{background:#14202e!important}
 
 
 /* ===================== DAILY GEMS (alag button) + DOOSRA GAME button + HARI BATTI (kis ki chaal) ===================== */
-function dailyGems(){
-  const u=me(),t=today(),box=h=>modal(h);
-  if(u.dgDay===t){
-    box(`<h2 style="text-align:center">🎁 ${T2('डेली जेम्स','Daily Gems')}</h2><div class="bigem" style="font-size:40px">✔</div><p style="text-align:center;font-size:16px;line-height:1.6">${T2('आज के जेम्स आप ले चुके हैं। कल फिर आइए!','You already took today\'s gems. Come back tomorrow!')}<br>🔥 ${T2('लगातार दिन','Day streak')}: <b>${u.dgStreak||1}</b></p><div class="row"><button class="gb" onclick="closeM()">${T2('ठीक है','OK')}</button></div>`);return}
-  const y=new Date();y.setDate(y.getDate()-1);const yd=y.getFullYear()*10000+(y.getMonth()+1)*100+y.getDate();
-  u.dgStreak=u.dgDay===yd?(u.dgStreak||0)+1:1;u.dgDay=t;
-  const amt=20+Math.min(u.dgStreak-1,6)*10;u.gems=gems()+amt;save();
-  box(`<h2 style="text-align:center">🎁 ${T2('डेली जेम्स','Daily Gems')}</h2><div class="bigem">+${amt} 💎</div><p style="text-align:center;font-size:16px;line-height:1.6">🔥 ${T2('लगातार दिन','Day streak')}: <b>${u.dgStreak}</b><br><small>${T2('रोज़ आने पर जेम्स बढ़ते हैं (7वें दिन +80)','Gems grow every consecutive day (day 7 = +80)')}</small></p><div class="row"><button class="gb" onclick="closeM()">${T2('लीजिए','Claim')}</button></div>`);
-  document.querySelectorAll('.gm').forEach(e=>e.innerHTML=ic('gem')+' '+gems());
-  document.querySelectorAll('.dgb').forEach(e=>{e.classList.remove('rdy');const q=e.querySelector('small');if(q)q.textContent=T2('मिल गया ✔','Claimed ✔')});
+const DG_AMT=[20,30,40,50,60,70,80];
+function dgFmt(d){const M=T2('जन,फ़र,मार्च,अप्रैल,मई,जून,जुलाई,अगस्त,सित,अक्टू,नव,दिस','Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec').split(',');return (d%100)+' '+M[((d/100|0)%100)-1]}
+function dgYesterday(){const y=new Date();y.setDate(y.getDate()-1);return y.getFullYear()*10000+(y.getMonth()+1)*100+y.getDate()}
+function dgState(){const u=me(),t=today(),done=u.dgDay===t,streak=done?(u.dgStreak||1):(u.dgDay===dgYesterday()?(u.dgStreak||0):0);return{u,t,done,streak,next:done?0:streak+1}}
+function dailyGems(){dgDraw(0)}
+function dgDraw(got){
+  const {u,done,streak,next}=dgState(),pos=Math.min(streak,7),np=next?Math.min(next,7):0;
+  const tiles=DG_AMT.map((a,i)=>{const d=i+1,cl=(!done&&d===np)?'now':(d<=pos?'got':'');return `<div class="dgt ${cl}"><small>${T2('दिन','Day')} ${d}</small><b>${cl==='got'?'✔':cl==='now'?'🎁':'🔒'}</b><span>+${a}</span></div>`}).join('');
+  const H=(u.dgHist||[]).slice().reverse().slice(0,8);
+  const hist=H.length?H.map(h=>`<div class="dgh"><span>📅 ${dgFmt(h.d)}</span><span>${T2('दिन','Day')} ${h.s}</span><b>+${h.a} 💎</b></div>`).join(''):`<div class="dgh" style="justify-content:center;opacity:.7">${T2('अभी तक कोई इनाम नहीं लिया','No reward claimed yet')}</div>`;
+  const amt=next?DG_AMT[np-1]:0;
+  const html=`<h2 style="text-align:center;margin:0 0 4px">🎁 ${T2('डेली जेम्स','Daily Gems')}</h2>
+  ${got?`<div class="bigem">+${got} 💎</div>`:''}
+  <div style="text-align:center;font-size:15px;opacity:.9">🔥 ${T2('लगातार दिन','Day streak')}: <b>${streak}</b> · 💎 ${T2('कुल मिले','Total earned')}: <b>${u.dgTotal||0}</b></div>
+  <div class="dgg">${tiles}</div>
+  <div class="lbl">${T2('पिछले इनाम (किस दिन कितना मिला)','Past rewards (which day, how much)')}</div><div class="dgl">${hist}</div>
+  <div class="row">${done?`<button class="gb" onclick="closeM()">${T2('ठीक है','OK')}</button>`:`<button class="gb" onclick="dgClaim()">🎁 ${T2('आज के +'+amt+' 💎 लीजिए','Claim today\'s +'+amt+' 💎')}</button><button class="ghost" onclick="closeM()">${T2('बाद में','Later')}</button>`}</div>${done&&!got?`<div style="text-align:center;font-size:13px;opacity:.8;margin-top:4px">${T2('कल फिर आइए — दिन '+Math.min(streak+1,7)+' का इनाम +'+DG_AMT[Math.min(streak+1,7)-1]+' 💎','Come back tomorrow — Day '+Math.min(streak+1,7)+' gives +'+DG_AMT[Math.min(streak+1,7)-1]+' 💎')}</div>`:''}`;
+  const w=document.getElementById('dgw');if(w)w.innerHTML=html;else modal(`<div id="dgw">${html}</div>`);
 }
+function dgClaim(){
+  const S=dgState();if(S.done)return;const u=S.u,amt=DG_AMT[Math.min(S.next,7)-1];
+  u.dgStreak=S.next;u.dgDay=S.t;u.gems=gems()+amt;u.dgTotal=(u.dgTotal||0)+amt;(u.dgHist=u.dgHist||[]).push({d:S.t,a:amt,s:S.next});if(u.dgHist.length>30)u.dgHist.shift();save();
+  if(typeof snd==='object'&&snd.win)snd.win();dgDraw(amt);
+  document.querySelectorAll('.gm').forEach(e=>e.innerHTML=ic('gem')+' '+gems());
+  document.querySelectorAll('.dgb').forEach(e=>{e.classList.remove('rdy')});
+}
+document.head.insertAdjacentHTML('beforeend',`<style>.dgg{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:10px 0}.dgt{border-radius:12px;background:#0004;border:2px solid #ffffff2a;text-align:center;padding:6px 2px;line-height:1.25}.dgt small{display:block;font-size:11px;opacity:.8}.dgt b{display:block;font-size:20px}.dgt span{font-weight:800;font-size:13px}.dgt.got{background:#1f8a3f;border-color:#8affa8}.dgt.now{background:linear-gradient(#ffd54a,#e08a00);color:#3a2100;border-color:#fff3b0;animation:dgs 1.4s ease-in-out infinite}.dgl{max-height:132px;overflow-y:auto;background:#0003;border-radius:12px;padding:4px 10px}.dgh{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid #ffffff1f;font-size:15px}.dgh:last-child{border:0}
+.cmb{position:absolute;right:-12px;top:-12px;width:30px;height:30px;border-radius:50%;background:#2f86e0;border:2px solid #fff;font-size:14px;line-height:1;padding:0;z-index:12;box-shadow:0 2px 4px #0008}.emt{display:block;font-size:12px;font-weight:700;background:#000b;color:#ffd54a;border-radius:8px;padding:1px 6px;margin-top:2px;white-space:nowrap}.emopick .qh{width:100%;text-align:center;font-weight:800;color:#ffd54a;font-size:17px;flex:none}</style>`);
 document.head.insertAdjacentHTML('beforeend',`<style>
 /* alag buttons: Daily Gems (baayen) aur Doosra Game (daayen) */
 .swg{position:absolute;z-index:8;display:flex;align-items:center;gap:8px;height:54px;padding:0 16px 0 10px;border-radius:26px;color:#fff;font-weight:800;text-align:left;border:3px solid #fff;line-height:1.05}
@@ -3364,6 +3394,7 @@ new MutationObserver(()=>{
     else if(ibs)ibs.insertAdjacentHTML('afterbegin',`<button class="wb iconb dgb ${rdy?'rdy':''}" title="${tip}" aria-label="${tip}" onclick="dailyGems()">🎁</button>`);
     if(!$.querySelector('.gts'))top.insertAdjacentHTML('beforeend',`<button class="frx dbx" onclick="hub()" aria-label="${T2('वापस','Back')}" title="${T2('सभी गेम','All games')}">✖</button>`);
   }
+  if(ON.active&&ON.room)$.querySelectorAll('[data-p]:not(.hascmb)').forEach(el=>{el.classList.add('hascmb');el.insertAdjacentHTML('beforeend',`<button class="cmb" onclick="event.stopPropagation();emoBox(${el.dataset.p})" aria-label="message">💬</button>`)});
   const my=!!$.querySelector('.kme.on,#sx0.on');let fx=document.getElementById('myfx');
   if(my&&!fx){fx=document.createElement('div');fx.id='myfx';document.body.appendChild(fx)}else if(!my&&fx)fx.remove();
 }).observe($,{childList:true});
@@ -3601,7 +3632,7 @@ html.lite #splash .sl,html.lite #splash .se svg{filter:none}
   setTimeout(()=>{const l=sc.querySelector('.sld');if(!l)return;l.outerHTML=`<button class="sgo">▶ ${T2('खेलना शुरू करें','Tap to play')}<small>${T2('पूरी स्क्रीन में','Full screen')}</small></button>`;sc.querySelector('.sb').style.visibility='hidden'},3300);
   el.onclick=()=>{if(!el.querySelector('.sgo'))return;goFull();close()};
 })();
-document.head.insertAdjacentHTML('beforeend',`<style>b.gola,.gola{display:inline-block!important;width:34px!important;height:34px!important;min-width:0!important;line-height:28px!important;border:3px solid #ff7b7b;border-radius:50%;color:#ff9a9a;text-align:center;font-size:17px;font-weight:800;box-sizing:border-box;padding:0!important;margin:0 auto}</style>`);
+document.head.insertAdjacentHTML('beforeend',`<style>b.gola,.gola{display:inline-block!important;width:38px!important;height:38px!important;min-width:0!important;line-height:32px!important;border:3px solid #ff7b7b;border-radius:50%;color:#ff9a9a;text-align:center;font-size:17px;font-weight:800;box-sizing:border-box;padding:0!important;margin:0 auto}</style>`);
 if(PG.cur&&me()&&!PG.set.game&&!document.querySelector('#sov'))home();   // app khulte hi pehle ban chuki game-chunne wali screen ko Seep ke saath dobara banao
 </script>
 </body>
